@@ -24,6 +24,9 @@ import DatePicker from 'react-bootstrap-date-picker';
 import uuid from 'node-uuid';
 import { assign, omit } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
+import axios from 'axios';
+
+import Buscar from './Buscar';
 
 import process from './process.svg';
 
@@ -42,9 +45,23 @@ export default class EmissaoDuplicata extends Component {
     this.handleClose = this.handleClose.bind(this);
 
     this.handleSearch = this.handleSearch.bind(this);
+    this.handleSelect = this.handleSelect.bind(this);
 
     this.handleCloseDialog = this.handleCloseDialog.bind(this);
 
+  }
+
+  componentWillMount() {
+    axios
+      .get('http://sistema/api/task/' + this.props.id)
+      .then( (response) => {
+        if (response.data instanceof Array) {
+          this.setState(JSON.parse(response.data.params));
+        }
+      })
+      .catch( error => {
+        alert('Erro ao obter a lista de tarefas.');
+      })
   }
 
   handleCloseDialog() {
@@ -55,12 +72,12 @@ export default class EmissaoDuplicata extends Component {
     browserHistory.push('/');
   }
 
-  handleSubmit(data) {
-  
+  handleSearch(data) {
+    this.setState({dialog: <Buscar onClose={this.handleCloseDialog} onSelect={this.handleSelect} />})
   }
 
-  handleSearch(data) {
-    this.setState({dialog: <Buscar onClose={this.handleCloseDialog} />})
+  handleSelect(item) {
+    alert('Item selecionado:\n' + JSON.stringify(item, null, 2));
   }
 
   handleChange(value) {
@@ -83,14 +100,13 @@ export default class EmissaoDuplicata extends Component {
         <Panel header={'Emissão de Duplicadas (Avulsa)'} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
-            <Col xs={6} md={2} >
+            <Col xs={4} md={3} >
 
               <OverlayTrigger 
                 placement="top" 
                 overlay={(<Tooltip id="tooltip">Emitir Duplicatas</Tooltip>)}
               >
                   <Button
-                    bsSize="medium"
                     onClick={this.handleSubmit}
                     style={{width: 140}}
                   >
@@ -100,7 +116,7 @@ export default class EmissaoDuplicata extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={6} md={2} >
+            {/*<Col xs={4} md={2} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -108,7 +124,6 @@ export default class EmissaoDuplicata extends Component {
               >
 
                   <Button
-                    bsSize="medium"
                     onClick={this.handleSave}
                     style={{width: 100}}
                   >
@@ -118,8 +133,8 @@ export default class EmissaoDuplicata extends Component {
 
               </OverlayTrigger>
 
-            </Col>
-            <Col xs={6} md={2} >
+            </Col>*/}
+            <Col xs={4} md={2} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -127,7 +142,6 @@ export default class EmissaoDuplicata extends Component {
               >
 
                 <Button
-                  bsSize="medium"
                   disabled={this.state.hasChanges}
                   onClick={this.handlePrint}
                   style={{width: 100}}
@@ -139,7 +153,7 @@ export default class EmissaoDuplicata extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={6} md={2} >
+            <Col xs={4} md={2} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -147,7 +161,6 @@ export default class EmissaoDuplicata extends Component {
               >
 
                 <Button
-                  bsSize="medium"
                   onClick={this.handleCalc}
                   style={{width: 100}}
                 >
@@ -158,15 +171,14 @@ export default class EmissaoDuplicata extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={6} md={2} >
+            <Col xs={4} md={2} >
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Consultar Duplicatas</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Buscar</Tooltip>)}
               >
 
                 <Button
-                  bsSize="medium"
                   onClick={this.handleSearch}
                   style={{width: 100}}
                 >
@@ -177,14 +189,13 @@ export default class EmissaoDuplicata extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={6} md={2} >
+            <Col xs={4} md={2} >
 
               <OverlayTrigger 
                 placement="top" 
                 overlay={(<Tooltip id="tooltip">Fechar sem emitir as duplicatas</Tooltip>)}
               >
                   <Button
-                    bsSize="medium"
                     disabled={this.state.hasChanges}
                     onClick={this.handleClose}
                     style={{width: 100}}

@@ -6,6 +6,8 @@
     "react-scripts": "0.7.0"
   },
   "dependencies": {
+    "axios": "^0.15.2",
+    "bootstrap": "^3.3.7",
     "lodash": "^4.17.0",
     "mqtt": "^1.14.1",
     "node-uuid": "^1.4.7",

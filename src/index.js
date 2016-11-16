@@ -2,6 +2,8 @@ import React from 'react'
 import { render } from 'react-dom'
 import { Router, Route, browserHistory } from 'react-router'
 
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap-theme.css';
 import './index.css';  // bootstrap css
 
 import App from './App';
@@ -39,8 +41,8 @@ const NoMatch = () =>
 render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
-    	<Route path="duplicata/emissao" component={EmitirDuplicata}/>
-      <Route path="duplicata/conferencia/:id" component={() => <ConferirDuplicata pedido={"19485"} />}/>
+    	<Route path="duplicata/emissao/:id" component={EmitirDuplicata}/>
+      <Route path="duplicata/conferencia/:id" component={ConferirDuplicata}/>
       <Route path="about" component={About}/>
       <Route path="users" component={Users}>
         <Route path="/user/:userId" component={User}/>
