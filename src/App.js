@@ -7,43 +7,12 @@ import { Nav, Navbar, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Col } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
-import uuid from 'node-uuid';
 import axios from 'axios';
-
-const tarefas = [
-  { 
-    path: '/duplicata/conferencia/4', 
-    title: 'Conferir Duplicatas', 
-    text: (<span><span style={{display: 'block'}}>Pedido 74716</span><span>SAINT PAUL INDUSTRIA E COMERCIO LTDA</span></span>), 
-    params: { 
-      _id: 1,
-      numero: '216558',
-      pedido: '74716',
-      emissao: '2016-10-10',
-      entrega: '2016-10-10',
-      cnpj: '63.394.915/0001-62',
-      representante: '001',
-      nome: 'SAINT PAUL INDUSTRIA E COMERCIO LTDA',
-      parcelas: [
-        {
-          selecionada: false,
-          vencto: '2016-10-10',
-          valor: 2198.74
-        },
-        {
-          selecionada: false,
-          vencto: '2016-10-10',
-          valor: 3572.96
-        }        
-      ]
-    }
-  },
-]
 
 const TaskItem = props =>
   <Link to={{ pathname: props.path, query: props.query }}>
-    <span style={{display: 'block'}}>{props.detail.header}</span>
-    <span>{props.detail.body}</span>
+    <span style={{display: 'block'}}>{props.title}</span>
+    <span>{props.detail}</span>
   </Link>
 
 class App extends Component {
@@ -57,14 +26,15 @@ class App extends Component {
 
   componentWillMount() {
     axios
-      .get('http://sistema/api/tasks?assign_to=' + (this.state.user || 'Marisa'))
+      .get('http://sistema/api/tarefas?assign_to=' + (this.state.user || 'neuci.bavato@altamira.com.br'))
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tasks: response.data.map( item => 
             ({ 
               id: item.id, 
-              title: item.title, 
-              detail: JSON.parse(item.detail) || { header: '', body: ''},
+              name: item.name, 
+              title: item.title || '',
+              detail: item.detail || '',
               path: item.link,
               query: item.query || ''
             })
@@ -110,10 +80,10 @@ class App extends Component {
 
           <Col md={3} >
             <Accordion>
-              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{tarefas.length}</Badge></span>} eventKey="1">
+              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tasks.length}</Badge></span>} eventKey="1">
                 <ListGroup>
                   {this.state.tasks.map( (task, i) =>
-                    <ListGroupItem key={'task-'+ i} header={task.title}>
+                    <ListGroupItem key={'task-'+ i} header={task.name}>
                       <TaskItem {...task} />
                     </ListGroupItem>
                   )}

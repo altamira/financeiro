@@ -20,8 +20,9 @@ import { browserHistory } from 'react-router'
 import DatePicker from 'react-bootstrap-date-picker';
 //import PDF from 'react-pdf';
 
-import Calcular from './Calcular';
+import Incluir from './Incluir';
 import Excluir from './Excluir';
+import Calcular from './Calcular';
 
 import { assign, omit } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
@@ -29,22 +30,58 @@ import axios from 'axios';
 
 import process from './process.svg';
 
+const TOPIC = '/financeiro/duplicata/conferir';
+
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = { 
-      _id: '',
-      numero: '',
-      pedido: '',
-      emissao: new Date().toISOString(),
-      entrega: new Date().toISOString(),
-      cnpj: '',
-      representante: '',
-      nome: '',
-      parcelas: [],
+    this.state = {
+      "empresa": "01",
+      "numero": 74700,
+      "emissao": "2016-11-01T00:00:00.000Z",
+      "entrega": "2016-12-16T00:00:00.000Z",
+      "cliente": {
+        "cnpj": "04.813.867/0001-17",
+        "inscricao": "407450079113",
+        "fantasia": "PENTAIR",
+        "nome": "PENTAIR WATER DO BRASIL LTDA",
+        "logradouro": "AV",
+        "endereco": "MARGINAL NORTE DA VIA ANHANGUERA",
+        "numero": "53.700",
+        "complemento": "",
+        "bairro": "JARDIM SERVILHA",
+        "municipio": 3525904,
+        "cidade": "JUNDIAI",
+        "CEP": "13206-245",
+        "UF": "SP",
+        "ddd": "11",
+        "telefone": "3378-5443",
+        "contato": ""
+      },
+      "condicao": "006",
+      "representante": {
+        "codigo": "008",
+        "nome": "CLAYTON CAPELATTO REPRESENTAÇÕES"
+      },
+      "comissao": 0.04,
+      "totais": {
+        "produtos": 4971.36,
+        "ipi": 248.568,
+        "total": 5219.928
+      },
+      "parcelas": [
+        {
+           "tipo": "DDL",
+           "sequencia": 1,
+           "dias": 21,
+           "porcentagem": 100,
+           "descricao": "DDL 021; POR 100000",
+           "valor": 5219.928
+        }
+      ],
 
       // campos de controle, não armazenar
       topics: {},
@@ -53,18 +90,15 @@ class App extends Component {
     }
 
     this.handleClose = this.handleClose.bind(this);
-    this.handleClick = this.handleClick.bind(this);
     this.handleChange = this.handleChange.bind(this);
-    this.handleEmissaoChange = this.handleEmissaoChange.bind(this);
-    this.handleEntregaChange = this.handleEntregaChange.bind(this);
 
-    this.handleSave = this.handleSave.bind(this);
-    this.handlePrint = this.handlePrint.bind(this);
-    this.handleCalc = this.handleCalc.bind(this);
+    this.handleComplete = this.handleComplete.bind(this);
 
     this.handleError = this.handleError.bind(this);
+
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleAdd = this.handleAdd.bind(this);
     this.handleSave = this.handleSave.bind(this);
-    this.handleCloseDialog = this.handleCloseDialog.bind(this);
 
   }
 
@@ -86,7 +120,7 @@ class App extends Component {
       let topics = {};
 
       this.client.subscribe(
-        'financeiro/duplicata/erros/' + clientId, 
+        TOPIC + '/erros/' + clientId, 
         function(err, granted) { 
           !err ? 
             this.setState({
@@ -104,22 +138,11 @@ class App extends Component {
       this.state.topics[topic] && this.state.topics[topic](message.toString());
 
     }.bind(this))
-
-    // carrega os parametros da tarefa
-    axios
-      .get('http://sistema/api/task/' + this.props.params.id)
-      .then( (response) => {
-        if (response.data instanceof Array && response.data.length === 1) {
-          this.setState(JSON.parse(response.data[0].params));
-        }
-      })
-      .catch( error => {
-        alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
-      })    
+  
   }
 
   componentWillUnmount() {
-    this.state.topics.forEach( (t) =>
+    this.state.topics && this.state.topics.forEach( (t) =>
       this.client.unsubscribe(
         t.topic, 
         function(err) { 
@@ -130,30 +153,31 @@ class App extends Component {
     this.client.end();
   }
 
+  componentWillReceiveProps(nextProps) {
+
+    // carrega os parametros da tarefa
+    axios
+      .get('http://sistema/api/tarefa/' + nextProps.params.id)
+      .then( (response) => {
+        if (response.data instanceof Array && response.data.length === 1) {
+          this.setState(JSON.parse(response.data[0].payload));
+        }
+      })
+      .catch( error => {
+        alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
+      })  
+  }
+  
   handleError(msg) {
     alert('Erro: ' + msg);
-  }
-
-  handleClick() {
-    this.setState({isLoading: true});
-
-    // This probably where you would have an `ajax` call
-    setTimeout(() => {
-      // Completed of async action, set loading state back
-      this.setState({isLoading: false});
-    }, 2000);
-  }
-
-  handleCloseDialog() {
-    this.setState({dialog: null});
   }
 
   handleClose() {
     browserHistory.push('/');
   }
 
-  handleSave(data) {
-    this.client.subscribe('financeiro/duplicata/alterado/' + this.state._id, function(err, granted) {
+  handleComplete(data) {
+    this.client.subscribe(TOPIC + '/alterado/' + this.state._id, function(err, granted) {
       if (err) {
         console.log('Erro ao se inscrever no topico: ' + granted[0].topic)
       } else {
@@ -163,7 +187,7 @@ class App extends Component {
           },
           this.client.publish.bind(
             this.client, 
-            'financeiro/duplicata/alterar/' + clientId, 
+            TOPIC + '/alterar/' + clientId, 
             JSON.stringify(omit(this.state, ['topics', 'hasChanges', 'dialog']))
           )  
         );
@@ -182,46 +206,33 @@ class App extends Component {
     );
   }
 
-  handleDelete(id) {
-    this.setState({dialog: <Excluir onClose={this.handleCloseDialog} />})
+  handleAdd() {
+    this.setState({dialog: <Incluir onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handlePrint(data) {
-    this.setState({dialog: <PDF file={'http://localhost/financeiro/duplicatas/bordero'} onClose={this.handleCloseDialog} />})
+  handleDelete(index) {
+    //this.setState({dialog: <Excluir onClose={this.handleCloseDialog.bind(this)} />})
+    let pedido = this.state;
+    pedido.parcelas.splice(index, 1);
+    this.setState(pedido);
   }
 
-  handleCalc(data) {
-    this.setState({dialog: <Calcular onClose={this.handleCloseDialog} />})
+  handleSave() {
+    this.setState({dialog: null})
+  }
+
+  handleCloseDialog() {
+    this.setState({dialog: null})
   }
 
   handleChange(value) {
     // value is an ISO String. 
-    if (this.state[value.target.id] != value.target.value) {
+    /*if (this.state[value.target.id] != value.target.value) {
       this.setState({
         [value.target.id]: value.target.value,
         persist: true
       });
-    }
-  }
-
-  handleEmissaoChange(value) {
-    // value is an ISO String. 
-    if (this.state['Emissao'] != value) {
-      this.setState({
-        ['Emissao']: value,
-        persist: true
-      });
-    }
-  }
-
-  handleEntregaChange(value) {
-    // value is an ISO String. 
-    if (this.state['Entrega'] != value) {
-      this.setState({
-        ['Entrega']: value,
-        persist: true
-      });
-    }
+    }*/
   }
 
   render() {
@@ -231,7 +242,7 @@ class App extends Component {
 
       <div>
 
-        <Panel header={'Conferência das Duplicadas Emitidas no Pedido de Venda ' + (this.state.pedido)} bsStyle="primary" >
+        <Panel header={'Conferência das Duplicadas Emitidas no Pedido de Venda ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
@@ -331,28 +342,28 @@ class App extends Component {
                   <Row style={{paddingTop: 20}} >
                     <Col xs={12} md={2}>Nosso Número</Col>
                     <Col xs={12} md={2}>
-                      <FormGroup controlId="numero" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl ref="numero" type="text" value={this.state.numero} onChange={this.handleChange} />
+                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={2}>Data da Emissão</Col>
                     <Col xs={12} md={2}>
-                      <FormGroup controlId="emissao" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleEmissaoChange} />
+                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={2}>Data da Entrega</Col>
                     <Col xs={12} md={2}>
-                      <FormGroup controlId="entrega" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker ref="entrega" value={this.state.entrega} onChange={this.handleEntregaChange} />
+                        <DatePicker value={this.state.entrega} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -360,25 +371,25 @@ class App extends Component {
                   <Row>
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={2}>
-                      <FormGroup controlId="pedido" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" ref="pedido" value={this.state.pedido} onChange={this.handleChange} />
+                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={1}>CNPJ/CPF</Col>
                     <Col xs={12} md={3}>
-                      <FormGroup controlId="cnpj" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" ref="cnpj" value={this.state.cnpj} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} value={this.state.cliente.cnpj} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={2}>Representante</Col>
                     <Col xs={12} md={2}>
-                      <FormGroup controlId="representante" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" ref="representante" value={this.state.representante} onChange={this.handleChange} />
+                        <FormControl type="text" value={this.state.representante.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -387,9 +398,36 @@ class App extends Component {
                   <Row>
                     <Col xs={12} md={2}>Razão Social</Col>
                     <Col xs={12} md={10}>
-                      <FormGroup controlId="nome" validationState="success">
+                      <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" ref="nome" value={this.state.nome} onChange={this.handleChange} />
+                        <FormControl type="text" value={this.state.cliente.nome} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                      </FormGroup>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col xs={12} md={2}>Valor Produtos</Col>
+                    <Col xs={12} md={2}>
+                      <FormGroup validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.produtos.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                      </FormGroup>
+                    </Col>
+                    <Col xs={12} md={2}>Valor IPI</Col>
+                    <Col xs={12} md={2}>
+                      <FormGroup validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.ipi.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                      </FormGroup>
+                    </Col>
+                    <Col xs={12} md={2}>Total do Pedido</Col>
+                    <Col xs={12} md={2}>
+                      <FormGroup validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.total.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -400,23 +438,32 @@ class App extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th>#</th>
-                            <th>Data</th>
-                            <th>Valor da Duplicata</th>
+                            <th>Vencimento</th>
+                            <th>Prazo</th>
+                            <th>Valor da Parcela</th>
+                            <th style={{width: '1%'}}><Button style={{width: '70px'}} bsStyle="success" bsSize="small" onClick={this.handleAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.map( (k, i) => 
-                            <tr key={'tr-' + i} >
-                              <td><Checkbox value={k.selecionada} /></td>
-                              <td>{k.vencto}</td>
-                              <td>{k.valor}</td>
-                            </tr>
+                          {this.state.parcelas.map( (parcela, i) => {
+                            let vencto = new Date(this.state.emissao);
+                            vencto.setTime( vencto.getTime() + parcela.dias * 86400000 );
+                            return (
+                              <tr key={'tr-' + i} >
+                                <td style={{textAlign: 'center'}}>{vencto.toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.sequencia === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.dias + ' dia(s) do PEDIDO' :  parcela.dias + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
+                                <td><Button bsStyle="danger" style={{width: '70px'}} bsSize="small" onClick={this.handleDelete.bind(null, i)}><Glyphicon glyph="remove" /> Excluir</Button></td>
+                              </tr>                              
+                            )
+                          }
+                            
                           )}
    
                           <tr>
                             <td></td>
-                            <td colSpan="2">Total das Parcelas: R$ 3.572,96</td>
+                            <td colSpan="2" style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
+                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.totais.total.toFixed(2)).toLocaleString()}</b></td>
                           </tr>
                         </tbody>
                       </Table>
