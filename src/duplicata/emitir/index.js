@@ -37,9 +37,11 @@ export default class EmissaoDuplicata extends Component {
     super(props);
 
     this.state = { 
+
       // campos de controle, não armazenar
       topics: {},
       dialog: null,
+
     }
 
     this.handleClose = this.handleClose.bind(this);
@@ -91,7 +93,6 @@ export default class EmissaoDuplicata extends Component {
   }
 
   render() {
-    const canSave = true;
 
     return (
 
@@ -213,45 +214,45 @@ export default class EmissaoDuplicata extends Component {
             <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
-                <Row>
-                  <Col xs={12} md={2}>CNPJ/CPF</Col>
-                  <Col xs={12} md={3}>
-                    <FormGroup controlId="cnpj" validationState="success">
-                      {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                      <FormControl type="text" ref="cnpj" value={this.state.cnpj} onChange={this.handleChange} />
-                      <FormControl.Feedback />
-                    </FormGroup>
-                  </Col>
-                  <Col xs={0} md={3} />
-                  <Col xs={12} md={2}>Emissão</Col>
-                  <Col xs={12} md={2}>
-                    <FormGroup controlId="emissao" validationState="success">
-                      {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                      {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
-                      {/*<FormControl.Feedback />*/}
-                      <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleEmissaoChange} />
-                    </FormGroup>
-                  </Col>
-                </Row>
+                  <Row>
+                    <Col xs={12} md={2}>CNPJ/CPF</Col>
+                    <Col xs={12} md={3}>
+                      <FormGroup controlId="cnpj" validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        <FormControl type="text" ref="cnpj" value={this.state.cnpj} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                      </FormGroup>
+                    </Col>
+                    <Col xs={0} md={3} />
+                    <Col xs={12} md={2}>Emissão</Col>
+                    <Col xs={12} md={2}>
+                      <FormGroup controlId="emissao" validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
+                        {/*<FormControl.Feedback />*/}
+                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleEmissaoChange} />
+                      </FormGroup>
+                    </Col>
+                  </Row>
 
-                <Row>
-                  <Col xs={12} md={2}>Razão Social</Col>
-                  <Col xs={12} md={10}>
-                    <FormGroup controlId="nome" validationState="success">
-                      {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                      <FormControl type="text" ref="nome" value={this.state.nome} onChange={this.handleChange} />
-                      <FormControl.Feedback />
-                    </FormGroup>
-                  </Col>
-                </Row>
+                  <Row>
+                    <Col xs={12} md={2}>Razão Social</Col>
+                    <Col xs={12} md={10}>
+                      <FormGroup controlId="nome" validationState="success">
+                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                        <FormControl type="text" ref="nome" value={this.state.nome} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                      </FormGroup>
+                    </Col>
+                  </Row>
                 </div>
               </Tab>
-            <Tab eventKey={2} title="Procedimento">
-              <img src={process} style={{width: '100%', height: '100%'}} />
-            </Tab>
-          </Tabs>
-        </Row>
-    </Panel>
+              <Tab eventKey={2} title="Procedimento">
+                <img src={process} style={{width: '100%', height: '100%'}} />
+              </Tab>
+            </Tabs>
+          </Row>
+        </Panel>
 
         {this.state.dialog}
 

@@ -10,27 +10,40 @@ import {
 } from 'react-bootstrap';
 import DatePicker from 'react-bootstrap-date-picker';
 
-export default class Incluir extends Component {
+export default class Edit extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       vencto: new Date().toISOString(),
-      prazo: 0,
-      valor: 0.00
+      tipo: "DDL",
+      sequencia: 1,
+      dias: 0,
+      porcentagem: 0,
+      descricao: "",
+      valor: 0.0
     }
 
+    this.handleDateChange = this.handleDateChange.bind(this);
     this.handleChange = this.handleChange.bind(this);
+
+    this.handleSave = this.handleSave.bind(this);
   }
 
-  handleChange(value) {
-    this.setState({
-        [value.target.id]: value.target.value
-    });
+  handleDateChange(date) {
+    this.setState({vencto: date});
   }
-  
+ 
+  handleChange(element) {
+    this.setState({[element.target.id]: element.target.value});
+  }
+ 
+  handleSave() {
+    this.props.onSave && this.props.onSave({...this.state, valor: parseFloat(this.state.valor)});
+  }
+
   componentWillReceiveProps(props) {
-    this.setState(props);
+    this.setState(this.props.item);
   }
 
   render() {
@@ -39,10 +52,23 @@ export default class Incluir extends Component {
       <div className="static-modal">
         <Modal.Dialog>
           <Modal.Header>
-            <Modal.Title>Calcular Datas</Modal.Title>
+            <Modal.Title>Incluir parcela</Modal.Title>
           </Modal.Header>
 
           <Modal.Body>
+            <Row>
+              <Col md={4}>Tipo</Col>
+              <Col md={8}>
+                <FormGroup validationState="success">
+                  <FormControl id="tipo" componentClass="select" placeholder="Tipo" value={this.state.tipo} onChange={this.handleChange} >
+                    <option value="DDP">Dias do Pedido (DDP)</option>
+                    <option value="DDL">Dias da Entrega (DDL)</option>
+                    <option value="DDM">Dias da Montagem (DDM)</option>
+                  </FormControl>
+                  <FormControl.Feedback />
+                </FormGroup>
+              </Col>
+            </Row>
             <Row>
               <Col md={4}>Vencto</Col>
               <Col md={8}>
@@ -50,7 +76,7 @@ export default class Incluir extends Component {
                   {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                   {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                   {/*<FormControl.Feedback />*/}
-                  <DatePicker id="emissao" value={this.state.vencto} onChange={this.handleChange} />
+                  <DatePicker id="emissao" value={this.state.vencto} onChange={this.handleDateChange} />
                 </FormGroup>
               </Col>
             </Row>
@@ -68,7 +94,7 @@ export default class Incluir extends Component {
 
           <Modal.Footer>
             <Button onClick={this.props.onClose} >Fechar</Button>
-            <Button bsStyle="primary">Incluir</Button>
+            <Button bsStyle="primary" onClick={this.handleSave}>Alterar</Button>
           </Modal.Footer>
 
         </Modal.Dialog>

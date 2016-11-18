@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router';
+import { Link, browserHistory } from 'react-router';
+
 //import logo from './logo.svg';
 import './App.css';
 
@@ -7,7 +8,13 @@ import { Nav, Navbar, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Col } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
+import { assign, omit } from 'lodash';
+import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
+
+const TOPIC = '/financeiro/duplicata/conferir';
+
+var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
   <Link to={{ pathname: props.path, query: props.query }}>
@@ -20,13 +27,69 @@ class App extends Component {
     super(props);
 
     this.state = {
-      tasks: []
+      user: {
+        name: 'Neuci',
+        email: 'neuci.bavato@altamira.com.br'
+      },
+      tasks: [],
+      topics: {}
     }
+
+    this.goHome = this.goHome.bind(this);
+
+    this.handleError = this.handleError.bind(this);
+    this.handleTaskDone = this.handleTaskDone.bind(this);
+
   }
 
   componentWillMount() {
+    var opts = {
+      host: '192.168.0.1', //'test.mosquitto.org'
+      port: 61614,
+      protocol: 'ws',
+      qos: 0,
+      retain: false,
+      clean: true,
+      keepAlive: 30, // 30 sec.
+      clientId: clientId
+    }
+
+    this.client = mqtt.connect(opts)
+
+    this.client.on('connect', function() {
+      this.client.subscribe(
+        [
+          '/erros/' + clientId,
+          '/tarefas/concluida/',
+        ], 
+        function(err, granted) { 
+          !err ? 
+            this.setState(
+            {
+              topics: assign(
+                this.state.topics, 
+                {
+                  [granted[0].topic]: this.handleError,
+                  [granted[1].topic]: this.handleTaskDone
+                }
+              )
+            }) 
+            : console.log('Erro ao se inscrever no topico: ' + err)
+        }.bind(this)
+      );
+
+    }.bind(this));
+    
+    this.client.on('message', function (topic, message) {
+      // message is Buffer
+      console.log('\n' + topic + ':\n' + message.toString())
+      
+      this.state.topics[topic] && this.state.topics[topic](message.toString());
+
+    }.bind(this))
+
     axios
-      .get('http://sistema/api/tarefas?assign_to=' + (this.state.user || 'neuci.bavato@altamira.com.br'))
+      .get('http://sistema/api/tarefas?assign_to=' + this.state.user.email)
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tasks: response.data.map( item => 
@@ -44,6 +107,33 @@ class App extends Component {
       .catch( error => {
         alert('Erro ao obter a lista de tarefas.');
       })
+  }
+
+  componentWillUnmount() {
+    this.state.topics && Object.keys(this.state.topics).forEach( (topic) =>
+      this.client.unsubscribe(
+        topic, 
+        function(err) { 
+          err && console.log('Erro ao retirar a inscrição ao topico: ' + topic)
+        }
+      )
+    )
+    this.client.end();
+  }
+
+  handleError(msg) {
+    alert('Erro: ' + msg);
+  }
+
+  handleTaskDone(msg) {
+    let task = JSON.parse(msg);
+    let tasks = this.state.tasks;
+    tasks.splice(tasks.findIndex( t => t.id === task.id), 1);
+    this.setState({tasks: tasks}, this.goHome);
+  }
+
+  goHome() {
+    browserHistory.push('/');
   }
   render() {
     return (

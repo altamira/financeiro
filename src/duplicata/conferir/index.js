@@ -1,5 +1,6 @@
 
 import React, { Component } from 'react';
+import { Link, browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -12,17 +13,19 @@ import {
   FormControl,
   Table,
   Checkbox,
-  Tooltip
+  Tooltip,
+  Label
 } from 'react-bootstrap';
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
-import { browserHistory } from 'react-router'
+
 import DatePicker from 'react-bootstrap-date-picker';
 //import PDF from 'react-pdf';
 
-import Incluir from './Incluir';
-import Excluir from './Excluir';
-import Calcular from './Calcular';
+import Add from './Add';
+import Edit from './Edit';
+import Delete from './Delete';
+//import Calc from './Calc';
 
 import { assign, omit } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
@@ -74,6 +77,7 @@ class App extends Component {
       },
       "parcelas": [
         {
+           "vencto": "2017-01-06T00:00:00.000Z",
            "tipo": "DDL",
            "sequencia": 1,
            "dias": 21,
@@ -84,80 +88,38 @@ class App extends Component {
       ],
 
       // campos de controle, não armazenar
-      topics: {},
-      hasChanges: true,
       dialog: null,
     }
 
+    // comandos
     this.handleClose = this.handleClose.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-
     this.handleComplete = this.handleComplete.bind(this);
 
-    this.handleError = this.handleError.bind(this);
+    // edição do formulario
+    this.handleChange = this.handleChange.bind(this);
 
-    this.handleDelete = this.handleDelete.bind(this);
+    // manipulação da lista de parcelas
+    this.handleFormAdd = this.handleFormAdd.bind(this);
     this.handleAdd = this.handleAdd.bind(this);
-    this.handleSave = this.handleSave.bind(this);
+    this.handleFormEdit = this.handleFormEdit.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
 
   }
 
   componentWillMount() {
-    var opts = {
-      host: '192.168.0.1', //'test.mosquitto.org'
-      port: 61614,
-      protocol: 'ws',
-      qos: 0,
-      retain: false,
-      clean: true,
-      keepAlive: 30, // 30 sec.
-      clientId: clientId
-    }
-
-    this.client = mqtt.connect(opts)
-
-    this.client.on('connect', function() {
-      let topics = {};
-
-      this.client.subscribe(
-        TOPIC + '/erros/' + clientId, 
-        function(err, granted) { 
-          !err ? 
-            this.setState({
-              topics: assign(this.state.topics, {[granted[0].topic]: this.handleError})}) : 
-            console.log('Erro ao se inscrever no topico: ' + err)
-        }.bind(this)
-      );
-
-    }.bind(this));
-    
-    this.client.on('message', function (topic, message) {
-      // message is Buffer
-      console.log('\n' + topic + ':\n' + message.toString())
-      
-      this.state.topics[topic] && this.state.topics[topic](message.toString());
-
-    }.bind(this))
-  
-  }
-
-  componentWillUnmount() {
-    this.state.topics && this.state.topics.forEach( (t) =>
-      this.client.unsubscribe(
-        t.topic, 
-        function(err) { 
-          err && console.log('Erro ao retirar a inscrição ao topico: ' + t.topic)
-        }
-      )
-    )
-    this.client.end();
+    this.load(this.props.params.id || 0);
   }
 
   componentWillReceiveProps(nextProps) {
-
+    this.load(nextProps.params.id);    
+  }
+  
+  load(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://sistema/api/tarefa/' + nextProps.params.id)
+      .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         if (response.data instanceof Array && response.data.length === 1) {
           this.setState(JSON.parse(response.data[0].payload));
@@ -165,11 +127,7 @@ class App extends Component {
       })
       .catch( error => {
         alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
-      })  
-  }
-  
-  handleError(msg) {
-    alert('Erro: ' + msg);
+      })      
   }
 
   handleClose() {
@@ -177,66 +135,61 @@ class App extends Component {
   }
 
   handleComplete(data) {
-    this.client.subscribe(TOPIC + '/alterado/' + this.state._id, function(err, granted) {
-      if (err) {
-        console.log('Erro ao se inscrever no topico: ' + granted[0].topic)
-      } else {
-        this.setState(
-          {
-            topics: assign(this.state.topics, {[granted[0].topic]: this.handleSaveOk.bind(this)})
-          },
-          this.client.publish.bind(
-            this.client, 
-            TOPIC + '/alterar/' + clientId, 
-            JSON.stringify(omit(this.state, ['topics', 'hasChanges', 'dialog']))
-          )  
-        );
-      }
-      
-    }.bind(this));    
+    // carrega os parametros da tarefa
+    axios
+      .post('http://sistema/api/financeiro/duplicata/conferencia/concluir/' + this.props.params.id, omit(this.state, ['topics', 'dialog']))
+      .then( (response) => {
+        alert('Tarefa concluida com sucesso');
+        //browserHistory.push('/');
+      })
+      .catch( error => {
+        alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
+      })
   }
 
-  handleSaveOk(msg) {
-    let data = JSON.parse(msg); 
-    let newState = this.state;
-    delete newState.hasChanges;
-    this.setState(
-      newState, 
-      //alert('Dados gravados com sucesso !')
-    );
+  // manipuladores da lista de parcelas
+  handleFormAdd() {
+    this.setState({dialog: <Add onSave={this.handleAdd.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleAdd() {
-    this.setState({dialog: <Incluir onClose={this.handleCloseDialog.bind(this)} />})
+  handleAdd(item) {
+    let p = this.state.parcelas;
+    item.sequencia = this.state.parcelas.length + 1;
+    p.push(item)
+    this.setState({parcelas: p, dialog: null});
+  }
+
+  handleFormEdit(item) {
+    this.setState({dialog: <Edit item={item} onSave={this.handleUpdate.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+  }
+
+  handleUpdate(item) {
+    let p = this.state.parcelas;
+    p.splice(item.index, 1, item);
+    this.setState({parcelas: p, dialog: null})
+  }
+
+  handleDeleteConfirm(item) {
+    this.setState({dialog: <Delete item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleDelete(index) {
-    //this.setState({dialog: <Excluir onClose={this.handleCloseDialog.bind(this)} />})
-    let pedido = this.state;
-    pedido.parcelas.splice(index, 1);
-    this.setState(pedido);
-  }
-
-  handleSave() {
-    this.setState({dialog: null})
+    let p = this.state.parcelas;
+    p.splice(index, 1);
+    p.forEach( (p, i) => p.sequencia = i + 1);
+    this.setState({parcelas: p, dialog: null});
   }
 
   handleCloseDialog() {
     this.setState({dialog: null})
   }
 
+  // formulario
   handleChange(value) {
-    // value is an ISO String. 
-    /*if (this.state[value.target.id] != value.target.value) {
-      this.setState({
-        [value.target.id]: value.target.value,
-        persist: true
-      });
-    }*/
+    this.setState({[value.target.id]: value.target.value});
   }
 
   render() {
-    const canSave = true;
 
     return (
 
@@ -252,7 +205,7 @@ class App extends Component {
                 overlay={(<Tooltip id="tooltip">Confirmar duplicatas conferidas</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleInsert}
+                    onClick={this.handleComplete}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="ok" />
@@ -340,7 +293,7 @@ class App extends Component {
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
                   <Row style={{paddingTop: 20}} >
-                    <Col xs={12} md={2}>Nosso Número</Col>
+                    <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
@@ -369,15 +322,7 @@ class App extends Component {
                   </Row>
 
                   <Row>
-                    <Col xs={12} md={2}>Pedido</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={1}>CNPJ/CPF</Col>
+                    <Col xs={12} md={2}>CNPJ/CPF</Col>
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
@@ -386,7 +331,7 @@ class App extends Component {
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={2}>Representante</Col>
-                    <Col xs={12} md={2}>
+                    <Col xs={12} md={5}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         <FormControl type="text" value={this.state.representante.nome} onChange={this.handleChange} />
@@ -408,14 +353,14 @@ class App extends Component {
 
                   <Row>
                     <Col xs={12} md={2}>Valor Produtos</Col>
-                    <Col xs={12} md={2}>
+                    <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.produtos.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
-                    <Col xs={12} md={2}>Valor IPI</Col>
+                    <Col xs={12} md={1}>IPI</Col>
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
@@ -423,13 +368,21 @@ class App extends Component {
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
-                    <Col xs={12} md={2}>Total do Pedido</Col>
-                    <Col xs={12} md={2}>
+                    <Col xs={12} md={1}>Total</Col>
+                    <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.total.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col xs={12} md={2}></Col>
+                    <Col xs={12} md={10}>
+                      <Checkbox value={this.state.desconto} onChange={this.handleChange} >
+                        <Label bsSize="large" bsStyle="danger">Cliente não aceita desconto de duplicata</Label>
+                      </Checkbox>
                     </Col>
                   </Row>
 
@@ -439,21 +392,24 @@ class App extends Component {
                         <thead>
                           <tr>
                             <th>Vencimento</th>
+                            <th>Parcela</th>
                             <th>Prazo</th>
-                            <th>Valor da Parcela</th>
-                            <th style={{width: '1%'}}><Button style={{width: '70px'}} bsStyle="success" bsSize="small" onClick={this.handleAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{width: '1%'}}><Button style={{width: '70px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.map( (parcela, i) => {
-                            let vencto = new Date(this.state.emissao);
-                            vencto.setTime( vencto.getTime() + parcela.dias * 86400000 );
+                          {this.state.parcelas.map( (parcela, index) => {
                             return (
-                              <tr key={'tr-' + i} >
-                                <td style={{textAlign: 'center'}}>{vencto.toLocaleDateString()}</td>
+                              <tr key={'tr-' + index} >
+                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.sequencia}/{this.state.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.sequencia === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.dias + ' dia(s) do PEDIDO' :  parcela.dias + ' dia(s) da ENTREGA'}</td>
                                 <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
-                                <td><Button bsStyle="danger" style={{width: '70px'}} bsSize="small" onClick={this.handleDelete.bind(null, i)}><Glyphicon glyph="remove" /> Excluir</Button></td>
+                                <td>
+                                  <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleFormEdit.bind(null, {...parcela, index})}><Glyphicon glyph="edit" /></Button>
+                                  <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleDeleteConfirm.bind(null, {...parcela, index})}><Glyphicon glyph="remove" /></Button>
+                                </td>
                               </tr>                              
                             )
                           }
@@ -462,8 +418,10 @@ class App extends Component {
    
                           <tr>
                             <td></td>
-                            <td colSpan="2" style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
-                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.totais.total.toFixed(2)).toLocaleString()}</b></td>
+                            <td></td>
+                            <td style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
+                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2)).toLocaleString()}</b></td>
+                            <td></td>
                           </tr>
                         </tbody>
                       </Table>
@@ -472,7 +430,7 @@ class App extends Component {
                 </div>
               </Tab>
             <Tab eventKey={2} title="Procedimento">
-              <img src={process} style={{width: '100%', height: '100%'}} />
+              <Image src={process} style={{width: '100%', height: '100%'}} />
             </Tab>
           </Tabs>
         </Row>
