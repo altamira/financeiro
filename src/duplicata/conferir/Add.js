@@ -17,8 +17,8 @@ export default class Edit extends Component {
     this.state = {
       vencto: new Date().toISOString(),
       tipo: "DDL",
-      sequencia: 1,
-      dias: 0,
+      parcela: 1,
+      prazo: 0,
       porcentagem: 0,
       descricao: "",
       valor: 0.0

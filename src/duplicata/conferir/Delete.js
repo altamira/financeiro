@@ -39,7 +39,7 @@ export default class Delete extends Component {
 		          		<tbody>
 							<tr>
 			                    <td style={{textAlign: 'center'}}>{new Date(this.state.vencto).toLocaleDateString()}</td>
-			                    <td style={{textAlign: 'center'}}>{this.state.sequencia === 1 && this.state.tipo === "DDP" ? 'SINAL' : this.state.tipo === 'DDP' ? this.state.dias + ' dia(s) do PEDIDO' :  this.state.dias + ' dia(s) da ENTREGA'}</td>
+			                    <td style={{textAlign: 'center'}}>{this.state.parcela === 1 && this.state.tipo === "DDP" ? 'SINAL' : this.state.tipo === 'DDP' ? this.state.prazo + ' dia(s) do PEDIDO' :  this.state.prazo + ' dia(s) da ENTREGA'}</td>
 			                    <td style={{textAlign: 'right'}}>R$ {Number(this.state.valor.toFixed(2)).toLocaleString()}</td>
 			                </tr>
 		                </tbody> 

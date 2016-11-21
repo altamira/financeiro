@@ -62,7 +62,8 @@ class App extends Component {
         "UF": "SP",
         "ddd": "11",
         "telefone": "3378-5443",
-        "contato": ""
+        "contato": "",
+        "desconto": 1
       },
       "condicao": "006",
       "representante": {
@@ -79,8 +80,8 @@ class App extends Component {
         {
            "vencto": "2017-01-06T00:00:00.000Z",
            "tipo": "DDL",
-           "sequencia": 1,
-           "dias": 21,
+           "parcela": 1,
+           "prazo": 21,
            "porcentagem": 100,
            "descricao": "DDL 021; POR 100000",
            "valor": 5219.928
@@ -97,6 +98,8 @@ class App extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
+    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+
 
     // manipulação da lista de parcelas
     this.handleFormAdd = this.handleFormAdd.bind(this);
@@ -122,6 +125,7 @@ class App extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         if (response.data instanceof Array && response.data.length === 1) {
+          console.log(JSON.stringify(JSON.parse(response.data[0].payload), null, 2))
           this.setState(JSON.parse(response.data[0].payload));
         }
       })
@@ -137,7 +141,7 @@ class App extends Component {
   handleComplete(data) {
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/conferencia/concluir/' + this.props.params.id, omit(this.state, ['topics', 'dialog']))
+      .post('http://sistema/api/financeiro/duplicata/conferencia/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
@@ -154,7 +158,7 @@ class App extends Component {
 
   handleAdd(item) {
     let p = this.state.parcelas;
-    item.sequencia = this.state.parcelas.length + 1;
+    item.parcela = this.state.parcelas.length + 1;
     p.push(item)
     this.setState({parcelas: p, dialog: null});
   }
@@ -187,6 +191,12 @@ class App extends Component {
   // formulario
   handleChange(value) {
     this.setState({[value.target.id]: value.target.value});
+  }
+
+  handleCheckboxChange(value) {
+    let cliente = this.state.cliente;
+    cliente.desconto = value.target.checked;
+    this.setState({cliente: cliente});
   }
 
   render() {
@@ -380,8 +390,8 @@ class App extends Component {
                   <Row>
                     <Col xs={12} md={2}></Col>
                     <Col xs={12} md={10}>
-                      <Checkbox value={this.state.desconto} onChange={this.handleChange} >
-                        <Label bsSize="large" bsStyle="danger">Cliente não aceita desconto de duplicata</Label>
+                      <Checkbox id="desconto" checked={this.state.cliente.desconto} value={this.state.cliente.desconto} onChange={this.handleCheckboxChange} >
+                        <Label bsSize="large" bsStyle="danger">Cliente ACEITA desconto de duplicata</Label>
                       </Checkbox>
                     </Col>
                   </Row>
@@ -403,8 +413,8 @@ class App extends Component {
                             return (
                               <tr key={'tr-' + index} >
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.sequencia}/{this.state.parcelas.length}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.sequencia === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.dias + ' dia(s) do PEDIDO' :  parcela.dias + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
                                 <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
                                 <td>
                                   <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleFormEdit.bind(null, {...parcela, index})}><Glyphicon glyph="edit" /></Button>
