@@ -8,6 +8,7 @@ import './index.css';  // bootstrap css
 
 import App from './App';
 import ConferirDuplicata from './duplicata/conferir';
+import DescontoDuplicata from './duplicata/desconto';
 import EmitirDuplicata from './duplicata/emitir';
 
 const About = () =>
@@ -43,6 +44,7 @@ render((
     <Route path="/" component={App}>
     	<Route path="duplicata/emissao" component={EmitirDuplicata}/>
       <Route path="duplicata/conferencia/:id" component={ConferirDuplicata}/>
+      <Route path="duplicata/desconto/:id" component={DescontoDuplicata}/>
       <Route path="about" component={About}/>
       <Route path="users" component={Users}>
         <Route path="/user/:userId" component={User}/>

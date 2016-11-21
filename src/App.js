@@ -39,6 +39,7 @@ class App extends Component {
 
     this.handleError = this.handleError.bind(this);
     this.handleTaskDone = this.handleTaskDone.bind(this);
+    this.handleTaskNew = this.handleTaskNew.bind(this);
 
   }
 
@@ -61,6 +62,7 @@ class App extends Component {
         [
           '/erros/' + clientId,
           '/tarefas/concluida/',
+          '/tarefas/nova/',
         ], 
         function(err, granted) { 
           !err ? 
@@ -70,7 +72,8 @@ class App extends Component {
                 this.state.topics, 
                 {
                   [granted[0].topic]: this.handleError,
-                  [granted[1].topic]: this.handleTaskDone
+                  [granted[1].topic]: this.handleTaskDone,
+                  [granted[1].topic]: this.handleTaskNew
                 }
               )
             }) 
@@ -130,6 +133,14 @@ class App extends Component {
     let tasks = this.state.tasks;
     tasks.splice(tasks.findIndex( t => t.id === task.id), 1);
     this.setState({tasks: tasks}, this.goHome);
+  }
+
+  handleTaskNew(msg) {
+    let task = JSON.parse(msg);
+    let tasks = this.state.tasks;
+    tasks.push(task);
+    this.setState({tasks: tasks});
+    alert('Nova tarefa: ' + task.title)
   }
 
   goHome() {
