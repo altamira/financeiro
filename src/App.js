@@ -17,7 +17,7 @@ const TOPIC = '/financeiro/duplicata/conferir';
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
-  <Link to={{ pathname: props.path, query: props.query }}>
+  <Link to={{ pathname: props.link, query: props.query }}>
     <span style={{display: 'block'}}>{props.title}</span>
     <span>{props.detail}</span>
   </Link>
@@ -73,7 +73,7 @@ class App extends Component {
                 {
                   [granted[0].topic]: this.handleError,
                   [granted[1].topic]: this.handleTaskDone,
-                  [granted[1].topic]: this.handleTaskNew
+                  [granted[2].topic]: this.handleTaskNew
                 }
               )
             }) 
@@ -85,9 +85,9 @@ class App extends Component {
     
     this.client.on('message', function (topic, message) {
       // message is Buffer
-      console.log('\n' + topic + ':\n' + message.toString())
+      //console.log('\n' + topic + ':\n' + message.toString())
       
-      this.state.topics[topic] && this.state.topics[topic](message.toString());
+      this.state.topics[topic] && this.state.topics[topic](JSON.parse(message.toString()));
 
     }.bind(this))
 
@@ -101,7 +101,7 @@ class App extends Component {
               name: item.name, 
               title: item.title || '',
               detail: item.detail || '',
-              path: item.link,
+              link: item.link,
               query: item.query || ''
             })
           )})
@@ -128,25 +128,31 @@ class App extends Component {
     alert('Erro: ' + msg);
   }
 
-  handleTaskDone(msg) {
-    let task = JSON.parse(msg);
+  handleTaskDone(task) {
     let tasks = this.state.tasks;
     tasks.splice(tasks.findIndex( t => t.id === task.id), 1);
+    console.log('Tarefa concluida: ' + task.id + ', ' + task.name + ', ' + task.title)
     this.setState({tasks: tasks}, this.goHome);
   }
 
-  handleTaskNew(msg) {
-    let task = JSON.parse(msg);
+  handleTaskNew(task) {
     let tasks = this.state.tasks;
     tasks.push(task);
     this.setState({tasks: tasks});
-    alert('Nova tarefa: ' + task.title)
+    console.log('Nova tarefas: ' + task.id + ', ' + task.name + ', ' + task.title)
   }
 
   goHome() {
     browserHistory.push('/');
   }
   render() {
+
+    const tasks = {};
+    this.state.tasks.forEach ( t => {
+      if (tasks[t.name] === undefined) tasks[t.name] = [];
+      tasks[t.name].push(t)
+    })
+
     return (
       <div className="App">
         {/*<div className="App-header">

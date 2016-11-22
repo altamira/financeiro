@@ -30,8 +30,6 @@ import axios from 'axios';
 
 import process from './process.svg';
 
-const TOPIC = '/financeiro/duplicata/conferir';
-
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 /*! FUNCTION: ARRAY.KEYSORT(); **/
@@ -42,7 +40,6 @@ Array.prototype.sortByKey = function(key, desc){
   });
   return this;
 }
-
 
 class App extends Component {
   constructor(props) {
@@ -95,6 +92,51 @@ class App extends Component {
         }
       ],
 
+      conta: null,
+
+      contas: [
+        {
+          nome: 'BRADESCO - GARANTIA',
+          limite: 500000.00,
+          utilizado: 502243.99,
+          saldo: null,
+          defasagem: -2243.99,
+          descoberto: 39154.66
+        },
+        {
+          nome: 'BRADESCO - DESCONTO',
+          limite: 500000.00,
+          utilizado: 502243.99,
+          saldo: null,
+          defasagem: -2243.99,
+          descoberto: 39154.66
+        },
+        {
+          nome: 'BRASIL - GARANTIA',
+          limite: 500000.00,
+          utilizado: 502243.99,
+          saldo: null,
+          defasagem: -2243.99,
+          descoberto: 39154.66
+        },
+        {
+          nome: 'BRASIL - DESCONTO',
+          limite: 500000.00,
+          utilizado: 502243.99,
+          saldo: null,
+          defasagem: -2243.99,
+          descoberto: 39154.66
+        },
+        {
+          nome: 'ITAU - GARANTIA',
+          limite: 500000.00,
+          utilizado: 502243.99,
+          saldo: null,
+          defasagem: -2243.99,
+          descoberto: 39154.66
+        }
+      ],
+
       // campos de controle, não armazenar
       dialog: null,
 
@@ -103,6 +145,7 @@ class App extends Component {
         nosso_numero: null, 
         vencto: null,
         nome: null,
+        parcela: null,
         valor: null, 
       }
     }
@@ -122,12 +165,27 @@ class App extends Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
 
+    this.handleSelectConta = this.handleSelectConta.bind(this);
+    this.handleUnselectConta = this.handleUnselectConta.bind(this);
+
     this.handleOrderBy = this.handleOrderBy.bind(this);
 
   }
 
   componentWillMount() {
-    this.load(this.props.params.id || 0);
+    axios
+      .get('http://sistema/api/financeiro/carteira/')
+      .then( (response) => {
+        this.setState(
+          {
+            contas:response.data
+          }, 
+          this.load(this.props.params.id || 0)
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter a carteira.\nErro: ' + error.message);
+      })         
   }
 
   componentWillReceiveProps(nextProps) {
@@ -141,12 +199,13 @@ class App extends Component {
       .then( (response) => {
         if (response.data instanceof Array && response.data.length === 1) {
           console.log(JSON.stringify(JSON.parse(response.data[0].payload), null, 2))
-          this.setState(JSON.parse(response.data[0].payload));
+          this.setState({...JSON.parse(response.data[0].payload), conta: null});
         }
       })
       .catch( error => {
         alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
-      })      
+      })   
+
   }
 
   handleClose() {
@@ -156,7 +215,7 @@ class App extends Component {
   handleComplete(data) {
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/desconto/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://sistema/api/financeiro/duplicata/desconto/concluir/' + this.props.params.id, omit(this.state, ['contas', 'order', 'dialog']))
       .then( (response) => {
         alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
@@ -164,6 +223,14 @@ class App extends Component {
       .catch( error => {
         alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
       })
+  }
+
+  handleSelectConta(conta, index) {
+    this.setState({conta: conta})
+  }
+
+  handleUnselectConta(conta, index) {
+    this.setState({conta: null})
   }
 
   handleSelect(parcela, index) {
@@ -205,7 +272,7 @@ class App extends Component {
   }
 
   handleOrderBy(key) {
-    let order = {nosso_numero: null, vencto: null, nome: null, valor: null};
+    let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
     let parcelas = this.state.parcelas;
     order[key] = !this.state.order[key];
     this.setState({parcelas: parcelas.sortByKey(key, order[key]), order: order });
@@ -229,7 +296,7 @@ class App extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!this.state.parcelas.find( p => p.selected)}
+                    disabled={!(this.state.parcelas.find( p => p.selected) && this.state.conta !== null)}
                     onClick={this.handleComplete}
                     style={{width: 200}}
                     bsStyle="success"
@@ -318,7 +385,8 @@ class App extends Component {
             <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
-                  <Row>
+
+                  {/*<Row>
                     <Col md={4}>Tipo</Col>
                     <Col md={8}>
                       <FormGroup validationState="success">
@@ -330,7 +398,8 @@ class App extends Component {
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
-                  </Row>
+                  </Row>*/}
+
                   {/*<Row style={{paddingTop: 20}} >
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={2}>
@@ -385,12 +454,28 @@ class App extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th><a href="#" onClick={this.handleOrderBy.bind(null, 'nosso_numero')}>Número</a> {this.state.order.nosso_numero !== null ? this.state.order.nosso_numero ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th><a href="#" onClick={this.handleOrderBy.bind(null, 'vencto')}>Vencimento</a> {this.state.order.vencto !== null ? this.state.order.vencto ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th>Parcela</th>
-                            <th>Prazo</th>
-                            <th><a href="#" onClick={this.handleOrderBy.bind(null, 'nome')}>Nome do Pagador</a> {this.state.order.nome !== null ? this.state.order.nome ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
+                            <th style={{width: '10%'}}>Pedido</th><td style={{width: '90%'}}><b>{this.state.numero}</b></td>
+                          </tr>
+                          <tr>
+                            <th style={{width: '10%'}}>Cliente</th><td style={{width: '90%'}}><b>{this.state.cliente.nome}</b></td>
+                          </tr>
+                        </thead>
+                      </Table>
+                    </Col>
+                  </Row>
+
+                  <Row>
+                    <Col xs={12} md={12}>
+                      <Table striped bordered condensed hover>
+                        <thead>
+                          <tr>
+                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'nosso_numero')}>Número</a> {this.state.order.nosso_numero !== null ? this.state.order.nosso_numero ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
+                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'vencto')}>Vencimento</a> {this.state.order.vencto !== null ? this.state.order.vencto ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
+                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'parcela')}>Parcela</a> {this.state.order.parcela !== null ? this.state.order.parcela ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
+                            <th style={{textAlign: 'center'}}>Prazo</th>
                             <th style={{textAlign: 'right'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'valor')}>Valor da Parcela</a> {this.state.order.valor !== null ? this.state.order.valor ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
+                            <th>CARTEIRA</th>
+                            <th>Data Envio</th>
                             <th style={{width: '1%'}}></th>
                           </tr>
                         </thead>
@@ -402,8 +487,9 @@ class App extends Component {
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'center'}}>{this.state.cliente.nome}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor).toLocaleString()}</td>
+                                <td ></td>
+                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
                                 <td>
                                   {!parcela.selected ? 
                                     (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, parcela, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
@@ -415,41 +501,81 @@ class App extends Component {
                           }
                             
                           )}
-   
-                          <tr>
-                              <td colSpan={4}></td>
-                              <td style={{textAlign: 'right'}} colSpan={2}>
-                                {this.state.parcelas.find( p => p.selected) ?
-                                    
-                                    <table style={{width: '100%'}}><tbody><tr>
-                                      <td style={{textAlign: 'right', width: '70%'}}><b>Valor Bruto</b></td>
-                                      <td style={{textAlign: 'right', width: '30%'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
-                                    </tr>
-                                    <tr>
-                                      <td style={{textAlign: 'right', width: '70%'}}><b>IOF (0.46%)</b></td>
-                                      <td style={{textAlign: 'right', width: '30%'}}><b>R$ {Number((total * (0.46 / 100)).toFixed(2)).toLocaleString()}</b></td>
-                                    </tr>
-                                    <tr>
-                                      <td style={{textAlign: 'right', width: '70%'}}><b>Juros (1.71%)</b></td>
-                                      <td style={{textAlign: 'right', width: '30%'}}><b>R$ {Number((total * (1.71 / 100)).toFixed(2)).toLocaleString()}</b></td>
-                                    </tr>
-                                    <tr>
-                                      <td style={{textAlign: 'right', width: '70%'}}><b>Taxa do Borderô</b></td>
-                                      <td style={{textAlign: 'right', width: '30%'}}><b>R$ {Number((190).toFixed(2)).toLocaleString()}</b></td>
-                                    </tr>
-                                    <tr>
-                                      <td style={{textAlign: 'right', width: '70%'}}><b>Valor Líquido</b></td>
-                                      <td style={{textAlign: 'right', width: '30%'}}><b>R$ {Number((total - (total * ((0.46 + 1.71) / 100) + 190)).toFixed(2)).toLocaleString()}</b></td>
-                                    </tr></tbody></table>
-                                    : null
-                                }
-                              </td>
-                              <td></td>
-                            </tr>
                         </tbody>
                       </Table>
                     </Col>
                   </Row>
+
+                  <Row>
+                    <Col xs={12} md={8}>
+                      <Table striped bordered condensed hover>
+                        <thead>
+                          <tr>
+                            <th>CARTEIRA</th>
+                            <th style={{textAlign: 'right'}}>LIMITE</th>
+                            <th style={{textAlign: 'right'}}>UTILIZADO</th>
+                            <th style={{textAlign: 'right'}}>SALDO</th>
+                            <th style={{textAlign: 'right'}}>DEFASAGEM</th>
+                            <th style={{textAlign: 'right'}}>ENVIAR</th>
+                            <th style={{width: '1%'}}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {this.state.contas.map( (conta, index) => {
+                            return (
+                              <tr key={'tr-contas-' + index} style={{background: this.state.conta && this.state.conta.id === conta.id ? 'gold' : ''}} >
+                                <td style={{textAlign: 'left'}}>{conta.nome}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(conta.limite).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(conta.utilizado).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(conta.saldo).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(conta.defasagem).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(conta.descoberto).toLocaleString()}</td>
+                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectConta.bind(null, conta, index)} ><Glyphicon glyph="ok" /></Button></td>
+                              </tr>                              
+                            )
+                          }
+                            
+                          )}
+                        </tbody>
+                      </Table>
+                    </Col>
+                    <Col xs={12} md={4}>
+                      {this.state.parcelas.find( p => p.selected) && this.state.conta !== null ?
+                        <Table striped bordered condensed hover>
+                          <thead>
+                            <tr>
+                              <th style={{textAlign: 'right'}}>DESCONTOS</th>
+                              <th style={{textAlign: 'right'}}>VALOR</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>IOF ({this.state.conta.iof}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100))).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Juros ({this.state.conta.juros}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (1.71 / 100))).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((190)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((0.46 + 1.71) / 100) + 190))).toLocaleString()}</b></td>
+                            </tr>
+                          </tbody>
+                        </Table>
+                        : null
+                      }
+                    </Col>
+                  </Row>
+
                 </div>
               </Tab>
             <Tab eventKey={2} title="Procedimento">
