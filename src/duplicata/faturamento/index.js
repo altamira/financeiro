@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -27,66 +27,52 @@ import Edit from './Edit';
 import Delete from './Delete';
 //import Calc from './Calc';
 
-import { assign, omit } from 'lodash';
-import mqtt from 'mqtt/lib/connect';
+import { omit } from 'lodash';
 import axios from 'axios';
 
 import process from './process.svg';
 
-const TOPIC = '/financeiro/duplicata/conferir';
-
-var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
-
-class App extends Component {
+export default class Faturamento extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      "empresa": "01",
-      "numero": 74700,
-      "emissao": "2016-11-01T00:00:00.000Z",
-      "entrega": "2016-12-16T00:00:00.000Z",
+      "empresa": "00",
+      "numero": 0,
+      "emissao": "2011-03-14T00:00:00.000Z",
+      "entrega": "2010-10-26T00:00:00.000Z",
       "cliente": {
-        "cnpj": "04.813.867/0001-17",
-        "inscricao": "407450079113",
-        "fantasia": "PENTAIR",
-        "nome": "PENTAIR WATER DO BRASIL LTDA",
-        "logradouro": "AV",
-        "endereco": "MARGINAL NORTE DA VIA ANHANGUERA",
-        "numero": "53.700",
+        "cnpj": "",
+        "inscricao": "",
+        "fantasia": "",
+        "nome": "",
+        "logradouro": "",
+        "endereco": "",
+        "numero": "",
         "complemento": "",
-        "bairro": "JARDIM SERVILHA",
-        "municipio": 3525904,
-        "cidade": "JUNDIAI",
-        "CEP": "13206-245",
-        "UF": "SP",
-        "ddd": "11",
-        "telefone": "3378-5443",
+        "bairro": "",
+        "municipio": 0,
+        "cidade": "",
+        "CEP": "",
+        "UF": "",
+        "ddd": "",
+        "telefone": "",
         "contato": "",
-        "desconto": 1
+        "desconto": false
       },
-      "condicao": "006",
+      "condicao": "",
       "representante": {
-        "codigo": "008",
-        "nome": "CLAYTON CAPELATTO REPRESENTAÇÕES"
+        "codigo": "",
+        "nome": ""
       },
-      "comissao": 0.04,
+      "comissao": 0,
+      "desconto": 0,
       "totais": {
-        "produtos": 4971.36,
-        "ipi": 248.568,
-        "total": 5219.928
+        "produtos": 0,
+        "ipi": 0,
+        "total": 0
       },
-      "parcelas": [
-        {
-           "parcela": 1,
-           "tipo": "DDL",
-           "vencto": "2017-01-06T00:00:00.000Z",
-           "prazo": 21,
-           "porcentagem": 100,
-           "descricao": "DDL 021; POR 100000",
-           "valor": 5219.928
-        }
-      ],
+      "parcelas": [],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -125,12 +111,12 @@ class App extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].payload), null, 2))
-          this.setState(JSON.parse(response.data[0].payload));
+          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
+          this.setState(JSON.parse(response.data[0].conteudo));
         }
       })
       .catch( error => {
-        alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
+        alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
       })      
   }
 
@@ -141,7 +127,7 @@ class App extends Component {
   handleComplete(data) {
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/conferencia/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://sistema/api/financeiro/duplicata/faturamento/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
@@ -205,7 +191,7 @@ class App extends Component {
 
       <div>
 
-        <Panel header={'Conferência das Duplicadas Emitidas no Pedido de Venda ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Faturamento Pedido ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
@@ -454,5 +440,3 @@ class App extends Component {
     );
   }
 }
-
-export default App;

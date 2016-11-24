@@ -10,29 +10,19 @@ import {
   Row, 
   FormGroup,
   FormControl,
-  Table,
-  Checkbox,
   Tooltip
 } from 'react-bootstrap';
 import { Tabs, Tab } from 'react-bootstrap';
-import { Image } from 'react-bootstrap';
 import { browserHistory } from 'react-router'
 import DatePicker from 'react-bootstrap-date-picker';
 
-//import Buscar from './Buscar';
-
-import uuid from 'node-uuid';
-import { assign, omit } from 'lodash';
-import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
 
 import Buscar from './Buscar';
 
 import process from './process.svg';
 
-var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
-
-export default class EmissaoDuplicata extends Component {
+export default class Emissao extends Component {
   constructor(props) {
     super(props);
 
@@ -55,7 +45,7 @@ export default class EmissaoDuplicata extends Component {
 
   componentWillMount() {
     axios
-      .get('http://sistema/api/task/' + this.props.id)
+      .get('http://sistema/api/tarefa/' + this.props.id)
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState(JSON.parse(response.data.params));
@@ -84,7 +74,7 @@ export default class EmissaoDuplicata extends Component {
 
   handleChange(value) {
     // value is an ISO String. 
-    if (this.state[value.target.id] != value.target.value) {
+    if (this.state[value.target.id] !== value.target.value) {
       this.setState({
         [value.target.id]: value.target.value,
         persist: true
@@ -248,7 +238,7 @@ export default class EmissaoDuplicata extends Component {
                 </div>
               </Tab>
               <Tab eventKey={2} title="Procedimento">
-                <img src={process} style={{width: '100%', height: '100%'}} />
+                <img alt="Procedimento" src={process} style={{width: '100%', height: '100%'}} />
               </Tab>
             </Tabs>
           </Row>

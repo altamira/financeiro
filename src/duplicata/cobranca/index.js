@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -9,28 +9,18 @@ import {
   Panel,  
   Col, 
   Row, 
-  FormGroup,
-  FormControl,
   Table,
-  Checkbox,
   Tooltip,
-  Label
 } from 'react-bootstrap';
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
-import DatePicker from 'react-bootstrap-date-picker';
-//import PDF from 'react-pdf';
-
 import Confirm from './Confirm';
 
-import { assign, omit } from 'lodash';
-import mqtt from 'mqtt/lib/connect';
+import { omit } from 'lodash';
 import axios from 'axios';
 
 import process from './process.svg';
-
-var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 /*! FUNCTION: ARRAY.KEYSORT(); **/
 Array.prototype.sortByKey = function(key, desc){
@@ -41,101 +31,52 @@ Array.prototype.sortByKey = function(key, desc){
   return this;
 }
 
-class App extends Component {
+export default class Cobranca extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       "empresa": "01",
-      "numero": 74700,
-      "emissao": "2016-11-01T00:00:00.000Z",
-      "entrega": "2016-12-16T00:00:00.000Z",
+      "numero": 63867,
+      "emissao": "2011-03-14T00:00:00.000Z",
+      "entrega": "2010-10-26T00:00:00.000Z",
       "cliente": {
-        "cnpj": "04.813.867/0001-17",
-        "inscricao": "407450079113",
-        "fantasia": "PENTAIR",
-        "nome": "PENTAIR WATER DO BRASIL LTDA",
-        "logradouro": "AV",
-        "endereco": "MARGINAL NORTE DA VIA ANHANGUERA",
-        "numero": "53.700",
-        "complemento": "",
-        "bairro": "JARDIM SERVILHA",
-        "municipio": 3525904,
-        "cidade": "JUNDIAI",
-        "CEP": "13206-245",
+        "cnpj": "67.841.650/0001-30",
+        "inscricao": "ISENTO",
+        "fantasia": "STORE",
+        "nome": "STORE SISTEMAS INTEL.DE ARMAZENAGEM LTDA.",
+        "logradouro": "",
+        "endereco": "ESTRADA DA ALDEINHA",
+        "numero": "237",
+        "complemento": "AREA EMPRESARIAL",
+        "bairro": "ALPHAVILLE",
+        "municipio": 3505708,
+        "cidade": "BARUERI",
+        "CEP": "06465-100",
         "UF": "SP",
         "ddd": "11",
-        "telefone": "3378-5443",
-        "contato": "",
-        "desconto": 1
+        "telefone": "41334326",
+        "contato": "ANDRE MONTEIRO",
+        "desconto": true
       },
-      "condicao": "006",
+      "condicao": "12 ",
       "representante": {
-        "codigo": "008",
-        "nome": "CLAYTON CAPELATTO REPRESENTAÇÕES"
+        "codigo": "006",
+        "nome": "ESTRUTURAÇÃO SERVICOS S/C LTDA."
       },
-      "comissao": 0.04,
+      "comissao": 0.056,
+      "desconto": 1,
       "totais": {
-        "produtos": 4971.36,
-        "ipi": 248.568,
-        "total": 5219.928
+        "produtos": 377370,
+        "ipi": 18868.5,
+        "total": 396238.5
       },
-      "parcelas": [
-        {
-           "vencto": "2017-01-06T00:00:00.000Z",
-           "tipo": "DDL",
-           "parcela": 1,
-           "prazo": 21,
-           "porcentagem": 100,
-           "descricao": "DDL 021; POR 100000",
-           "valor": 5219.928
-        }
-      ],
+      "parcelas": [],
 
+      // campos de controle, não apagar
       conta: null,
 
-      contas: [
-        {
-          nome: 'BRADESCO - GARANTIA',
-          limite: 500000.00,
-          utilizado: 502243.99,
-          saldo: null,
-          defasagem: -2243.99,
-          descoberto: 39154.66
-        },
-        {
-          nome: 'BRADESCO - DESCONTO',
-          limite: 500000.00,
-          utilizado: 502243.99,
-          saldo: null,
-          defasagem: -2243.99,
-          descoberto: 39154.66
-        },
-        {
-          nome: 'BRASIL - GARANTIA',
-          limite: 500000.00,
-          utilizado: 502243.99,
-          saldo: null,
-          defasagem: -2243.99,
-          descoberto: 39154.66
-        },
-        {
-          nome: 'BRASIL - DESCONTO',
-          limite: 500000.00,
-          utilizado: 502243.99,
-          saldo: null,
-          defasagem: -2243.99,
-          descoberto: 39154.66
-        },
-        {
-          nome: 'ITAU - GARANTIA',
-          limite: 500000.00,
-          utilizado: 502243.99,
-          saldo: null,
-          defasagem: -2243.99,
-          descoberto: 39154.66
-        }
-      ],
+      contas: [],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -180,30 +121,30 @@ class App extends Component {
           {
             contas:response.data
           }, 
-          this.load(this.props.params.id || 0)
+          this.loadTarefas(this.props.params.id || 0)
         );
       })
       .catch( error => {
-        alert('Erro ao obter a carteira.\nErro: ' + error.message);
+        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
       })         
   }
 
   componentWillReceiveProps(nextProps) {
-    this.load(nextProps.params.id);    
+    this.loadTarefas(nextProps.params.id);    
   }
   
-  load(tarefa) {
+  loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].payload), null, 2))
-          this.setState({...JSON.parse(response.data[0].payload), conta: null});
+          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
+          this.setState({...JSON.parse(response.data[0].conteudo), conta: null});
         }
       })
       .catch( error => {
-        alert('Erro ao obter a lista de tarefas.\nErro: ' + error.message);
+        alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
       })   
 
   }
@@ -215,7 +156,7 @@ class App extends Component {
   handleComplete(data) {
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/desconto/concluir/' + this.props.params.id, omit(this.state, ['contas', 'order', 'dialog']))
+      .post('http://sistema/api/financeiro/duplicata/cobranca/concluir/' + this.props.params.id, omit(this.state, ['contas', 'order', 'dialog']))
       .then( (response) => {
         alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
@@ -286,7 +227,7 @@ class App extends Component {
 
       <div>
 
-        <Panel header={'Ordem de Desconto de Duplicatas ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Envio de Cobrança - Pedido ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
@@ -296,13 +237,13 @@ class App extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.parcelas.find( p => p.selected) && this.state.conta !== null)}
+                    disabled={!(this.state.parcelas.find( p => !p.carteira && p.selected) && this.state.conta !== null)}
                     onClick={this.handleComplete}
                     style={{width: 200}}
                     bsStyle="success"
                   >
                     <Glyphicon glyph="ok" />
-                    <div><span>Enviar Ordem de Desconto</span></div>
+                    <div><span>Enviar Cobrança</span></div>
                   </Button>
               </OverlayTrigger>
 
@@ -482,18 +423,18 @@ class App extends Component {
                         <tbody>
                           {this.state.parcelas.map( (parcela, index) => {
                             return (
-                              <tr key={'tr-' + index} style={{background: parcela.selected ? 'gold' : ''}} >
+                              <tr key={'tr-' + index} style={{background: !parcela.carteira && parcela.selected ? 'gold' : ''}} >
                                 <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
                                 <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor).toLocaleString()}</td>
-                                <td ></td>
-                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
+                                <td >{parcela.carteira && parcela.carteira.nome}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.carteira && new Date(parcela.envio).toLocaleDateString()}</td>
                                 <td>
-                                  {!parcela.selected ? 
+                                  {!parcela.carteira ? (!parcela.selected ? 
                                     (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, parcela, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, parcela, index)} ><Glyphicon glyph="remove" /></Button>)
+                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, parcela, index)} ><Glyphicon glyph="remove" /></Button>)) : null
                                   }
                                 </td>
                               </tr>                              
@@ -554,20 +495,20 @@ class App extends Component {
                               <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({this.state.conta.iof}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100))).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.conta.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({this.state.conta.juros}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (1.71 / 100))).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.conta.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((190)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.conta.bordero).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((0.46 + 1.71) / 100) + 190))).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.conta.iof + this.state.conta.juros) / 100) + this.state.conta.bordero)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>
@@ -578,12 +519,12 @@ class App extends Component {
 
                 </div>
               </Tab>
-            <Tab eventKey={2} title="Procedimento">
-              <Image src={process} style={{width: '100%', height: '100%'}} />
-            </Tab>
-          </Tabs>
-        </Row>
-    </Panel>
+              <Tab eventKey={2} title="Procedimento">
+                <Image src={process} style={{width: '100%', height: '100%'}} />
+              </Tab>
+            </Tabs>
+          </Row>
+        </Panel>
 
         {this.state.dialog}
 
@@ -592,5 +533,3 @@ class App extends Component {
     );
   }
 }
-
-export default App;

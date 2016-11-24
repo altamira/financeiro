@@ -1,24 +1,12 @@
 import React, { Component } from 'react';
-import { 
-  PageHeader, 
-  ButtonGroup, 
-  OverlayTrigger, 
-  Button, 
-  Popover, 
-  Glyphicon, 
-  Panel, 
-  ListGroup, 
-  ButtonToolbar, 
+import {  
   Col, 
   Row, 
-  Grid,
   FormGroup,
-  ControlLabel,
   FormControl,
   Table,
-  Checkbox,
-  Tooltip,
-  Modal
+  Modal,
+  Button
 } from 'react-bootstrap';
 
 import axios from 'axios';

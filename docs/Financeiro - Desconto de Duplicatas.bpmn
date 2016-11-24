@@ -29,11 +29,11 @@
         <bpmn:flowNodeRef>EndEvent_1xr5bsu</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
-    <bpmn:userTask id="UserTask_0nkiexp" name="Enviar a ordem de desconto para o banco">
+    <bpmn:userTask id="UserTask_0nkiexp" name="Remessa de Cobrança">
       <bpmn:incoming>SequenceFlow_07o7wl0</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1dp3jti</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="UserTask_0ogfu0d" name="Ordem Efetivada (Emite Bordero)">
+    <bpmn:userTask id="UserTask_0ogfu0d" name="Retorno de Cobrança (Emissão Bordero)">
       <bpmn:incoming>SequenceFlow_1dp3jti</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_1dgn2w3</bpmn:outgoing>
       <bpmn:outgoing>SequenceFlow_066nn11</bpmn:outgoing>
@@ -56,7 +56,7 @@
     <bpmn:endEvent id="EndEvent_1xyjz1m">
       <bpmn:incoming>SequenceFlow_0v9bv5s</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:userTask id="UserTask_06mp9zx" name="Conciliação Bancária (Baixa, Prorrogação, etc...)">
+    <bpmn:userTask id="UserTask_06mp9zx" name="Conciliação Cobrança (Baixa, Prorrogação, etc...)">
       <bpmn:incoming>SequenceFlow_0sktqzz</bpmn:incoming>
       <bpmn:incoming>SequenceFlow_066nn11</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_16l3zzd</bpmn:outgoing>
@@ -92,7 +92,7 @@
     <bpmn:endEvent id="EndEvent_0w6shux">
       <bpmn:incoming>SequenceFlow_0dtswgd</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:userTask id="UserTask_0x5xfn0" name="Ordem de Desconto">
+    <bpmn:userTask id="UserTask_0x5xfn0" name="Envio de Cobrança">
       <bpmn:incoming>SequenceFlow_0x8rtjt</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_07o7wl0</bpmn:outgoing>
     </bpmn:userTask>
@@ -119,7 +119,7 @@
       <bpmn:outgoing>SequenceFlow_0s69yxh</bpmn:outgoing>
       <bpmn:messageEventDefinition />
     </bpmn:startEvent>
-    <bpmn:userTask id="UserTask_1dhvngf" name="Conferir Duplicatas">
+    <bpmn:userTask id="UserTask_1dhvngf" name="Faturamento">
       <bpmn:incoming>SequenceFlow_1ek6art</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0ol8fyn</bpmn:outgoing>
     </bpmn:userTask>
@@ -127,7 +127,7 @@
       <bpmn:incoming>SequenceFlow_0ol8fyn</bpmn:incoming>
       <bpmn:messageEventDefinition />
     </bpmn:endEvent>
-    <bpmn:textAnnotation id="TextAnnotation_197gv3v">    <bpmn:text>Marisa executa a ordem enviando a duplicata para o banco, confere o CEP e end, preenche bairro se necessário. Numa segunda etapa este envio pode ser feito via CNAB</bpmn:text>
+    <bpmn:textAnnotation id="TextAnnotation_197gv3v">    <bpmn:text>Marisa faz a remessa das duplicatas para o banco, confere o CEP e end, preenche bairro se necessário. Numa segunda etapa este envio pode ser feito via CNAB</bpmn:text>
 </bpmn:textAnnotation>
     <bpmn:association id="Association_0t1pnnd" sourceRef="UserTask_1dhvngf" targetRef="Lane_0jqkdzm" />
     <bpmn:association id="Association_1wxdx0i" sourceRef="UserTask_0x5xfn0" targetRef="TextAnnotation_0csy24l" />
@@ -139,7 +139,7 @@
     <bpmn:textAnnotation id="TextAnnotation_0fitd83">    <bpmn:text><![CDATA[Somente Pedidos com SINAL (Valor do Produtos)
 * IRON paga sinal com 15 dias]]></bpmn:text>
 </bpmn:textAnnotation>
-    <bpmn:textAnnotation id="TextAnnotation_0csy24l">    <bpmn:text>Rita abre uma nova Ordem de Desconto e informa para qual banco deve ser enviado a duplicata</bpmn:text>
+    <bpmn:textAnnotation id="TextAnnotation_0csy24l">    <bpmn:text>Rita informa para qual banco deve ser enviado a cobrança das duplicatas</bpmn:text>
 </bpmn:textAnnotation>
     <bpmn:textAnnotation id="TextAnnotation_1mljdzr">    <bpmn:text><![CDATA[Neuci confere os venctos de acordo com as restrições de pagamento informado nas observações do pedido e faz os ajustes nas datas se necessário, tambem informa se o cliente não aceita desconto. Exemplo: cliente só paga as quartas-feiras, cliente vai pagar numa data específica.
 Tambem verifica se o Pedido tem Diferencial de ICMS e acrescentar uma parcela no valor.]]></bpmn:text>

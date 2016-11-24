@@ -8,18 +8,16 @@ import { Nav, Navbar, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Col } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
-import { assign, omit } from 'lodash';
+import { assign } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
-
-const TOPIC = '/financeiro/duplicata/conferir';
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
-  <Link to={{ pathname: props.link, query: props.query }}>
-    <span style={{display: 'block'}}>{props.title}</span>
-    <span>{props.detail}</span>
+  <Link to={{ pathname: props.form, query: props.query }}>
+    <span style={{display: 'block'}}>{props.titulo}</span>
+    <span>{props.descricao}</span>
   </Link>
 
 class App extends Component {
@@ -27,12 +25,13 @@ class App extends Component {
     super(props);
 
     this.state = {
-      user: {
-        name: 'Neuci',
+      usuario: {
+        login: 'neuci',
+        nome: 'Neuci Bavato',
         email: 'neuci.bavato@altamira.com.br'
       },
-      tasks: [],
-      topics: {}
+      tarefas: [],
+      topicos: {}
     }
 
     this.goHome = this.goHome.bind(this);
@@ -68,8 +67,8 @@ class App extends Component {
           !err ? 
             this.setState(
             {
-              topics: assign(
-                this.state.topics, 
+              topicos: assign(
+                this.state.topicos, 
                 {
                   [granted[0].topic]: this.handleError,
                   [granted[1].topic]: this.handleTaskDone,
@@ -87,22 +86,22 @@ class App extends Component {
       // message is Buffer
       //console.log('\n' + topic + ':\n' + message.toString())
       
-      this.state.topics[topic] && this.state.topics[topic](JSON.parse(message.toString()));
+      this.state.topicos[topic] && this.state.topicos[topic](JSON.parse(message.toString()));
 
     }.bind(this))
 
     axios
-      .get('http://sistema/api/tarefas?assign_to=' + this.state.user.email)
+      .get('http://sistema/api/tarefas?assign_to=' + this.state.usuario.email)
       .then( (response) => {
         if (response.data instanceof Array) {
-          this.setState({tasks: response.data.map( item => 
+          this.setState({tarefas: response.data.map( item => 
             ({ 
               id: item.id, 
-              name: item.name, 
-              title: item.title || '',
-              detail: item.detail || '',
-              link: item.link,
-              query: item.query || ''
+              nome: item.nome, 
+              titulo: item.titulo || '',
+              descricao: item.descricao || '',
+              form: item.form,
+              query: item.parametros || ''
             })
           )})
         }
@@ -113,7 +112,7 @@ class App extends Component {
   }
 
   componentWillUnmount() {
-    this.state.topics && Object.keys(this.state.topics).forEach( (topic) =>
+    this.state.topicos && Object.keys(this.state.topicos).forEach( (topic) =>
       this.client.unsubscribe(
         topic, 
         function(err) { 
@@ -128,18 +127,18 @@ class App extends Component {
     alert('Erro: ' + msg);
   }
 
-  handleTaskDone(task) {
-    let tasks = this.state.tasks;
-    tasks.splice(tasks.findIndex( t => t.id === task.id), 1);
-    console.log('Tarefa concluida: ' + task.id + ', ' + task.name + ', ' + task.title)
-    this.setState({tasks: tasks}, this.goHome);
+  handleTaskDone(tarefa) {
+    let tarefas = this.state.tarefas;
+    tarefas.splice(tarefas.findIndex( t => t.id === tarefa.id), 1);
+    console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.name + ', ' + tarefa.title)
+    this.setState({tarefas: tarefas}, this.goHome);
   }
 
-  handleTaskNew(task) {
-    let tasks = this.state.tasks;
-    tasks.push(task);
-    this.setState({tasks: tasks});
-    console.log('Nova tarefas: ' + task.id + ', ' + task.name + ', ' + task.title)
+  handleTaskNew(tarefa) {
+    let tarefas = this.state.tarefas;
+    tarefas.push(tarefa);
+    this.setState({tarefas: tarefas});
+    console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.name + ', ' + tarefa.title)
   }
 
   goHome() {
@@ -147,10 +146,10 @@ class App extends Component {
   }
   render() {
 
-    const tasks = {};
-    this.state.tasks.forEach ( t => {
-      if (tasks[t.name] === undefined) tasks[t.name] = [];
-      tasks[t.name].push(t)
+    const tarefas = {};
+    this.state.tarefas.forEach ( t => {
+      if (tarefas[t.name] === undefined) tarefas[t.name] = [];
+      tarefas[t.name].push(t)
     })
 
     return (
@@ -187,11 +186,11 @@ class App extends Component {
 
           <Col md={3} >
             <Accordion>
-              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tasks.length}</Badge></span>} eventKey="1">
+              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tarefas.length}</Badge></span>} eventKey="1">
                 <ListGroup>
-                  {this.state.tasks.map( (task, i) =>
-                    <ListGroupItem key={'task-'+ i} header={task.name}>
-                      <TaskItem {...task} />
+                  {this.state.tarefas.map( (tarefa, i) =>
+                    <ListGroupItem key={'tarefa-'+ i} header={tarefa.nome}>
+                      <TaskItem {...tarefa} />
                     </ListGroupItem>
                   )}
                 </ListGroup>                
