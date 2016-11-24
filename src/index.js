@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap-theme.css';
 import './index.css';  // bootstrap css
 
 import App from './App';
+import Dashboard from './dashboard';
 import Emissao from './duplicata/emissao';
 import Faturamento from './duplicata/faturamento';
 import Cobranca from './duplicata/cobranca';
@@ -44,6 +45,7 @@ const NoMatch = () =>
 render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
+      
     	<Route path="duplicata/emissao/avulsa" component={Emissao}/>
       <Route path="duplicata/faturamento/:id" component={Faturamento}/>
       <Route path="duplicata/cobranca/:id" component={Cobranca}/>

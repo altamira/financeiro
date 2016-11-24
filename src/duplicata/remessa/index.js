@@ -165,7 +165,7 @@ export default class Remessa extends Component {
     axios
       .post('http://sistema/api/financeiro/duplicata/remessa/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
       .then( (response) => {
-        alert('Tarefa concluida com sucesso');
+        //alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
       })
       .catch( error => {

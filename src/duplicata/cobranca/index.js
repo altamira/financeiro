@@ -36,40 +36,40 @@ export default class Cobranca extends Component {
     super(props);
 
     this.state = {
-      "empresa": "01",
-      "numero": 63867,
+      "empresa": "00",
+      "numero": 0,
       "emissao": "2011-03-14T00:00:00.000Z",
       "entrega": "2010-10-26T00:00:00.000Z",
       "cliente": {
-        "cnpj": "67.841.650/0001-30",
-        "inscricao": "ISENTO",
-        "fantasia": "STORE",
-        "nome": "STORE SISTEMAS INTEL.DE ARMAZENAGEM LTDA.",
+        "cnpj": "",
+        "inscricao": "",
+        "fantasia": "",
+        "nome": "",
         "logradouro": "",
-        "endereco": "ESTRADA DA ALDEINHA",
-        "numero": "237",
-        "complemento": "AREA EMPRESARIAL",
-        "bairro": "ALPHAVILLE",
-        "municipio": 3505708,
-        "cidade": "BARUERI",
-        "CEP": "06465-100",
-        "UF": "SP",
-        "ddd": "11",
-        "telefone": "41334326",
-        "contato": "ANDRE MONTEIRO",
-        "desconto": true
+        "endereco": "",
+        "numero": "",
+        "complemento": "",
+        "bairro": "",
+        "municipio": 0,
+        "cidade": "",
+        "CEP": "",
+        "UF": "",
+        "ddd": "",
+        "telefone": "",
+        "contato": "",
+        "desconto": false
       },
-      "condicao": "12 ",
+      "condicao": "",
       "representante": {
-        "codigo": "006",
-        "nome": "ESTRUTURAÇÃO SERVICOS S/C LTDA."
+        "codigo": "",
+        "nome": ""
       },
-      "comissao": 0.056,
-      "desconto": 1,
+      "comissao": 0,
+      "desconto": 0,
       "totais": {
-        "produtos": 377370,
-        "ipi": 18868.5,
-        "total": 396238.5
+        "produtos": 0,
+        "ipi": 0,
+        "total": 0
       },
       "parcelas": [],
 

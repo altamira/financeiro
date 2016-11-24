@@ -15,7 +15,7 @@ import axios from 'axios';
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
-  <Link to={{ pathname: props.form, query: props.query }}>
+  <Link to={{ pathnome: props.form, query: props.parametros }}>
     <span style={{display: 'block'}}>{props.titulo}</span>
     <span>{props.descricao}</span>
   </Link>
@@ -91,19 +91,10 @@ class App extends Component {
     }.bind(this))
 
     axios
-      .get('http://sistema/api/tarefas?assign_to=' + this.state.usuario.email)
+      .get('http://sistema/api/tarefas?atribuir=' + this.state.usuario.login)
       .then( (response) => {
         if (response.data instanceof Array) {
-          this.setState({tarefas: response.data.map( item => 
-            ({ 
-              id: item.id, 
-              nome: item.nome, 
-              titulo: item.titulo || '',
-              descricao: item.descricao || '',
-              form: item.form,
-              query: item.parametros || ''
-            })
-          )})
+          this.setState({tarefas: response.data});
         }
       })
       .catch( error => {
@@ -130,7 +121,7 @@ class App extends Component {
   handleTaskDone(tarefa) {
     let tarefas = this.state.tarefas;
     tarefas.splice(tarefas.findIndex( t => t.id === tarefa.id), 1);
-    console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.name + ', ' + tarefa.title)
+    console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
     this.setState({tarefas: tarefas}, this.goHome);
   }
 
@@ -138,18 +129,19 @@ class App extends Component {
     let tarefas = this.state.tarefas;
     tarefas.push(tarefa);
     this.setState({tarefas: tarefas});
-    console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.name + ', ' + tarefa.title)
+    console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
   }
 
   goHome() {
     browserHistory.push('/');
   }
+
   render() {
 
     const tarefas = {};
-    this.state.tarefas.forEach ( t => {
-      if (tarefas[t.name] === undefined) tarefas[t.name] = [];
-      tarefas[t.name].push(t)
+    this.state.tarefas.forEach ( tarefa => {
+      if (tarefas[tarefa.nome] === undefined) tarefas[tarefa.nome] = [];
+      tarefas[tarefa.nome].push(tarefa)
     })
 
     return (
@@ -175,7 +167,7 @@ class App extends Component {
                 <MenuItem divider />
                 <MenuItem eventKey={3.3}>Usuarios</MenuItem>
               </NavDropdown>
-              <NavItem eventKey={1} href="#">Financeiro</NavItem>
+              <NavItem eventKey={1} href="/dashboard">Resumo Financeiro</NavItem>
               <NavItem eventKey={2} href="#">Configurações</NavItem>
             </Nav>
             <Nav pullRight>

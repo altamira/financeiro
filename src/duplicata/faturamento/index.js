@@ -129,7 +129,7 @@ export default class Faturamento extends Component {
     axios
       .post('http://sistema/api/financeiro/duplicata/faturamento/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
-        alert('Tarefa concluida com sucesso');
+        //alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
       })
       .catch( error => {

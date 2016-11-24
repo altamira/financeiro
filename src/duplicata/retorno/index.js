@@ -195,8 +195,8 @@ export default class Retorno extends Component {
     axios
       .post('http://sistema/api/financeiro/duplicata/retorno/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
       .then( (response) => {
-        alert('Tarefa concluida com sucesso');
-        browserHistory.push('/');
+        //alert('Tarefa concluida com sucesso');
+        //browserHistory.push('/');
       })
       .catch( error => {
         alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
