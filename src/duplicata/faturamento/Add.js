@@ -9,6 +9,7 @@ import {
   Button
 } from 'react-bootstrap';
 import DatePicker from 'react-bootstrap-date-picker';
+import moment from 'moment';
 
 export default class Edit extends Component {
   constructor(props) {
@@ -30,6 +31,10 @@ export default class Edit extends Component {
     this.handleSave = this.handleSave.bind(this);
   }
 
+  componentWillReceiveProps(props) {
+    this.setState(props.item);
+  }
+
   handleDateChange(date) {
     this.setState({vencto: date});
   }
@@ -40,10 +45,6 @@ export default class Edit extends Component {
  
   handleSave() {
     this.props.onSave && this.props.onSave({...this.state, valor: parseFloat(this.state.valor)});
-  }
-
-  componentWillReceiveProps(props) {
-    this.setState(this.props.item);
   }
 
   render() {
@@ -57,6 +58,17 @@ export default class Edit extends Component {
 
           <Modal.Body>
             <Row>
+              <Col md={4}>Vencto</Col>
+              <Col md={8}>
+                <FormGroup validationState="success">
+                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
+                  {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
+                  {/*<FormControl.Feedback />*/}
+                  <DatePicker id="emissao" value={this.state.vencto} onChange={this.handleDateChange} />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
               <Col md={4}>Tipo</Col>
               <Col md={8}>
                 <FormGroup validationState="success">
@@ -66,17 +78,6 @@ export default class Edit extends Component {
                     <option value="DDM">Dias da Montagem (DDM)</option>
                   </FormControl>
                   <FormControl.Feedback />
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col md={4}>Vencto</Col>
-              <Col md={8}>
-                <FormGroup validationState="success">
-                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
-                  {/*<FormControl.Feedback />*/}
-                  <DatePicker id="emissao" value={this.state.vencto} onChange={this.handleDateChange} />
                 </FormGroup>
               </Col>
             </Row>
@@ -94,7 +95,7 @@ export default class Edit extends Component {
 
           <Modal.Footer>
             <Button onClick={this.props.onClose} >Fechar</Button>
-            <Button bsStyle="primary" onClick={this.handleSave}>Alterar</Button>
+            <Button bsStyle="primary" onClick={this.handleSave}>Incluir</Button>
           </Modal.Footer>
 
         </Modal.Dialog>

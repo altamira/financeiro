@@ -20,12 +20,11 @@ import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
 import DatePicker from 'react-bootstrap-date-picker';
-//import PDF from 'react-pdf';
 
 import Add from './Add';
 import Edit from './Edit';
 import Delete from './Delete';
-//import Calc from './Calc';
+import Calc from './Calc';
 
 import { omit } from 'lodash';
 import axios from 'axios';
@@ -37,10 +36,10 @@ export default class Faturamento extends Component {
     super(props);
 
     this.state = {
-      "empresa": "00",
+      "empresa": "",
       "numero": 0,
-      "emissao": "2011-03-14T00:00:00.000Z",
-      "entrega": "2010-10-26T00:00:00.000Z",
+      "emissao": new Date().toISOString(),
+      "entrega": new Date().toISOString(),
       "cliente": {
         "cnpj": "",
         "inscricao": "",
@@ -86,34 +85,32 @@ export default class Faturamento extends Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
 
-
     // manipulação da lista de parcelas
     this.handleFormAdd = this.handleFormAdd.bind(this);
-    this.handleAdd = this.handleAdd.bind(this);
     this.handleFormEdit = this.handleFormEdit.bind(this);
+    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
+
+    this.handleAdd = this.handleAdd.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
-    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
 
   }
 
   componentWillMount() {
-    this.load(this.props.params.id || 0);
+    this.loadTarefas(this.props.params.id || 0);
   }
 
   componentWillReceiveProps(nextProps) {
-    this.load(nextProps.params.id);    
+    this.loadTarefas(nextProps.params.id);    
   }
   
-  load(tarefa) {
+  loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
-        if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
-          this.setState(JSON.parse(response.data[0].conteudo));
-        }
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(response.data.conteudo);
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -125,6 +122,7 @@ export default class Faturamento extends Component {
   }
 
   handleComplete(data) {
+    console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
       .post('http://sistema/api/financeiro/duplicata/faturamento/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
@@ -139,18 +137,38 @@ export default class Faturamento extends Component {
 
   // manipuladores da lista de parcelas
   handleFormAdd() {
-    this.setState({dialog: <Add onSave={this.handleAdd.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({dialog: <Edit 
+      item={{
+          emissao: this.state.emissao, 
+          entrega: this.state.entrega, 
+          inicial: this.state.entrega,
+          vencto: this.state.entrega,
+          tipo: "DDL",
+          parcela: this.state.parcelas.length + 1,
+          prazo: 0,
+          porcentagem: 0,
+          descricao: "",
+          valor: 0.0
+        }}        
+      onSave={this.handleAdd.bind(this)} 
+      onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleAdd(item) {
-    let p = this.state.parcelas;
-    item.parcela = this.state.parcelas.length + 1;
-    p.push(item)
-    this.setState({parcelas: p, dialog: null});
+    let parcelas = this.state.parcelas;
+    parcelas.push(item)
+    this.setState({parcelas: parcelas, dialog: null});
   }
 
   handleFormEdit(item) {
-    this.setState({dialog: <Edit item={item} onSave={this.handleUpdate.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({dialog: <Edit 
+      item={{...item, 
+          emissao: this.state.emissao, 
+          entrega: this.state.entrega, 
+          inicial: this.state.tipo === 'DDP' ? this.state.emissao : this.state.entrega
+        }} 
+      onSave={this.handleUpdate.bind(this)} 
+      onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleUpdate(item) {
@@ -164,10 +182,12 @@ export default class Faturamento extends Component {
   }
 
   handleDelete(index) {
-    let p = this.state.parcelas;
-    p.splice(index, 1);
-    p.forEach( (p, i) => p.sequencia = i + 1);
-    this.setState({parcelas: p, dialog: null});
+    let parcelas = this.state.parcelas;
+    parcelas.splice(index, 1);
+    this.setState({parcelas: parcelas.map( (p, i) => {
+      p.parcela = i + 1;
+      return p;
+    }), dialog: null});
   }
 
   handleCloseDialog() {
@@ -181,7 +201,7 @@ export default class Faturamento extends Component {
 
   handleCheckboxChange(value) {
     let cliente = this.state.cliente;
-    cliente.desconto = value.target.checked;
+    cliente.desconto = !this.refs.desconto;
     this.setState({cliente: cliente});
   }
 
@@ -202,6 +222,7 @@ export default class Faturamento extends Component {
               >
                   <Button
                     onClick={this.handleComplete}
+                    disabled={!this.state.parcelas.length}
                     style={{width: 120}}
                     bsStyle="success"
                   >
@@ -377,8 +398,8 @@ export default class Faturamento extends Component {
                   <Row>
                     <Col xs={12} md={2}></Col>
                     <Col xs={12} md={10}>
-                      <Checkbox id="desconto" checked={this.state.cliente.desconto} value={this.state.cliente.desconto} onChange={this.handleCheckboxChange} >
-                        <Label bsSize="large" bsStyle="danger">Cliente ACEITA desconto de duplicata</Label>
+                      <Checkbox id="desconto" ref="desconto" defaultChecked={this.state.cliente.desconto} onChange={this.handleCheckboxChange} >
+                        <Label bsSize="large" bsStyle="danger">Cliente NÃO ACEITA desconto de duplicata ou forma de pagamento é BNDES.</Label>
                       </Checkbox>
                     </Col>
                   </Row>

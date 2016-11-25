@@ -15,7 +15,7 @@ import axios from 'axios';
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
-  <Link to={{ pathnome: props.form, query: props.parametros }}>
+  <Link to={{ pathname: props.form, query: props.parametros }}>
     <span style={{display: 'block'}}>{props.titulo}</span>
     <span>{props.descricao}</span>
   </Link>
@@ -167,7 +167,7 @@ class App extends Component {
                 <MenuItem divider />
                 <MenuItem eventKey={3.3}>Usuarios</MenuItem>
               </NavDropdown>
-              <NavItem eventKey={1} href="/dashboard">Resumo Financeiro</NavItem>
+              <NavItem eventKey={1} href="dashboard/">Resumo Financeiro</NavItem>
               <NavItem eventKey={2} href="#">Configurações</NavItem>
             </Nav>
             <Nav pullRight>

@@ -45,8 +45,8 @@ const NoMatch = () =>
 render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
-      
-    	<Route path="duplicata/emissao/avulsa" component={Emissao}/>
+      <Route path="dashboard/" component={Dashboard}/>
+    	<Route path="duplicata/emissao" component={Emissao}/>
       <Route path="duplicata/faturamento/:id" component={Faturamento}/>
       <Route path="duplicata/cobranca/:id" component={Cobranca}/>
       <Route path="duplicata/remessa/:id" component={Remessa}/>

@@ -117,10 +117,7 @@ export default class Cobranca extends Component {
     axios
       .get('http://sistema/api/financeiro/carteira/')
       .then( (response) => {
-        this.setState(
-          {
-            contas:response.data
-          }, 
+        this.setState({contas:response.data}, 
           this.loadTarefas(this.props.params.id || 0)
         );
       })
@@ -138,10 +135,8 @@ export default class Cobranca extends Component {
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
-        if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
-          this.setState({...JSON.parse(response.data[0].conteudo), conta: null});
-        }
+        console.log(JSON.stringify(response.data, null, 2));
+        this.setState({...response.data.conteudo, conta: null});
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -154,6 +149,7 @@ export default class Cobranca extends Component {
   }
 
   handleComplete(data) {
+    console.log(JSON.stringify(omit(this.state, ['contas', 'order', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
       .post('http://sistema/api/financeiro/duplicata/cobranca/concluir/' + this.props.params.id, omit(this.state, ['contas', 'order', 'dialog']))
@@ -239,7 +235,7 @@ export default class Cobranca extends Component {
                   <Button
                     disabled={!(this.state.parcelas.find( p => !p.carteira && p.selected) && this.state.conta !== null)}
                     onClick={this.handleComplete}
-                    style={{width: 200}}
+                    style={{width: 150}}
                     bsStyle="success"
                   >
                     <Glyphicon glyph="ok" />
