@@ -8,9 +8,11 @@ import { Nav, Navbar, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Col } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
-import { assign } from 'lodash';
+import { assign, omit } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
+
+import Login from './login';
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
@@ -25,24 +27,34 @@ class App extends Component {
     super(props);
 
     this.state = {
-      usuario: {
-        login: 'neuci',
-        nome: 'Neuci Bavato',
-        email: 'neuci.bavato@altamira.com.br'
-      },
+
       tarefas: [],
+
       topicos: {}
     }
 
+    this.handleLogin = this.handleLogin.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
+
+    this.mountComponent = this.mountComponent.bind(this);
+    
     this.goHome = this.goHome.bind(this);
 
-    this.handleError = this.handleError.bind(this);
-    this.handleTaskDone = this.handleTaskDone.bind(this);
-    this.handleTaskNew = this.handleTaskNew.bind(this);
+    this.handleErro = this.handleErro.bind(this);
+    this.handleTarefaConcluida = this.handleTarefaConcluida.bind(this);
+    this.handleTarefaNova = this.handleTarefaNova.bind(this);
 
   }
 
-  componentWillMount() {
+  handleLogin(usuario) {
+    this.setState({usuario: usuario}, this.mountComponent);
+  }
+
+  handleLogout() {
+    this.setState({usuario: undefined});
+  }
+
+  mountComponent() {
     var opts = {
       host: '192.168.0.1', //'test.mosquitto.org'
       port: 61614,
@@ -60,8 +72,8 @@ class App extends Component {
       this.client.subscribe(
         [
           '/erros/' + clientId,
-          '/tarefas/concluida/',
-          '/tarefas/nova/',
+          '/tarefas/concluida/' + this.state.usuario.login,
+          '/tarefas/nova/' + this.state.usuario.login,
         ], 
         function(err, granted) { 
           !err ? 
@@ -70,9 +82,9 @@ class App extends Component {
               topicos: assign(
                 this.state.topicos, 
                 {
-                  [granted[0].topic]: this.handleError,
-                  [granted[1].topic]: this.handleTaskDone,
-                  [granted[2].topic]: this.handleTaskNew
+                  [granted[0].topic]: this.handleErro,
+                  [granted[1].topic]: this.handleTarefaConcluida,
+                  [granted[2].topic]: this.handleTarefaNova
                 }
               )
             }) 
@@ -91,7 +103,7 @@ class App extends Component {
     }.bind(this))
 
     axios
-      .get('http://sistema/api/tarefas?atribuir=' + this.state.usuario.login)
+      .get('http://sistema/api/tarefas?atribuir=' + (this.state.usuario && this.state.usuario.login) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
@@ -114,18 +126,18 @@ class App extends Component {
     this.client.end();
   }
 
-  handleError(msg) {
+  handleErro(msg) {
     alert('Erro: ' + msg);
   }
 
-  handleTaskDone(tarefa) {
+  handleTarefaConcluida(tarefa) {
     let tarefas = this.state.tarefas;
     tarefas.splice(tarefas.findIndex( t => t.id === tarefa.id), 1);
     console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
     this.setState({tarefas: tarefas}, this.goHome);
   }
 
-  handleTaskNew(tarefa) {
+  handleTarefaNova(tarefa) {
     let tarefas = this.state.tarefas;
     tarefas.push(tarefa);
     this.setState({tarefas: tarefas});
@@ -144,37 +156,34 @@ class App extends Component {
       tarefas[tarefa.nome].push(tarefa)
     })
 
-    return (
-      <div className="App">
-        {/*<div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
-        </div>*/}
-
-        <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
-          <Navbar.Header>
-            <Navbar.Brand>
-              <Link to='/'>Altamira</Link>
-            </Navbar.Brand>
-            <Navbar.Toggle />
-          </Navbar.Header>
-          <Navbar.Collapse>
-            <Nav>
-              <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
-                <MenuItem eventKey={3.1}>Banco</MenuItem>
-                <MenuItem eventKey={3.2}>Conta Corrente</MenuItem>
-                <MenuItem eventKey={3.3}>Clientes</MenuItem>
-                <MenuItem divider />
-                <MenuItem eventKey={3.3}>Usuarios</MenuItem>
-              </NavDropdown>
-              <NavItem eventKey={1} href="dashboard/">Resumo Financeiro</NavItem>
-              <NavItem eventKey={2} href="#">Configurações</NavItem>
-            </Nav>
-            <Nav pullRight>
-              <NavItem eventKey={1} href="#">Sair</NavItem>
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
+    if (this.state.usuario) {
+      return (
+       
+        <div className="App">
+          <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
+            <Navbar.Header>
+              <Navbar.Brand>
+                <Link to='/'>Altamira</Link>
+              </Navbar.Brand>
+              <Navbar.Toggle />
+            </Navbar.Header>
+            <Navbar.Collapse>
+              <Nav>
+                <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
+                  <MenuItem eventKey={3.1}>Banco</MenuItem>
+                  <MenuItem eventKey={3.2}>Conta Corrente</MenuItem>
+                  <MenuItem eventKey={3.3}>Clientes</MenuItem>
+                  <MenuItem divider />
+                  <MenuItem eventKey={3.3}>Usuarios</MenuItem>
+                </NavDropdown>
+                <NavItem eventKey={1} href="dashboard/">Resumo Financeiro</NavItem>
+                <NavItem eventKey={2} href="#">Configurações</NavItem>
+              </Nav>
+              <Nav pullRight>
+                <NavItem eventKey={1} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario.nome} (Sair)</span></NavItem>
+              </Nav>
+            </Navbar.Collapse>
+          </Navbar>
 
           <Col md={3} >
             <Accordion>
@@ -195,12 +204,16 @@ class App extends Component {
               </Panel>
             </Accordion> 
           </Col>
+
           <Col md={9} >
             {this.props.children}
           </Col>
-      
-      </div>
-    );
+
+        </div> 
+      );
+    } else {
+      return (<Login onLogin={this.handleLogin} />)
+    }
   }
 }
 

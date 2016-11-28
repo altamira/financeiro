@@ -21,10 +21,10 @@ import { Image } from 'react-bootstrap';
 
 import DatePicker from 'react-bootstrap-date-picker';
 
-import Add from './Add';
+//import Add from './Add';
 import Edit from './Edit';
 import Delete from './Delete';
-import Calc from './Calc';
+//import Calc from './Calc';
 
 import { omit } from 'lodash';
 import axios from 'axios';
@@ -315,7 +315,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
+                        <FormControl type="text" id="numero" value={this.state.numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -325,7 +325,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleChange} />
+                        <DatePicker id="emissao" value={this.state.emissao} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={2}>Data da Entrega</Col>
@@ -334,7 +334,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker value={this.state.entrega} onChange={this.handleChange} />
+                        <DatePicker id="entrega" value={this.state.entrega} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -344,7 +344,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={this.state.cliente.cnpj} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} id="cnpj" value={this.state.cliente.cnpj} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -352,7 +352,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={5}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" value={this.state.representante.nome} onChange={this.handleChange} />
+                        <FormControl type="text" id="representante" value={this.state.representante.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -363,7 +363,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={10}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" value={this.state.cliente.nome} onChange={this.handleChange} />
+                        <FormControl type="text" id="nome" value={this.state.cliente.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -447,12 +447,12 @@ export default class Faturamento extends Component {
                   </Row>
                 </div>
               </Tab>
-            <Tab eventKey={2} title="Procedimento">
-              <Image src={process} style={{width: '100%', height: '100%'}} />
-            </Tab>
-          </Tabs>
-        </Row>
-    </Panel>
+              <Tab eventKey={2} title="Procedimento">
+                <Image src={process} style={{width: '100%', height: '100%'}} />
+              </Tab>
+            </Tabs>
+          </Row>
+        </Panel>
 
         {this.state.dialog}
 
