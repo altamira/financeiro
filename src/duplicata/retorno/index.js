@@ -69,37 +69,16 @@ export default class Retorno extends Component {
         "ipi": 0,
         "total": 0
       },
-      "parcelas": [
-        {
-           "nosso_numero": 0,
-           "vencto": "2011-04-13T00:00:00.000Z",
-           "tipo": "DDP",
-           "parcela": 1,
-           "prazo": 0,
-           "porcentagem": 0,
-           "descricao": "",
-           "valor": 0,
-           "carteira": {
-              "id": 8,
-              "banco": "",
-              "agencia": "0",
-              "conta": "0",
-              "carteira": 0,
-              "nome": "",
-              "limite": 0,
-              "utilizado": 0,
-              "saldo": 0,
-              "defasagem": 0,
-              "descoberto": 0,
-              "iof": 0,
-              "juros": 0,
-              "bordero": 0
-           },
-           "envio": "2016-11-24T17:05:25.716Z",
-           "remessa": "2016-11-24T17:05:32.523Z"
-        }
-      ],
-      "conta": {
+      "parcelas": [],
+
+      "cobrancas": [],
+
+      "remessas": [],
+
+      "retornos": [],
+
+      // campos de controle, não apagar
+      carteira: {
         "id": 0,
         "banco": "",
         "agencia": "0",
@@ -115,8 +94,6 @@ export default class Retorno extends Component {
         "juros": 0,
         "bordero": 0
       },
-
-      "contas": [],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -137,11 +114,8 @@ export default class Retorno extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
-    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
-
 
     this.handleConfirm = this.handleConfirm.bind(this);
-    this.handleSendOrder = this.handleSendOrder.bind(this);
 
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
@@ -151,19 +125,7 @@ export default class Retorno extends Component {
   }
 
   componentWillMount() {
-    axios
-      .get('http://sistema/api/financeiro/carteira/')
-      .then( (response) => {
-        this.setState(
-          {
-            contas:response.data
-          }, 
-          this.loadTarefas(this.props.params.id || 0)
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })         
+    this.loadTarefas(this.props.params.id || 0)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -175,10 +137,8 @@ export default class Retorno extends Component {
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
-        if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
-          this.setState({...JSON.parse(response.data[0].conteudo)});
-        }
+        console.log(JSON.stringify(response.data, null, 2));
+        this.setState({...response.data.conteudo});
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -191,6 +151,7 @@ export default class Retorno extends Component {
   }
 
   handleComplete(data) {
+    console.log(JSON.stringify(omit(this.state, ['order', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
       .post('http://sistema/api/financeiro/duplicata/retorno/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
@@ -203,27 +164,20 @@ export default class Retorno extends Component {
       })
   }
 
-  handleSelect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = true;
-    this.setState({parcelas: parcelas})
+  handleSelect(retorno, index) {
+    let retornos = this.state.retornos;
+    retornos[index].selected = true;
+    this.setState({retornos: retornos})
   }
 
   handleUnselect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = false;
-    this.setState({parcelas: parcelas})
+    let retornos = this.state.retornos;
+    retornos[index].selected = false;
+    this.setState({retornos: retornos})
   }
 
   handleConfirm(item) {
     //this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
-  }
-
-  handleSendOrder(index) {
-    let p = this.state.parcelas;
-    p.splice(index, 1);
-    p.forEach( (p, i) => p.sequencia = i + 1);
-    this.setState({parcelas: p, dialog: null});
   }
 
   handleCloseDialog() {
@@ -235,22 +189,16 @@ export default class Retorno extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
-  handleCheckboxChange(value) {
-    let cliente = this.state.cliente;
-    cliente.desconto = value.target.checked;
-    this.setState({cliente: cliente});
-  }
-
   handleOrderBy(key) {
     let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
-    let parcelas = this.state.parcelas;
+    let retornos = this.state.retornos;
     order[key] = !this.state.order[key];
-    this.setState({parcelas: parcelas.sortByKey(key, order[key]), order: order });
+    this.setState({retornos: retornos.sortByKey(key, order[key]), order: order });
   }
 
   render() {
 
-    let total = this.state.parcelas.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
+    let total = this.state.retornos.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
 
     return (
 
@@ -266,7 +214,7 @@ export default class Retorno extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.parcelas.find( p => p.selected) && this.state.conta !== null)}
+                    disabled={!(this.state.retornos.find( p => p.selected) && this.state.carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -449,12 +397,12 @@ export default class Retorno extends Component {
                         </thead>
                         <tbody>
                           <tr>
-                            <td style={{textAlign: 'left'}}>{this.state.conta.nome}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.limite).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.utilizado).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.saldo).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.defasagem).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.descoberto).toLocaleString()}</td>
+                            <td style={{textAlign: 'left'}}>{this.state.carteira.nome}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.limite).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.utilizado).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.saldo).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.defasagem).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.descoberto).toLocaleString()}</td>
                           </tr>                              
                         </tbody>
                       </Table>
@@ -473,20 +421,20 @@ export default class Retorno extends Component {
                               <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.conta.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.conta.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.conta.bordero).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.conta.iof + this.state.conta.juros) / 100) + this.state.conta.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>
@@ -510,21 +458,21 @@ export default class Retorno extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.filter( p => p.carteira).map( (parcela, index) => {
+                          {this.state.retornos.map( (retorno, index) => {
                             return (
-                              <tr key={'tr-' + index} style={{background: !parcela.carteira && parcela.selected ? 'gold' : ''}} >
-                                <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor).toLocaleString()}</td>
-                                <td >{parcela.remessa && parcela.carteira.nome}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.remessa && new Date(parcela.envio).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.remessa && new Date(parcela.remessa).toLocaleDateString()}</td>
+                              <tr key={'tr-' + index} style={{background: !retorno.carteira && retorno.selected ? 'gold' : ''}} >
+                                <td style={{textAlign: 'center'}}>{retorno.nosso_numero}</td>
+                                <td style={{textAlign: 'center'}}>{new Date(retorno.vencto).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{retorno.parcela}/{this.state.retornos.length}</td>
+                                <td style={{textAlign: 'center'}}>{retorno.retorno === 1 && retorno.tipo === "DDP" ? 'SINAL' : retorno.tipo === 'DDP' ? retorno.prazo + ' dia(s) do PEDIDO' :  retorno.prazo + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(retorno.valor).toLocaleString()}</td>
+                                <td >{retorno.remessa && retorno.carteira.nome}</td>
+                                <td style={{textAlign: 'center'}}>{retorno.remessa && new Date(retorno.envio).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{retorno.remessa && new Date(retorno.remessa).toLocaleDateString()}</td>
                                 <td>
-                                  {!parcela.retorno ? (!parcela.selected ? 
-                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, parcela, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, parcela, index)} ><Glyphicon glyph="remove" /></Button>)) : null
+                                  {!retorno.retorno ? (!retorno.selected ? 
+                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, retorno, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, retorno, index)} ><Glyphicon glyph="remove" /></Button>)) : null
                                   }
                                 </td>
                               </tr>                              

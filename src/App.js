@@ -63,7 +63,7 @@ class App extends Component {
       retain: false,
       clean: true,
       keepAlive: 30, // 30 sec.
-      clientId: clientId
+      //clientId: clientId
     }
 
     this.client = mqtt.connect(opts)
@@ -101,6 +101,10 @@ class App extends Component {
       this.state.topicos[topic] && this.state.topicos[topic](JSON.parse(message.toString()));
 
     }.bind(this))
+
+    this.client.on('error', function(err) {
+      alert('Erro na conexao com o servidor de mensagens: ' + err);
+    })
 
     axios
       .get('http://sistema/api/tarefas?atribuir=' + (this.state.usuario && this.state.usuario.login) || '')

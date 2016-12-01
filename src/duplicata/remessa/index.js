@@ -71,7 +71,12 @@ export default class Remessa extends Component {
       },
       "parcelas": [],
 
-      "conta": {
+      "cobrancas": [],
+
+      "remessas": [],
+
+      // campos de controle, não apagar
+      carteira: {
         "id": 0,
         "banco": "",
         "agencia": "0",
@@ -107,11 +112,8 @@ export default class Remessa extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
-    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
-
 
     this.handleConfirm = this.handleConfirm.bind(this);
-    this.handleSendOrder = this.handleSendOrder.bind(this);
 
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
@@ -121,19 +123,7 @@ export default class Remessa extends Component {
   }
 
   componentWillMount() {
-    axios
-      .get('http://sistema/api/financeiro/carteira/')
-      .then( (response) => {
-        this.setState(
-          {
-            contas:response.data
-          }, 
-          this.loadTarefas(this.props.params.id || 0)
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })         
+    this.loadTarefas(this.props.params.id || 0)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -145,10 +135,8 @@ export default class Remessa extends Component {
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
-        if (response.data instanceof Array && response.data.length === 1) {
-          console.log(JSON.stringify(JSON.parse(response.data[0].conteudo), null, 2))
-          this.setState({...JSON.parse(response.data[0].conteudo)});
-        }
+        console.log(JSON.stringify(response.data, null, 2));
+        this.setState({...response.data.conteudo});
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -161,6 +149,7 @@ export default class Remessa extends Component {
   }
 
   handleComplete(data) {
+    console.log(JSON.stringify(omit(this.state, ['order', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
       .post('http://sistema/api/financeiro/duplicata/remessa/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
@@ -173,27 +162,20 @@ export default class Remessa extends Component {
       })
   }
 
-  handleSelect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = true;
-    this.setState({parcelas: parcelas})
+  handleSelect(remessa, index) {
+    let remessas = this.state.remessas;
+    remessas[index].selected = true;
+    this.setState({remessas: remessas})
   }
 
-  handleUnselect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = false;
-    this.setState({parcelas: parcelas})
+  handleUnselect(remessa, index) {
+    let remessas = this.state.remessas;
+    remessas[index].selected = false;
+    this.setState({remessas: remessas})
   }
 
   handleConfirm(item) {
     //this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
-  }
-
-  handleSendOrder(index) {
-    let p = this.state.parcelas;
-    p.splice(index, 1);
-    p.forEach( (p, i) => p.sequencia = i + 1);
-    this.setState({parcelas: p, dialog: null});
   }
 
   handleCloseDialog() {
@@ -205,22 +187,16 @@ export default class Remessa extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
-  handleCheckboxChange(value) {
-    let cliente = this.state.cliente;
-    cliente.desconto = value.target.checked;
-    this.setState({cliente: cliente});
-  }
-
   handleOrderBy(key) {
     let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
-    let parcelas = this.state.parcelas;
+    let remessas = this.state.remessas;
     order[key] = !this.state.order[key];
-    this.setState({parcelas: parcelas.sortByKey(key, order[key]), order: order });
+    this.setState({remessas: remessas.sortByKey(key, order[key]), order: order });
   }
 
   render() {
 
-    let total = this.state.parcelas.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
+    let total = this.state.remessas.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
 
     return (
 
@@ -236,7 +212,7 @@ export default class Remessa extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.parcelas.find( p => p.selected) && this.state.conta !== null)}
+                    disabled={!(this.state.remessas.find( p => p.selected) && this.state.carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -419,12 +395,12 @@ export default class Remessa extends Component {
                         </thead>
                         <tbody>
                           <tr>
-                            <td style={{textAlign: 'left'}}>{this.state.conta.nome}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.limite).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.utilizado).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.saldo).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.defasagem).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.conta.descoberto).toLocaleString()}</td>
+                            <td style={{textAlign: 'left'}}>{(this.state.carteira && this.state.carteira.nome) || ''}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.limite).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.utilizado).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.saldo).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.defasagem).toLocaleString()}</td>
+                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.descoberto).toLocaleString()}</td>
                           </tr>                              
                         </tbody>
                       </Table>
@@ -443,20 +419,20 @@ export default class Remessa extends Component {
                               <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.conta.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.conta.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.conta.bordero).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.conta.iof + this.state.conta.juros) / 100) + this.state.conta.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>
@@ -479,20 +455,20 @@ export default class Remessa extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.filter( p => p.carteira).map( (parcela, index) => {
+                          {this.state.remessas.map( (remessa, index) => {
                             return (
-                              <tr key={'tr-' + index} style={{background: !parcela.carteira && parcela.selected ? 'gold' : ''}} >
-                                <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor).toLocaleString()}</td>
-                                <td >{parcela.carteira && parcela.carteira.nome}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.carteira && new Date(parcela.envio).toLocaleDateString()}</td>
+                              <tr key={'tr-' + index} style={{background: !remessa.envio && remessa.selected ? 'gold' : ''}} >
+                                <td style={{textAlign: 'center'}}>{remessa.nosso_numero}</td>
+                                <td style={{textAlign: 'center'}}>{new Date(remessa.vencto).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{remessa.parcela}/{this.state.remessas.length}</td>
+                                <td style={{textAlign: 'center'}}>{remessa.remessa === 1 && remessa.tipo === "DDP" ? 'SINAL' : remessa.tipo === 'DDP' ? remessa.prazo + ' dia(s) do PEDIDO' :  remessa.prazo + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(remessa.valor).toLocaleString()}</td>
+                                <td >{remessa.envio && remessa.carteira.nome}</td>
+                                <td style={{textAlign: 'center'}}>{remessa.carteira && new Date(remessa.envio).toLocaleDateString()}</td>
                                 <td>
-                                  {!parcela.remessa ? (!parcela.selected ? 
-                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, parcela, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, parcela, index)} ><Glyphicon glyph="remove" /></Button>)) : null
+                                  {!remessa.envio ? (!remessa.selected ? 
+                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, remessa, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, remessa, index)} ><Glyphicon glyph="remove" /></Button>)) : null
                                   }
                                 </td>
                               </tr>                              

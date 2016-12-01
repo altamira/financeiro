@@ -19,6 +19,8 @@ import {
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
+import Error from './../../Error';
+
 import DatePicker from 'react-bootstrap-date-picker';
 
 //import Add from './Add';
@@ -128,10 +130,11 @@ export default class Faturamento extends Component {
       .post('http://sistema/api/financeiro/duplicata/faturamento/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         //alert('Tarefa concluida com sucesso');
-        //browserHistory.push('/');
+        browserHistory.push('/');
       })
       .catch( error => {
-        alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
+        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 

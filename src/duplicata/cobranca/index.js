@@ -17,7 +17,7 @@ import { Image } from 'react-bootstrap';
 
 import Confirm from './Confirm';
 
-import { omit } from 'lodash';
+import { assign, omit } from 'lodash';
 import axios from 'axios';
 
 import process from './process.svg';
@@ -73,10 +73,12 @@ export default class Cobranca extends Component {
       },
       "parcelas": [],
 
-      // campos de controle, não apagar
-      conta: null,
+      "cobrancas": [],
 
-      contas: [],
+      // campos de controle, não apagar
+      carteira: null,
+
+      carteiras: [],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -97,17 +99,14 @@ export default class Cobranca extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
-    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
-
 
     this.handleConfirm = this.handleConfirm.bind(this);
-    this.handleSendOrder = this.handleSendOrder.bind(this);
 
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
 
-    this.handleSelectConta = this.handleSelectConta.bind(this);
-    this.handleUnselectConta = this.handleUnselectConta.bind(this);
+    this.handleSelectCarteira = this.handleSelectCarteira.bind(this);
+    this.handleUnselectCarteira = this.handleUnselectCarteira.bind(this);
 
     this.handleOrderBy = this.handleOrderBy.bind(this);
 
@@ -117,7 +116,7 @@ export default class Cobranca extends Component {
     axios
       .get('http://sistema/api/financeiro/carteira/')
       .then( (response) => {
-        this.setState({contas:response.data}, 
+        this.setState({carteiras: response.data}, 
           this.loadTarefas(this.props.params.id || 0)
         );
       })
@@ -136,7 +135,7 @@ export default class Cobranca extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
-        this.setState({...response.data.conteudo, conta: null});
+        this.setState({...response.data.conteudo, carteira: null});
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -149,10 +148,10 @@ export default class Cobranca extends Component {
   }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['contas', 'order', 'dialog']), null, 2));
+    console.log(JSON.stringify(omit(this.state, ['carteiras', 'order', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/cobranca/concluir/' + this.props.params.id, omit(this.state, ['contas', 'order', 'dialog']))
+      .post('http://sistema/api/financeiro/duplicata/cobranca/concluir/' + this.props.params.id, omit(this.state, ['carteiras', 'order', 'dialog']))
       .then( (response) => {
         alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');
@@ -162,35 +161,28 @@ export default class Cobranca extends Component {
       })
   }
 
-  handleSelectConta(conta, index) {
-    this.setState({conta: conta})
+  handleSelectCarteira(carteira, index) {
+    this.setState({carteira: carteira});
   }
 
-  handleUnselectConta(conta, index) {
-    this.setState({conta: null})
+  handleUnselectCarteira(carteira, index) {
+    this.setState({carteira: null});
   }
 
-  handleSelect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = true;
-    this.setState({parcelas: parcelas})
+  handleSelect(cobranca, index) {
+    let cobrancas = this.state.cobrancas;
+    cobrancas[index].selected = true;
+    this.setState({cobrancas: cobrancas});
   }
 
-  handleUnselect(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas[index].selected = false;
-    this.setState({parcelas: parcelas})
+  handleUnselect(cobranca, index) {
+    let cobrancas = this.state.cobrancas;
+    cobrancas[index].selected = false;
+    this.setState({cobrancas: cobrancas});
   }
 
   handleConfirm(item) {
     this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
-  }
-
-  handleSendOrder(index) {
-    let p = this.state.parcelas;
-    p.splice(index, 1);
-    p.forEach( (p, i) => p.sequencia = i + 1);
-    this.setState({parcelas: p, dialog: null});
   }
 
   handleCloseDialog() {
@@ -200,12 +192,6 @@ export default class Cobranca extends Component {
   // formulario
   handleChange(value) {
     this.setState({[value.target.id]: value.target.value});
-  }
-
-  handleCheckboxChange(value) {
-    let cliente = this.state.cliente;
-    cliente.desconto = value.target.checked;
-    this.setState({cliente: cliente});
   }
 
   handleOrderBy(key) {
@@ -233,7 +219,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.parcelas.find( p => !p.carteira && p.selected) && this.state.conta !== null)}
+                    disabled={!(this.state.cobrancas.find( c => !c.carteira && c.selected) && this.state.carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -417,20 +403,20 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.map( (parcela, index) => {
+                          {this.state.cobrancas.map( (cobranca, index) => {
                             return (
-                              <tr key={'tr-' + index} style={{background: !parcela.carteira && parcela.selected ? 'gold' : ''}} >
-                                <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor).toLocaleString()}</td>
-                                <td >{parcela.carteira && parcela.carteira.nome}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.carteira && new Date(parcela.envio).toLocaleDateString()}</td>
+                              <tr key={'tr-' + index} style={{background: !cobranca.carteira && cobranca.selected ? 'gold' : ''}} >
+                                <td style={{textAlign: 'center'}}>{cobranca.nosso_numero}</td>
+                                <td style={{textAlign: 'center'}}>{new Date(cobranca.vencto).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{cobranca.parcela}/{this.state.cobrancas.length}</td>
+                                <td style={{textAlign: 'center'}}>{cobranca.cobranca === 1 && cobranca.tipo === "DDP" ? 'SINAL' : cobranca.tipo === 'DDP' ? cobranca.prazo + ' dia(s) do PEDIDO' :  cobranca.prazo + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(cobranca.valor).toLocaleString()}</td>
+                                <td >{cobranca.carteira && cobranca.carteira.nome}</td>
+                                <td style={{textAlign: 'center'}}>{cobranca.carteira && new Date(cobranca.envio).toLocaleDateString()}</td>
                                 <td>
-                                  {!parcela.carteira ? (!parcela.selected ? 
-                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, parcela, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, parcela, index)} ><Glyphicon glyph="remove" /></Button>)) : null
+                                  {!cobranca.carteira ? (!cobranca.selected ? 
+                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, cobranca, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, cobranca, index)} ><Glyphicon glyph="remove" /></Button>)) : null
                                   }
                                 </td>
                               </tr>                              
@@ -458,16 +444,16 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.contas.map( (conta, index) => {
+                          {this.state.carteiras.map( (carteira, index) => {
                             return (
-                              <tr key={'tr-contas-' + index} style={{background: this.state.conta && this.state.conta.id === conta.id ? 'gold' : ''}} >
-                                <td style={{textAlign: 'left'}}>{conta.nome}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(conta.limite).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(conta.utilizado).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(conta.saldo).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(conta.defasagem).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(conta.descoberto).toLocaleString()}</td>
-                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectConta.bind(null, conta, index)} ><Glyphicon glyph="ok" /></Button></td>
+                              <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
+                                <td style={{textAlign: 'left'}}>{carteira.nome}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.limite).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.utilizado).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.saldo).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.defasagem).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.descoberto).toLocaleString()}</td>
+                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, carteira, index)} ><Glyphicon glyph="ok" /></Button></td>
                               </tr>                              
                             )
                           }
@@ -477,7 +463,7 @@ export default class Cobranca extends Component {
                       </Table>
                     </Col>
                     <Col xs={12} md={4}>
-                      {this.state.parcelas.find( p => p.selected) && this.state.conta !== null ?
+                      {this.state.cobrancas.find( p => p.selected) && this.state.carteira !== null ?
                         <Table striped bordered condensed hover>
                           <thead>
                             <tr>
@@ -491,20 +477,20 @@ export default class Cobranca extends Component {
                               <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.conta.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.conta.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.conta.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.conta.bordero).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.conta.iof + this.state.conta.juros) / 100) + this.state.conta.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>
