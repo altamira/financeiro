@@ -8,11 +8,11 @@ import './index.css';  // bootstrap css
 
 import App from './App';
 import Dashboard from './dashboard';
-import Emissao from './duplicata/emissao';
-import Faturamento from './duplicata/faturamento';
-import Cobranca from './duplicata/cobranca';
-import Remessa from './duplicata/remessa';
-import Retorno from './duplicata/retorno';
+import Emissao from './recebiveis/emissao';
+import Faturamento from './recebiveis/lancamento';
+import Cobranca from './recebiveis/antecipacao';
+import Remessa from './recebiveis/remessa';
+import Retorno from './recebiveis/retorno';
 
 const About = () =>
 	<div>
@@ -46,11 +46,11 @@ render((
   <Router history={browserHistory}>
     <Route path="/" component={App}>
       <Route path="dashboard/" component={Dashboard}/>
-    	<Route path="duplicata/emissao" component={Emissao}/>
-      <Route path="duplicata/faturamento/:id" component={Faturamento}/>
-      <Route path="duplicata/cobranca/:id" component={Cobranca}/>
-      <Route path="duplicata/remessa/:id" component={Remessa}/>
-      <Route path="duplicata/retorno/:id" component={Retorno}/>
+    	<Route path="recebiveis/emissao" component={Emissao}/>
+      <Route path="recebiveis/lancamento/:id" component={Faturamento}/>
+      <Route path="recebiveis/antecipacao/:id" component={Cobranca}/>
+      <Route path="recebiveis/remessa/:id" component={Remessa}/>
+      <Route path="recebiveis/retorno/:id" component={Retorno}/>
       <Route path="about" component={About}/>
       <Route path="users" component={Users}>
         <Route path="/user/:userId" component={User}/>

@@ -11,6 +11,8 @@ import {
 import md5 from 'md5';
 import axios from 'axios';
 
+import Error from './../Error';
+
 export default class Login extends Component {
   constructor(props) {
     super(props);
@@ -40,7 +42,7 @@ export default class Login extends Component {
         }
       })
       .catch( error => {
-        alert('Erro ao autenticar usuario.');
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 

@@ -15,9 +15,11 @@ export default class Edit extends Component {
   constructor(props) {
     super(props);
 
-    this.state = this.props.item
+    this.state = this.props.parcela
 
-    this.handleChangeTipo = this.handleChangeTipo.bind(this);
+    this.handleChangeOrigem = this.handleChangeOrigem.bind(this);
+    this.handleChangeFormaPagto = this.handleChangeFormaPagto.bind(this);
+    this.handleChangeTipoVencto = this.handleChangeTipoVencto.bind(this);
     this.handleChangeInicial = this.handleChangeInicial.bind(this);
     this.handleChangePrazo = this.handleChangePrazo.bind(this);
     this.handleChangeVencto = this.handleChangeVencto.bind(this);
@@ -26,13 +28,21 @@ export default class Edit extends Component {
     this.handleSave = this.handleSave.bind(this);
   }
 
-  handleChangeTipo(element) {
+  handleChangeOrigem(element) {
+    this.setState({origem: element.target.value});
+  }
+
+  handleChangeFormaPagto(element) {
+    this.setState({forma_pagto: element.target.value});
+  }
+
+  handleChangeTipoVencto(element) {
     let inicial = moment(element.target.value === 'DDP' ? moment(this.state.emissao) : moment(this.state.entrega));
     this.setState(
       {
         inicial: inicial.toDate().toISOString(), 
         vencto: inicial.clone().add(this.state.prazo, 'd').toDate().toISOString(), 
-        tipo: element.target.value
+        tipo_vencto: element.target.value
       });
   }
 
@@ -56,7 +66,7 @@ export default class Edit extends Component {
   }
 
   handleSave() {
-    this.props.onSave && this.props.onSave({...this.state, valor: parseFloat(this.state.valor)});
+    this.props.onSave && this.props.onSave({...this.state, valor: parseFloat(this.state.valor)}, this.props.index);
   }
 
   render() {
@@ -70,10 +80,37 @@ export default class Edit extends Component {
 
           <Modal.Body>
             <Row>
+              <Col md={4}>Origem do Recebível</Col>
+              <Col md={8}>
+                <FormGroup validationState="success">
+                  <FormControl id="origem" componentClass="select" placeholder="Origem do Recebível" value={this.state.origem} onChange={this.handleChangeOrigem} >
+                    <option value="VENDA">Venda de Produto</option>
+                    <option value="DIFAL">Diferencial de ICMS</option>
+                  </FormControl>
+                  <FormControl.Feedback />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={4}>Forma de Pagamento</Col>
+              <Col md={8}>
+                <FormGroup validationState="success">
+                  <FormControl id="forma_pagto" componentClass="select" placeholder="Forma de Pagamento" value={this.state.forma_pagto} onChange={this.handleChangeFormaPagto} >
+                    <option value="COBRANCA">Cobrança Bancária</option>
+                    <option value="DEPOSITO">Depósito Bancário</option>
+                    <option value="BNDES">Cartão BNDES</option>
+                    <option value="CHEQUE">Cheque</option>
+                    <option value="DINHEIRO">Dinheiro</option>
+                  </FormControl>
+                  <FormControl.Feedback />
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row>
               <Col md={4}>Tipo de Vencto</Col>
               <Col md={8}>
                 <FormGroup validationState="success">
-                  <FormControl id="tipo" componentClass="select" placeholder="Tipo" value={this.state.tipo} onChange={this.handleChangeTipo} >
+                  <FormControl id="tipo_vencto" componentClass="select" placeholder="Tipo de Vencimento" value={this.state.tipo_vencto} onChange={this.handleChangeTipoVencto} >
                     <option value="DDP">Dias do Pedido (DDP)</option>
                     <option value="DDL">Dias da Entrega (DDL)</option>
                     <option value="DDM">Dias da Montagem (DDM)</option>

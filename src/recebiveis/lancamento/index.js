@@ -14,7 +14,8 @@ import {
   Table,
   Checkbox,
   Tooltip,
-  Label
+  Label,
+  InputGroup
 } from 'react-bootstrap';
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
@@ -28,7 +29,7 @@ import Edit from './Edit';
 import Delete from './Delete';
 //import Calc from './Calc';
 
-import { omit } from 'lodash';
+import { omit, cloneDeep } from 'lodash';
 import axios from 'axios';
 
 import process from './process.svg';
@@ -38,6 +39,7 @@ export default class Faturamento extends Component {
     super(props);
 
     this.state = {
+      "nosso_numero": 0,
       "empresa": "",
       "numero": 0,
       "emissao": new Date().toISOString(),
@@ -85,16 +87,18 @@ export default class Faturamento extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
-    this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
 
     // manipulação da lista de parcelas
     this.handleFormAdd = this.handleFormAdd.bind(this);
     this.handleFormEdit = this.handleFormEdit.bind(this);
     this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
+    this.handleCopy = this.handleCopy.bind(this);
 
     this.handleAdd = this.handleAdd.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+
+    this.handleNossoNumero = this.handleNossoNumero.bind(this);
 
   }
 
@@ -112,7 +116,7 @@ export default class Faturamento extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data.conteudo);
+        this.setState(response.data.conteudo, this.handleNossoNumero);
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -127,7 +131,7 @@ export default class Faturamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/faturamento/concluir/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://sistema/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         //alert('Tarefa concluida com sucesso');
         browserHistory.push('/');
@@ -141,43 +145,46 @@ export default class Faturamento extends Component {
   // manipuladores da lista de parcelas
   handleFormAdd() {
     this.setState({dialog: <Edit 
-      item={{
+      parcela={{
+          origem: 'VENDA',
+          forma_pagto: 'COBRANCA',
+          tipo_vencto: 'DDL',
           emissao: this.state.emissao, 
           entrega: this.state.entrega, 
           inicial: this.state.entrega,
           vencto: this.state.entrega,
-          tipo: "DDL",
           parcela: this.state.parcelas.length + 1,
           prazo: 0,
           porcentagem: 0,
           descricao: "",
           valor: 0.0
-        }}        
+        }}      
       onSave={this.handleAdd.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleAdd(item) {
+  handleAdd(parcela) {
     let parcelas = this.state.parcelas;
-    parcelas.push(item)
+    parcelas.push(parcela)
     this.setState({parcelas: parcelas, dialog: null});
   }
 
-  handleFormEdit(item) {
+  handleFormEdit(parcela, index) {
     this.setState({dialog: <Edit 
-      item={{...item, 
+      parcela={{...parcela, 
           emissao: this.state.emissao, 
           entrega: this.state.entrega, 
           inicial: this.state.tipo === 'DDP' ? this.state.emissao : this.state.entrega
         }} 
+      index={index}
       onSave={this.handleUpdate.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleUpdate(item) {
-    let p = this.state.parcelas;
-    p.splice(item.index, 1, item);
-    this.setState({parcelas: p, dialog: null})
+  handleUpdate(parcela, index) {
+    let parcelas = this.state.parcelas;
+    parcelas.splice(index, 1, parcela);
+    this.setState({parcelas: parcelas, dialog: null})
   }
 
   handleDeleteConfirm(item) {
@@ -193,6 +200,16 @@ export default class Faturamento extends Component {
     }), dialog: null});
   }
 
+  handleCopy(parcela, index) {
+    let parcelas = this.state.parcelas;
+    parcelas.splice(index, 0, parcela);
+    this.setState({parcelas: parcelas.map( (p, i) => {
+      let c = cloneDeep(p);
+      c.parcela = i + 1;
+      return c;
+    })})
+  }
+
   handleCloseDialog() {
     this.setState({dialog: null})
   }
@@ -202,26 +219,50 @@ export default class Faturamento extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
-  handleCheckboxChange(value) {
-    let cliente = this.state.cliente;
-    cliente.desconto = !this.refs.desconto;
-    this.setState({cliente: cliente});
+  handleNossoNumero() {
+    axios
+      .get('http://sistema/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .then( (response) => {
+        this.setState({nosso_numero: response.data.nosso_numero + 1})
+      })
+      .catch( error => {
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+      })
   }
 
   render() {
+
+    let origem = {
+      VENDA: 'Venda de Produto',
+      DIFAL: 'Diferencial de ICMS'
+    }
+
+    let forma_pagto = {
+      COBRANCA: 'Cobrança Bancária',
+      DEPOSITO: 'Depósito Bancário',
+      BNDES: 'Cartão BNDES',
+      CHEQUE: 'Cheque',
+      DINHEIRO: 'Dinheiro'
+    }
+
+    let tipo_vencto = {
+      DDP: 'Dia(s) do Pedido',
+      DDL: 'Dia(s) da Entrega',
+      DDM: 'Dia(s) da Montagem'
+    }
 
     return (
 
       <div>
 
-        <Panel header={'Faturamento Pedido ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Confirmar duplicatas conferidas</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Confirmar lançamentos</Tooltip>)}
               >
                   <Button
                     onClick={this.handleComplete}
@@ -313,16 +354,33 @@ export default class Faturamento extends Component {
             <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
+
                   <Row style={{paddingTop: 20}} >
                     <Col xs={12} md={2}>Nosso Número</Col>
-                    <Col xs={12} md={2}>
+                    <Col xs={12} md={3}>
+                      <FormGroup>
+                        <InputGroup>
+                        <FormControl type="text" id="nosso_numero" value={this.state.nosso_numero} onChange={this.handleChange} />
+                        <FormControl.Feedback />
+                        <InputGroup.Addon>
+                        <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
+                            <Glyphicon glyph="transfer" onClick={this.handleNossoNumero} />
+                        </OverlayTrigger>
+                        </InputGroup.Addon>
+                        </InputGroup>
+                      </FormGroup>
+                    </Col>
+                    <Col xs={12} md={7}></Col>
+                  </Row>
+                  <Row>
+                    <Col xs={12} md={2}>Pedido</Col>
+                    <Col xs={12} md={3}>
                       <FormGroup validationState="success">
-                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         <FormControl type="text" id="numero" value={this.state.numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
-                    <Col xs={12} md={2}>Data da Emissão</Col>
+                    <Col xs={12} md={2}>Emissão</Col>
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
@@ -331,7 +389,7 @@ export default class Faturamento extends Component {
                         <DatePicker id="emissao" value={this.state.emissao} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
-                    <Col xs={12} md={2}>Data da Entrega</Col>
+                    <Col xs={12} md={1}>Entrega</Col>
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
@@ -398,38 +456,47 @@ export default class Faturamento extends Component {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Row>
-                    <Col xs={12} md={2}></Col>
-                    <Col xs={12} md={10}>
-                      <Checkbox id="desconto" ref="desconto" defaultChecked={this.state.cliente.desconto} onChange={this.handleCheckboxChange} >
-                        <Label bsSize="large" bsStyle="danger">Cliente NÃO ACEITA desconto de duplicata ou forma de pagamento é BNDES.</Label>
-                      </Checkbox>
-                    </Col>
-                  </Row>
 
                   <Row>
                     <Col xs={12} md={12}>
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
+                            <th style={{textAlign: 'center'}}>Origem</th>
+                            <th style={{textAlign: 'center'}}>Forma Pagto</th>
                             <th>Vencimento</th>
                             <th>Parcela</th>
                             <th>Prazo</th>
                             <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th style={{width: '1%'}}><Button style={{width: '70px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th style={{width: '1%'}}><Button style={{width: '110px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                         </thead>
                         <tbody>
                           {this.state.parcelas.map( (parcela, index) => {
                             return (
                               <tr key={'tr-' + index} >
+                                <td style={{textAlign: 'center'}}>{origem[parcela.origem]}</td>
+                                <td style={{textAlign: 'center'}}>{forma_pagto[parcela.forma_pagto]}</td>
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
                                 <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
                                 <td>
-                                  <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleFormEdit.bind(null, {...parcela, index})}><Glyphicon glyph="edit" /></Button>
-                                  <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleDeleteConfirm.bind(null, {...parcela, index})}><Glyphicon glyph="remove" /></Button>
+                                  <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_duplicar' + index} >Duplicar</Tooltip>}>
+                                    <Button bsStyle="info" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleCopy.bind(null, parcela, index)}>
+                                      <Glyphicon glyph="random" />
+                                    </Button>
+                                  </OverlayTrigger>
+                                  <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_alterar' + index} >Alterar</Tooltip>}>
+                                    <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleFormEdit.bind(null, parcela, index)}>
+                                      <Glyphicon glyph="edit" />
+                                    </Button>
+                                  </OverlayTrigger>
+                                  <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_excluir' + index}>Excluir</Tooltip>}>
+                                    <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleDeleteConfirm.bind(null, parcela, index)}>
+                                      <Glyphicon glyph="remove" />
+                                    </Button>
+                                  </OverlayTrigger>
                                 </td>
                               </tr>                              
                             )
@@ -438,8 +505,7 @@ export default class Faturamento extends Component {
                           )}
    
                           <tr>
-                            <td></td>
-                            <td></td>
+                            <td colSpan={4}></td>
                             <td style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
                             <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2)).toLocaleString()}</b></td>
                             <td></td>

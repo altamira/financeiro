@@ -72,8 +72,8 @@ class App extends Component {
       this.client.subscribe(
         [
           '/erros/' + clientId,
-          '/tarefas/concluida/' + this.state.usuario.login,
-          '/tarefas/nova/' + this.state.usuario.login,
+          '/tarefas/concluida/' + this.state.usuario.perfil,
+          '/tarefas/nova/' + this.state.usuario.perfil,
         ], 
         function(err, granted) { 
           !err ? 
@@ -107,7 +107,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://sistema/api/tarefas?atribuir=' + (this.state.usuario && this.state.usuario.login) || '')
+      .get('http://sistema/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});

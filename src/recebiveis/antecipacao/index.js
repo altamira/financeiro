@@ -209,7 +209,7 @@ export default class Cobranca extends Component {
 
       <div>
 
-        <Panel header={'Envio de Cobrança - Pedido ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Envio de Cobrança e Antecipaçao de Recebíveis - Pedido ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
