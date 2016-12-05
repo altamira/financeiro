@@ -134,6 +134,7 @@ export default class Faturamento extends Component {
       .post('http://sistema/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         //alert('Tarefa concluida com sucesso');
+        console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
@@ -362,9 +363,9 @@ export default class Faturamento extends Component {
                         <InputGroup>
                         <FormControl type="text" id="nosso_numero" value={this.state.nosso_numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
-                        <InputGroup.Addon>
+                        <InputGroup.Addon className='btn-success' style={{cursor: 'pointer'}} >
                         <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
-                            <Glyphicon glyph="transfer" onClick={this.handleNossoNumero} />
+                            <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
                         </OverlayTrigger>
                         </InputGroup.Addon>
                         </InputGroup>

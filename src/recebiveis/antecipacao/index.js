@@ -392,6 +392,80 @@ export default class Cobranca extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
+                            <th>Carteira</th>
+                            <th style={{textAlign: 'right'}}>Limite</th>
+                            <th style={{textAlign: 'right'}}>Utilizado</th>
+                            <th style={{textAlign: 'right'}}>Saldo</th>
+                            <th style={{textAlign: 'right'}}>Defasagem</th>
+                            <th style={{textAlign: 'right'}}>Enviar</th>
+                            <th style={{textAlign: 'right'}}>Remessa</th>
+                            <th style={{textAlign: 'right'}}>Confirmar</th>
+                            <th style={{width: '1%'}}></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {this.state.carteiras.map( (carteira, index) => {
+                            return (
+                              <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
+                                <td style={{textAlign: 'left'}}>{carteira.nome}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.limite.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.remessa).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>{Number(carteira.confirmar).toLocaleString()}</td>
+                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, carteira, index)} ><Glyphicon glyph="ok" /></Button></td>
+                              </tr>                              
+                            )
+                          }
+                            
+                          )}
+                        </tbody>
+                      </Table>
+                    </Col>
+                    {/*<Col xs={12} md={3}>
+                      {this.state.cobrancas.find( p => p.selected) && this.state.carteira !== null ?
+                        <Table striped bordered condensed hover>
+                          <thead>
+                            <tr>
+                              <th style={{textAlign: 'right'}}>DESCONTOS</th>
+                              <th style={{textAlign: 'right'}}>VALOR</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                          </tbody>
+                        </Table>
+                        : null
+                      }
+                    </Col>*/}
+                  </Row>
+
+                  <Row>
+                    <Col xs={12} md={12}>
+                      <Table striped bordered condensed hover>
+                        <thead>
+                          <tr>
                             <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'nosso_numero')}>Número</a> {this.state.order.nosso_numero !== null ? this.state.order.nosso_numero ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
                             <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'vencto')}>Vencimento</a> {this.state.order.vencto !== null ? this.state.order.vencto ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
                             <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'parcela')}>Parcela</a> {this.state.order.parcela !== null ? this.state.order.parcela ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
@@ -426,76 +500,6 @@ export default class Cobranca extends Component {
                           )}
                         </tbody>
                       </Table>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={8}>
-                      <Table striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th>CARTEIRA</th>
-                            <th style={{textAlign: 'right'}}>LIMITE</th>
-                            <th style={{textAlign: 'right'}}>UTILIZADO</th>
-                            <th style={{textAlign: 'right'}}>SALDO</th>
-                            <th style={{textAlign: 'right'}}>DEFASAGEM</th>
-                            <th style={{textAlign: 'right'}}>ENVIAR</th>
-                            <th style={{width: '1%'}}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {this.state.carteiras.map( (carteira, index) => {
-                            return (
-                              <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
-                                <td style={{textAlign: 'left'}}>{carteira.nome}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.limite).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.utilizado).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.saldo).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.defasagem).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(carteira.descoberto).toLocaleString()}</td>
-                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, carteira, index)} ><Glyphicon glyph="ok" /></Button></td>
-                              </tr>                              
-                            )
-                          }
-                            
-                          )}
-                        </tbody>
-                      </Table>
-                    </Col>
-                    <Col xs={12} md={4}>
-                      {this.state.cobrancas.find( p => p.selected) && this.state.carteira !== null ?
-                        <Table striped bordered condensed hover>
-                          <thead>
-                            <tr>
-                              <th style={{textAlign: 'right'}}>DESCONTOS</th>
-                              <th style={{textAlign: 'right'}}>VALOR</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                          </tbody>
-                        </Table>
-                        : null
-                      }
                     </Col>
                   </Row>
 

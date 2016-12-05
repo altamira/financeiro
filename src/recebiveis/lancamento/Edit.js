@@ -86,6 +86,7 @@ export default class Edit extends Component {
                   <FormControl id="origem" componentClass="select" placeholder="Origem do Recebível" value={this.state.origem} onChange={this.handleChangeOrigem} >
                     <option value="VENDA">Venda de Produto</option>
                     <option value="DIFAL">Diferencial de ICMS</option>
+                    <option value="SUCATA">Venda de Sucata</option>
                   </FormControl>
                   <FormControl.Feedback />
                 </FormGroup>

@@ -13,6 +13,7 @@ import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
 
 import Login from './login';
+import Error from './Error';
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
@@ -30,7 +31,9 @@ class App extends Component {
 
       tarefas: [],
 
-      topicos: {}
+      topicos: {},
+
+      dialog: null
     }
 
     this.handleLogin = this.handleLogin.bind(this);
@@ -41,6 +44,7 @@ class App extends Component {
     this.goHome = this.goHome.bind(this);
 
     this.handleErro = this.handleErro.bind(this);
+    this.handleDebug = this.handleDebug.bind(this);
     this.handleTarefaConcluida = this.handleTarefaConcluida.bind(this);
     this.handleTarefaNova = this.handleTarefaNova.bind(this);
 
@@ -74,6 +78,7 @@ class App extends Component {
           '/erros/' + clientId,
           '/tarefas/concluida/' + this.state.usuario.perfil,
           '/tarefas/nova/' + this.state.usuario.perfil,
+          '/debug/',
         ], 
         function(err, granted) { 
           !err ? 
@@ -84,7 +89,8 @@ class App extends Component {
                 {
                   [granted[0].topic]: this.handleErro,
                   [granted[1].topic]: this.handleTarefaConcluida,
-                  [granted[2].topic]: this.handleTarefaNova
+                  [granted[2].topic]: this.handleTarefaNova,
+                  [granted[3].topic]: this.handleDebug,
                 }
               )
             }) 
@@ -97,8 +103,12 @@ class App extends Component {
     this.client.on('message', function (topic, message) {
       // message is Buffer
       //console.log('\n' + topic + ':\n' + message.toString())
-      
-      this.state.topicos[topic] && this.state.topicos[topic](JSON.parse(message.toString()));
+
+      if (topic === '/debug/') {
+        this.state.topicos[topic] && this.state.topicos[topic](message.toString());  
+      } else {
+        this.state.topicos[topic] && this.state.topicos[topic](JSON.parse(message.toString()));  
+      }
 
     }.bind(this))
 
@@ -130,8 +140,16 @@ class App extends Component {
     this.client.end();
   }
 
+  handleCloseDialog() {
+    this.setState({dialog: null})
+  }
+
   handleErro(msg) {
     alert('Erro: ' + msg);
+  }
+
+  handleDebug(msg) {
+    this.setState({dialog: <Error {...{erro: 'debug', mensagem: msg}} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleTarefaConcluida(tarefa) {
@@ -213,11 +231,14 @@ class App extends Component {
             {this.props.children}
           </Col>
 
+          {this.state.dialog}
+
         </div> 
       );
     } else {
       return (<Login onLogin={this.handleLogin} />)
     }
+
   }
 }
 
