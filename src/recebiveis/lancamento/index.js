@@ -116,7 +116,7 @@ export default class Faturamento extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data.conteudo, this.handleNossoNumero);
+        this.setState(response.data.documento, this.handleNossoNumero);
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -124,7 +124,17 @@ export default class Faturamento extends Component {
   }
 
   handleClose() {
-    browserHistory.push('/');
+    axios
+      .post('http://sistema/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .then( (response) => {
+        //alert('Tarefa concluida com sucesso');
+        console.log(response.data);
+        browserHistory.push('/');
+      })
+      .catch( error => {
+        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+      })
   }
 
   handleComplete(data) {
@@ -336,14 +346,14 @@ export default class Faturamento extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para fazer depois</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
               >
                   <Button
                     onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
-                    <div><span>Fazer depois</span></div>
+                    <div><span>Terminar depois</span></div>
                   </Button>
 
               </OverlayTrigger>

@@ -10,7 +10,7 @@ import App from './App';
 import Dashboard from './dashboard';
 import Emissao from './recebiveis/emissao';
 import Faturamento from './recebiveis/lancamento';
-import Cobranca from './recebiveis/antecipacao';
+import Cobranca from './recebiveis/cobranca';
 import Remessa from './recebiveis/remessa';
 import Retorno from './recebiveis/retorno';
 
@@ -48,7 +48,7 @@ render((
       <Route path="dashboard/" component={Dashboard}/>
     	<Route path="recebiveis/emissao" component={Emissao}/>
       <Route path="recebiveis/lancamento/:id" component={Faturamento}/>
-      <Route path="recebiveis/antecipacao/:id" component={Cobranca}/>
+      <Route path="recebiveis/cobranca/:id" component={Cobranca}/>
       <Route path="recebiveis/remessa/:id" component={Remessa}/>
       <Route path="recebiveis/retorno/:id" component={Retorno}/>
       <Route path="about" component={About}/>

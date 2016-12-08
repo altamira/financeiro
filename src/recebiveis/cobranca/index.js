@@ -36,44 +36,7 @@ export default class Cobranca extends Component {
     super(props);
 
     this.state = {
-      "empresa": "00",
-      "numero": 0,
-      "emissao": "2011-03-14T00:00:00.000Z",
-      "entrega": "2010-10-26T00:00:00.000Z",
-      "cliente": {
-        "cnpj": "",
-        "inscricao": "",
-        "fantasia": "",
-        "nome": "",
-        "logradouro": "",
-        "endereco": "",
-        "numero": "",
-        "complemento": "",
-        "bairro": "",
-        "municipio": 0,
-        "cidade": "",
-        "CEP": "",
-        "UF": "",
-        "ddd": "",
-        "telefone": "",
-        "contato": "",
-        "desconto": false
-      },
-      "condicao": "",
-      "representante": {
-        "codigo": "",
-        "nome": ""
-      },
-      "comissao": 0,
-      "desconto": 0,
-      "totais": {
-        "produtos": 0,
-        "ipi": 0,
-        "total": 0
-      },
-      "parcelas": [],
-
-      "cobrancas": [],
+      documento: [],
 
       // campos de controle, não apagar
       carteira: null,
@@ -83,14 +46,6 @@ export default class Cobranca extends Component {
       // campos de controle, não armazenar
       dialog: null,
 
-      // false = ascending order, true = descending order
-      order: {
-        nosso_numero: null, 
-        vencto: null,
-        nome: null,
-        parcela: null,
-        valor: null, 
-      }
     }
 
     // comandos
@@ -106,7 +61,6 @@ export default class Cobranca extends Component {
     this.handleUnselect = this.handleUnselect.bind(this);
 
     this.handleSelectCarteira = this.handleSelectCarteira.bind(this);
-    this.handleUnselectCarteira = this.handleUnselectCarteira.bind(this);
 
     this.handleOrderBy = this.handleOrderBy.bind(this);
 
@@ -116,7 +70,11 @@ export default class Cobranca extends Component {
     axios
       .get('http://sistema/api/financeiro/carteira/')
       .then( (response) => {
-        this.setState({carteiras: response.data}, 
+        let carteiras = response.data;
+        this.setState({carteiras: carteiras.map( c => {
+          c.remessa_total = c.remessa;
+          return c;
+        })}, 
           this.loadTarefas(this.props.params.id || 0)
         );
       })
@@ -134,27 +92,50 @@ export default class Cobranca extends Component {
     axios
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2));
-        this.setState({...response.data.conteudo, carteira: null});
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(response.data);
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
-      })   
+      })  
+
+    // carrega documento
+    /*axios
+      .get('http://sistema/api/financeiro/cobranca')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2));
+        this.setState({documento: response.data, carteira: null});
+      })
+      .catch( error => {
+        alert('Erro ao obter a documento.\nErro: ' + error.message);
+      })  */
 
   }
 
   handleClose() {
-    browserHistory.push('/');
+
+    axios
+      .post('http://sistema/api/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
+      .then( (response) => {
+        //alert('Tarefa concluida com sucesso');
+        console.log(response.data);
+        browserHistory.push('/');
+      })
+      .catch( error => {
+        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+      })
   }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['carteiras', 'order', 'dialog']), null, 2));
+    console.log(JSON.stringify(omit(this.state, ['carteiras', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/cobranca/concluir/' + this.props.params.id, omit(this.state, ['carteiras', 'order', 'dialog']))
+      .post('http://sistema/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
       .then( (response) => {
-        alert('Tarefa concluida com sucesso');
-        //browserHistory.push('/');
+        console.log(response.data);
+        //alert('Tarefa concluida com sucesso');
+        browserHistory.push('/');
       })
       .catch( error => {
         alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
@@ -162,23 +143,56 @@ export default class Cobranca extends Component {
   }
 
   handleSelectCarteira(carteira, index) {
-    this.setState({carteira: carteira});
+    let carteiras = this.state.carteiras.map( c => {
+      c.remessa_total = c.remessa;
+      return c;
+    });
+
+    carteira.remessa_total += this.state.documento.reduce( (total, cobranca) => total + cobranca.parcelas.reduce( (soma, parcela) => soma + (parcela.selected ? parcela.valor : 0), 0.0), 0.0);
+
+    this.setState({carteiras: carteiras, carteira: carteira});
   }
 
-  handleUnselectCarteira(carteira, index) {
-    this.setState({carteira: null});
+  handleSelect(nosso_numero, parcela) {
+    let carteira = this.state.carteira;
+    let documento = this.state.documento;
+    parcela = documento.map( c => {
+      if (c.nosso_numero === nosso_numero) {
+        c.parcelas = c.parcelas.map( p => {
+          if (p.parcela === parcela) {
+            p.selected = true;
+            if (carteira) {
+              carteira.remessa_total = (carteira.remessa_total || 0) + p.valor;
+            }
+          }
+          return p;
+        });
+        return c;
+      }
+    })
+
+    this.setState({documento: documento, carteira: carteira});
   }
 
-  handleSelect(cobranca, index) {
-    let cobrancas = this.state.cobrancas;
-    cobrancas[index].selected = true;
-    this.setState({cobrancas: cobrancas});
-  }
+  handleUnselect(nosso_numero, parcela) {
+    let carteira = this.state.carteira;
+    let documento = this.state.documento;
+    parcela = documento.map( c => {
+      if (c.nosso_numero === nosso_numero) {
+        c.parcelas = c.parcelas.map( p => {
+          if (p.parcela === parcela) {
+            p.selected = false;
+            if (carteira) {
+              carteira.remessa_total = (carteira.remessa_total || 0) - p.valor;
+            }
+          }
+          return p;
+        });
+        return c;
+      }
+    })
 
-  handleUnselect(cobranca, index) {
-    let cobrancas = this.state.cobrancas;
-    cobrancas[index].selected = false;
-    this.setState({cobrancas: cobrancas});
+    this.setState({documento: documento, carteira: carteira});
   }
 
   handleConfirm(item) {
@@ -203,13 +217,13 @@ export default class Cobranca extends Component {
 
   render() {
 
-    let total = this.state.parcelas.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
+    let total = this.state.documento.reduce( (total, c) => total + (c.parcelas.reduce( (soma, p) => soma + (p.selected ? p.valor: 0), 0.0) || 0), 0.0) || 0;
 
     return (
 
       <div>
 
-        <Panel header={'Envio de Cobrança e Antecipaçao de Recebíveis - Pedido ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Cobrança Bancária e Antecipaçao de Recebíveis'} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
             <Col xs={4} md={4} >
@@ -219,7 +233,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.cobrancas.find( c => !c.carteira && c.selected) && this.state.carteira !== null)}
+                    disabled={!(this.state.documento.find( c => c.parcelas.find( p => !p.carteira && p.selected)) && this.state.carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -289,14 +303,14 @@ export default class Cobranca extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para fazer depois</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
               >
                   <Button
                     onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
-                    <div><span>Fazer depois</span></div>
+                    <div><span>Terminar depois</span></div>
                   </Button>
 
               </OverlayTrigger>
@@ -374,22 +388,7 @@ export default class Cobranca extends Component {
 
                   <Row>
                     <Col xs={12} md={12}>
-                      <Table striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th style={{width: '10%'}}>Pedido</th><td style={{width: '90%'}}><b>{this.state.numero}</b></td>
-                          </tr>
-                          <tr>
-                            <th style={{width: '10%'}}>Cliente</th><td style={{width: '90%'}}><b>{this.state.cliente.nome}</b></td>
-                          </tr>
-                        </thead>
-                      </Table>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={12}>
-                      <Table striped bordered condensed hover>
+                      <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
                         <thead>
                           <tr>
                             <th>Carteira</th>
@@ -399,7 +398,7 @@ export default class Cobranca extends Component {
                             <th style={{textAlign: 'right'}}>Defasagem</th>
                             <th style={{textAlign: 'right'}}>Enviar</th>
                             <th style={{textAlign: 'right'}}>Remessa</th>
-                            <th style={{textAlign: 'right'}}>Confirmar</th>
+                            <th style={{textAlign: 'right'}}>Retorno</th>
                             <th style={{width: '1%'}}></th>
                           </tr>
                         </thead>
@@ -407,14 +406,14 @@ export default class Cobranca extends Component {
                           {this.state.carteiras.map( (carteira, index) => {
                             return (
                               <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
-                                <td style={{textAlign: 'left'}}>{carteira.nome}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.limite.toFixed(2)).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.remessa).toLocaleString()}</td>
-                                <td style={{textAlign: 'right'}}>{Number(carteira.confirmar).toLocaleString()}</td>
+                                <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa_total || 0).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno).toLocaleString()}</b></td>
                                 <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, carteira, index)} ><Glyphicon glyph="ok" /></Button></td>
                               </tr>                              
                             )
@@ -424,8 +423,36 @@ export default class Cobranca extends Component {
                         </tbody>
                       </Table>
                     </Col>
-                    {/*<Col xs={12} md={3}>
-                      {this.state.cobrancas.find( p => p.selected) && this.state.carteira !== null ?
+                  </Row>
+
+                  <Row>
+                    <Col xs={12} md={12}>
+                      <Table striped bordered condensed hover>
+                        <thead>
+                          <tr>
+                            <th style={{textAlign: 'center'}}>Número</th>
+                            <th style={{textAlign: 'center'}}>Pedido</th>
+                            <th style={{textAlign: 'center'}}>Vencimento</th>
+                            <th style={{textAlign: 'center'}}>Parcela</th>
+                            <th style={{textAlign: 'center'}}>Prazo</th>
+                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
+                            <th>CARTEIRA</th>
+                            <th>Data Envio</th>
+                            <th style={{width: '1%'}}></th>
+                          </tr>
+                        </thead>
+
+                          {this.state.documento.map( (cobranca, index) => <Recebivel key={'recebivel-' + cobranca.nosso_numero} {...cobranca} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                        
+                      </Table>
+                    </Col>
+                  </Row>
+                  
+                  <Row>
+                    <Col xs={0} md={8}></Col>
+                    <Col xs={12} md={4}>
+                      {this.state.documento.find( c => c.parcelas.find( p => p.selected)) && this.state.carteira !== null ? 
+
                         <Table striped bordered condensed hover>
                           <thead>
                             <tr>
@@ -436,7 +463,7 @@ export default class Cobranca extends Component {
                           <tbody>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
@@ -456,53 +483,11 @@ export default class Cobranca extends Component {
                             </tr>
                           </tbody>
                         </Table>
+                          
                         : null
                       }
-                    </Col>*/}
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={12}>
-                      <Table striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'nosso_numero')}>Número</a> {this.state.order.nosso_numero !== null ? this.state.order.nosso_numero ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'vencto')}>Vencimento</a> {this.state.order.vencto !== null ? this.state.order.vencto ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'parcela')}>Parcela</a> {this.state.order.parcela !== null ? this.state.order.parcela ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}>Prazo</th>
-                            <th style={{textAlign: 'right'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'valor')}>Valor da Parcela</a> {this.state.order.valor !== null ? this.state.order.valor ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th>CARTEIRA</th>
-                            <th>Data Envio</th>
-                            <th style={{width: '1%'}}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {this.state.cobrancas.map( (cobranca, index) => {
-                            return (
-                              <tr key={'tr-' + index} style={{background: !cobranca.carteira && cobranca.selected ? 'gold' : ''}} >
-                                <td style={{textAlign: 'center'}}>{cobranca.nosso_numero}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(cobranca.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{cobranca.parcela}/{this.state.cobrancas.length}</td>
-                                <td style={{textAlign: 'center'}}>{cobranca.cobranca === 1 && cobranca.tipo === "DDP" ? 'SINAL' : cobranca.tipo === 'DDP' ? cobranca.prazo + ' dia(s) do PEDIDO' :  cobranca.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(cobranca.valor).toLocaleString()}</td>
-                                <td >{cobranca.carteira && cobranca.carteira.nome}</td>
-                                <td style={{textAlign: 'center'}}>{cobranca.carteira && new Date(cobranca.envio).toLocaleDateString()}</td>
-                                <td>
-                                  {!cobranca.carteira ? (!cobranca.selected ? 
-                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, cobranca, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, cobranca, index)} ><Glyphicon glyph="remove" /></Button>)) : null
-                                  }
-                                </td>
-                              </tr>                              
-                            )
-                          }
-                            
-                          )}
-                        </tbody>
-                      </Table>
                     </Col>
-                  </Row>
-
+                  </Row>                  
                 </div>
               </Tab>
               <Tab eventKey={2} title="Procedimento">
@@ -519,3 +504,31 @@ export default class Cobranca extends Component {
     );
   }
 }
+
+const Recebivel = (cobranca) =>
+  <tbody>
+    <tr>
+      <td colSpan={8}><h4><b>{cobranca.cliente.nome}</b></h4></td>
+    </tr>
+    {cobranca.parcelas.map ( (parcela, index) =>
+      <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.numero} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />
+    )}
+  </tbody>
+
+const Parcela = (parcela) =>
+  <tr style={{background: !parcela.carteira && parcela.selected ? 'gold' : ''}} >
+    <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
+    <td style={{textAlign: 'center'}}><b>{parcela.pedido}</b></td>
+    <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
+    <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
+    <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
+    <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
+    <td >{parcela.carteira && parcela.carteira.nome}</td>
+    <td style={{textAlign: 'center'}}>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</td>
+    <td>
+      {!parcela.carteira ? (!parcela.selected ? 
+        (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela.nosso_numero, parcela.parcela)} ><Glyphicon glyph="ok" /></Button>) :                                 
+        (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela.nosso_numero, parcela.parcela)} ><Glyphicon glyph="remove" /></Button>)) : null
+      }
+    </td>
+  </tr>

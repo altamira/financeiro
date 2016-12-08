@@ -18,7 +18,7 @@ import Error from './Error';
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 const TaskItem = props =>
-  <Link to={{ pathname: props.form, query: props.parametros }}>
+  <Link to={{ pathname: props.form + props.id, query: props.parametros }}>
     <span style={{display: 'block'}}>{props.titulo}</span>
     <span>{props.descricao}</span>
   </Link>
