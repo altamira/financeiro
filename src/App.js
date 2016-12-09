@@ -154,16 +154,25 @@ class App extends Component {
 
   handleTarefaConcluida(tarefa) {
     let tarefas = this.state.tarefas;
-    tarefas.splice(tarefas.findIndex( t => t.id === tarefa.id), 1);
-    console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
-    this.setState({tarefas: tarefas}, this.goHome);
+    let index = tarefas.findIndex( t => t.id === tarefa.id);
+    if (index >= 0) {
+      tarefas.splice(index, 1);
+      console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      this.setState({tarefas: tarefas}, this.goHome);
+    }
   }
 
   handleTarefaNova(tarefa) {
     let tarefas = this.state.tarefas;
-    tarefas.push(tarefa);
+    let index = tarefas.findIndex( t => t.id === tarefa.id);
+    if (index >= 0) {
+      tarefas.splice(index, 1, tarefa);
+      console.log('Tarefas atualizada: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+    } else {
+      tarefas.push(tarefa);
+      console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+    }
     this.setState({tarefas: tarefas});
-    console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
   }
 
   goHome() {

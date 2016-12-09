@@ -39,43 +39,45 @@ export default class Faturamento extends Component {
     super(props);
 
     this.state = {
-      "nosso_numero": 0,
-      "empresa": "",
-      "numero": 0,
-      "emissao": new Date().toISOString(),
-      "entrega": new Date().toISOString(),
-      "cliente": {
-        "cnpj": "",
-        "inscricao": "",
-        "fantasia": "",
-        "nome": "",
-        "logradouro": "",
-        "endereco": "",
-        "numero": "",
-        "complemento": "",
-        "bairro": "",
-        "municipio": 0,
-        "cidade": "",
-        "CEP": "",
-        "UF": "",
-        "ddd": "",
-        "telefone": "",
-        "contato": "",
-        "desconto": false
+      "documento": {
+        "nosso_numero": 0,
+        "empresa": "",
+        "numero": 0,
+        "emissao": new Date().toISOString(),
+        "entrega": new Date().toISOString(),
+        "cliente": {
+          "cnpj": "",
+          "inscricao": "",
+          "fantasia": "",
+          "nome": "",
+          "logradouro": "",
+          "endereco": "",
+          "numero": "",
+          "complemento": "",
+          "bairro": "",
+          "municipio": 0,
+          "cidade": "",
+          "CEP": "",
+          "UF": "",
+          "ddd": "",
+          "telefone": "",
+          "contato": "",
+          "desconto": false
+        },
+        "condicao": "",
+        "representante": {
+          "codigo": "",
+          "nome": ""
+        },
+        "comissao": 0,
+        "desconto": 0,
+        "totais": {
+          "produtos": 0,
+          "ipi": 0,
+          "total": 0
+        },
+        "parcelas": []
       },
-      "condicao": "",
-      "representante": {
-        "codigo": "",
-        "nome": ""
-      },
-      "comissao": 0,
-      "desconto": 0,
-      "totais": {
-        "produtos": 0,
-        "ipi": 0,
-        "total": 0
-      },
-      "parcelas": [],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -116,7 +118,7 @@ export default class Faturamento extends Component {
       .get('http://sistema/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data.documento, this.handleNossoNumero);
+        this.setState(response.data, this.handleNossoNumero);
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
@@ -160,11 +162,11 @@ export default class Faturamento extends Component {
           origem: 'VENDA',
           forma_pagto: 'COBRANCA',
           tipo_vencto: 'DDL',
-          emissao: this.state.emissao, 
-          entrega: this.state.entrega, 
-          inicial: this.state.entrega,
-          vencto: this.state.entrega,
-          parcela: this.state.parcelas.length + 1,
+          emissao: this.state.documento.emissao, 
+          entrega: this.state.documento.entrega, 
+          inicial: this.state.documento.entrega,
+          vencto: this.state.documento.entrega,
+          parcela: this.state.documento.parcelas.length + 1,
           prazo: 0,
           porcentagem: 0,
           descricao: "",
@@ -175,17 +177,15 @@ export default class Faturamento extends Component {
   }
 
   handleAdd(parcela) {
-    let parcelas = this.state.parcelas;
-    parcelas.push(parcela)
-    this.setState({parcelas: parcelas, dialog: null});
+    this.setState({documento: {...this.state.documento, parcelas: this.state.documento.parcelas.concat([parcela])}, dialog: null});
   }
 
   handleFormEdit(parcela, index) {
     this.setState({dialog: <Edit 
       parcela={{...parcela, 
-          emissao: this.state.emissao, 
-          entrega: this.state.entrega, 
-          inicial: this.state.tipo === 'DDP' ? this.state.emissao : this.state.entrega
+          emissao: this.state.documento.emissao, 
+          entrega: this.state.documento.entrega, 
+          inicial: this.state.documento.tipo === 'DDP' ? this.state.documento.emissao : this.state.documento.entrega
         }} 
       index={index}
       onSave={this.handleUpdate.bind(this)} 
@@ -193,32 +193,47 @@ export default class Faturamento extends Component {
   }
 
   handleUpdate(parcela, index) {
-    let parcelas = this.state.parcelas;
+    let parcelas = this.state.documento.parcelas;
     parcelas.splice(index, 1, parcela);
-    this.setState({parcelas: parcelas, dialog: null})
+    this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: null})
   }
 
-  handleDeleteConfirm(item) {
-    this.setState({dialog: <Delete item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+  handleDeleteConfirm(parcela, index) {
+    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleDelete(index) {
-    let parcelas = this.state.parcelas;
-    parcelas.splice(index, 1);
-    this.setState({parcelas: parcelas.map( (p, i) => {
-      p.parcela = i + 1;
-      return p;
-    }), dialog: null});
+  handleDelete(parcela, index) {
+    this.setState(
+    {
+      documento: 
+      {
+        ...this.state.documento, 
+        parcelas: 
+          this.state.documento.parcelas
+          .filter( (parcela, i) => i != index)
+          .map( (parcela, i) => {
+            parcela.parcela = i + 1;
+            return parcela;
+          })
+      }, 
+      dialog: null
+    });
   }
 
   handleCopy(parcela, index) {
-    let parcelas = this.state.parcelas;
-    parcelas.splice(index, 0, parcela);
-    this.setState({parcelas: parcelas.map( (p, i) => {
-      let c = cloneDeep(p);
-      c.parcela = i + 1;
-      return c;
-    })})
+    this.setState(
+    {
+      documento: 
+      {
+        ...this.state.documento, 
+        parcelas: 
+          this.state.documento.parcelas.concat([cloneDeep(this.state.documento.parcelas[index])])
+          .map( (p, i) => {
+            p.parcela = i + 1;
+            return p;
+          })
+      }
+    });
   }
 
   handleCloseDialog() {
@@ -227,14 +242,14 @@ export default class Faturamento extends Component {
 
   // formulario
   handleChange(value) {
-    this.setState({[value.target.id]: value.target.value});
+    this.setState({documento: {...this.state.documento, [value.target.id]: value.target.value}});
   }
 
   handleNossoNumero() {
     axios
       .get('http://sistema/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
-        this.setState({nosso_numero: response.data.nosso_numero + 1})
+        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
         this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
@@ -277,7 +292,7 @@ export default class Faturamento extends Component {
               >
                   <Button
                     onClick={this.handleComplete}
-                    disabled={!this.state.parcelas.length}
+                    disabled={!this.state.documento.parcelas.length}
                     style={{width: 120}}
                     bsStyle="success"
                   >
@@ -371,7 +386,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup>
                         <InputGroup>
-                        <FormControl type="text" id="nosso_numero" value={this.state.nosso_numero} onChange={this.handleChange} />
+                        <FormControl type="text" id="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                         <InputGroup.Addon className='btn-success' style={{cursor: 'pointer'}} >
                         <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
@@ -387,7 +402,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
-                        <FormControl type="text" id="numero" value={this.state.numero} onChange={this.handleChange} />
+                        <FormControl type="text" id="numero" value={this.state.documento.numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -397,7 +412,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker id="emissao" value={this.state.emissao} onChange={this.handleChange} />
+                        <DatePicker id="emissao" value={this.state.documento.emissao} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={1}>Entrega</Col>
@@ -406,7 +421,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker id="entrega" value={this.state.entrega} onChange={this.handleChange} />
+                        <DatePicker id="entrega" value={this.state.documento.entrega} onChange={this.handleChange} />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -416,7 +431,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} id="cnpj" value={this.state.cliente.cnpj} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} id="cnpj" value={this.state.documento.cliente.cnpj} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -424,7 +439,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={5}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" id="representante" value={this.state.representante.nome} onChange={this.handleChange} />
+                        <FormControl type="text" id="representante" value={this.state.documento.representante.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -435,7 +450,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={10}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" id="nome" value={this.state.cliente.nome} onChange={this.handleChange} />
+                        <FormControl type="text" id="nome" value={this.state.documento.cliente.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -446,7 +461,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.produtos.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.produtos.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -454,7 +469,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.ipi.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.ipi.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -462,7 +477,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.totais.total.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.total.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -483,13 +498,13 @@ export default class Faturamento extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.parcelas.map( (parcela, index) => {
+                          {this.state.documento.parcelas.map( (parcela, index) => {
                             return (
-                              <tr key={'tr-' + index} >
+                              <tr key={'tr-' + index} id={'tr-' + index} >
                                 <td style={{textAlign: 'center'}}>{origem[parcela.origem]}</td>
                                 <td style={{textAlign: 'center'}}>{forma_pagto[parcela.forma_pagto]}</td>
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.parcelas.length}</td>
+                                <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.documento.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
                                 <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
                                 <td>
@@ -518,7 +533,7 @@ export default class Faturamento extends Component {
                           <tr>
                             <td colSpan={4}></td>
                             <td style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
-                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2)).toLocaleString()}</b></td>
+                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.documento.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2)).toLocaleString()}</b></td>
                             <td></td>
                           </tr>
                         </tbody>

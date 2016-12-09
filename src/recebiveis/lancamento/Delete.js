@@ -11,17 +11,11 @@ export default class Delete extends Component {
 	constructor(props) {
 		super(props);
 
-		this.state = this.props.item;
-
 		this.handleSave = this.handleSave.bind(this);
 	}
 
 	handleSave() {
-		this.props.onSave && this.props.onSave(this.props.index);
-	}
-
-	componentWillReceiveProps(props) {
-		this.setState(this.props.item);
+		this.props.onSave && this.props.onSave(this.props.parcela, this.props.index);
 	}
 
 	render() {
@@ -38,9 +32,9 @@ export default class Delete extends Component {
 		          	<Table>
 		          		<tbody>
 							<tr>
-			                    <td style={{textAlign: 'center'}}>{new Date(this.state.vencto).toLocaleDateString()}</td>
-			                    <td style={{textAlign: 'center'}}>{this.state.parcela === 1 && this.state.tipo === "DDP" ? 'SINAL' : this.state.tipo === 'DDP' ? this.state.prazo + ' dia(s) do PEDIDO' :  this.state.prazo + ' dia(s) da ENTREGA'}</td>
-			                    <td style={{textAlign: 'right'}}>R$ {Number(this.state.valor.toFixed(2)).toLocaleString()}</td>
+			                    <td style={{textAlign: 'center'}}>{new Date(this.props.parcela.vencto).toLocaleDateString()}</td>
+			                    <td style={{textAlign: 'center'}}>{this.props.parcela.parcela === 1 && this.props.parcela.tipo === "DDP" ? 'SINAL' : this.props.parcela.tipo === 'DDP' ? this.props.parcela.prazo + ' dia(s) do PEDIDO' :  this.props.parcela.prazo + ' dia(s) da ENTREGA'}</td>
+			                    <td style={{textAlign: 'right'}}>R$ {Number(this.props.parcela.valor.toFixed(2)).toLocaleString()}</td>
 			                </tr>
 		                </tbody> 
 	                </Table>

@@ -523,8 +523,8 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
-    <td >{parcela.carteira && parcela.carteira.nome}</td>
-    <td style={{textAlign: 'center'}}>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</td>
+    <td ><b>{parcela.carteira && parcela.carteira.nome}</b></td>
+    <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>
       {!parcela.carteira ? (!parcela.selected ? 
         (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela.nosso_numero, parcela.parcela)} ><Glyphicon glyph="ok" /></Button>) :                                 
