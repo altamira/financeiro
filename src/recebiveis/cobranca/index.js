@@ -15,6 +15,8 @@ import {
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
+import Error from './../../Error';
+
 import Confirm from './Confirm';
 
 import { assign, omit } from 'lodash';
@@ -49,7 +51,7 @@ export default class Cobranca extends Component {
     }
 
     // comandos
-    this.handleClose = this.handleClose.bind(this);
+    this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
 
     // edição do formulario
@@ -68,7 +70,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://sistema/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         let carteiras = response.data;
         this.setState({carteiras: carteiras.map( c => {
@@ -90,18 +92,18 @@ export default class Cobranca extends Component {
   loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://sistema/api/tarefa/' + tarefa)
+      .get('http://localhost:1880/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(response.data);
       })
       .catch( error => {
-        alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })  
 
     // carrega documento
     /*axios
-      .get('http://sistema/api/financeiro/cobranca')
+      .get('http://localhost:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -112,18 +114,15 @@ export default class Cobranca extends Component {
 
   }
 
-  handleClose() {
-
+  handleSaveAndClose() {
     axios
-      .post('http://sistema/api/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
       .then( (response) => {
-        //alert('Tarefa concluida com sucesso');
         console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
-        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -131,14 +130,13 @@ export default class Cobranca extends Component {
     console.log(JSON.stringify(omit(this.state, ['carteiras', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
+      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
       .then( (response) => {
         console.log(response.data);
-        //alert('Tarefa concluida com sucesso');
         browserHistory.push('/');
       })
       .catch( error => {
-        alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -196,10 +194,10 @@ export default class Cobranca extends Component {
   }
 
   handleConfirm(item) {
-    this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
   }
 
-  handleCloseDialog() {
+  handleSaveAndCloseDialog() {
     this.setState({dialog: null})
   }
 
@@ -306,7 +304,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleClose}
+                    onClick={this.handleSaveAndClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />

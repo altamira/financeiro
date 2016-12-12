@@ -84,7 +84,7 @@ export default class Faturamento extends Component {
     }
 
     // comandos
-    this.handleClose = this.handleClose.bind(this);
+    this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
 
     // edição do formulario
@@ -115,27 +115,31 @@ export default class Faturamento extends Component {
   loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://sistema/api/tarefa/' + tarefa)
+      .get('http://localhost:1880/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data, this.handleNossoNumero);
+
+        if (response.data.concluido) {
+          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        } else {
+          this.setState(response.data, this.handleNossoNumero);
+        }
+        
       })
       .catch( error => {
         alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
       })      
   }
 
-  handleClose() {
+  handleSaveAndClose() {
     axios
-      .post('http://sistema/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
-        //alert('Tarefa concluida com sucesso');
         console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
-        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -143,15 +147,13 @@ export default class Faturamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
-        //alert('Tarefa concluida com sucesso');
         console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
-        //alert('Erro ao concluir a tarefa.\nErro: ' + error.response.data.mensagem);
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -173,7 +175,7 @@ export default class Faturamento extends Component {
           valor: 0.0
         }}      
       onSave={this.handleAdd.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
+      onClose={this.handleSaveAndCloseDialog.bind(this)} />})
   }
 
   handleAdd(parcela) {
@@ -189,7 +191,7 @@ export default class Faturamento extends Component {
         }} 
       index={index}
       onSave={this.handleUpdate.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
+      onClose={this.handleSaveAndCloseDialog.bind(this)} />})
   }
 
   handleUpdate(parcela, index) {
@@ -199,7 +201,7 @@ export default class Faturamento extends Component {
   }
 
   handleDeleteConfirm(parcela, index) {
-    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
   }
 
   handleDelete(parcela, index) {
@@ -236,7 +238,7 @@ export default class Faturamento extends Component {
     });
   }
 
-  handleCloseDialog() {
+  handleSaveAndCloseDialog() {
     this.setState({dialog: null})
   }
 
@@ -247,12 +249,12 @@ export default class Faturamento extends Component {
 
   handleNossoNumero() {
     axios
-      .get('http://sistema/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -310,7 +312,7 @@ export default class Faturamento extends Component {
               >
 
                   <Button
-                    onClick={this.handleSave}
+                    onClick={this.handleSaveAndClose}
                     style={{width: 100}}
                   >
                     <Glyphicon glyph="floppy-disk" />
@@ -364,7 +366,7 @@ export default class Faturamento extends Component {
                 overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleClose}
+                    onClick={this.handleSaveAndClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />

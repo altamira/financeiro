@@ -32,8 +32,6 @@ class App extends Component {
       tarefas: [],
 
       topicos: {},
-
-      dialog: null
     }
 
     this.handleLogin = this.handleLogin.bind(this);
@@ -47,6 +45,7 @@ class App extends Component {
     this.handleDebug = this.handleDebug.bind(this);
     this.handleTarefaConcluida = this.handleTarefaConcluida.bind(this);
     this.handleTarefaNova = this.handleTarefaNova.bind(this);
+    this.handleTarefaAtualizada = this.handleTarefaAtualizada.bind(this);
 
   }
 
@@ -78,6 +77,7 @@ class App extends Component {
           '/erros/' + clientId,
           '/tarefas/concluida/' + this.state.usuario.perfil,
           '/tarefas/nova/' + this.state.usuario.perfil,
+          '/tarefas/atualizada/' + this.state.usuario.perfil,
           '/debug/',
         ], 
         function(err, granted) { 
@@ -90,7 +90,8 @@ class App extends Component {
                   [granted[0].topic]: this.handleErro,
                   [granted[1].topic]: this.handleTarefaConcluida,
                   [granted[2].topic]: this.handleTarefaNova,
-                  [granted[3].topic]: this.handleDebug,
+                  [granted[3].topic]: this.handleTarefaAtualizada,
+                  [granted[4].topic]: this.handleDebug,
                 }
               )
             }) 
@@ -117,7 +118,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://sistema/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
@@ -175,6 +176,19 @@ class App extends Component {
     this.setState({tarefas: tarefas});
   }
 
+  handleTarefaAtualizada(tarefa) {
+    let tarefas = this.state.tarefas;
+    let index = tarefas.findIndex( t => t.id === tarefa.id);
+    if (index >= 0) {
+      tarefas.splice(index, 1, tarefa);
+      console.log('Tarefas atualizada: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+    } else {
+      tarefas.push(tarefa);
+      console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+    }
+    this.setState({tarefas: tarefas});
+  }
+  
   goHome() {
     browserHistory.push('/');
   }

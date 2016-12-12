@@ -31,7 +31,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://sistema/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         this.setState(
           {

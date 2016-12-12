@@ -38,7 +38,7 @@ export default class Buscar extends Component {
 
 	handleSearch() {
 		axios
-		.get('http://sistema/api/financeiro/duplicata/conferencia/busca?pedido=' + (this.state.pedido || '') + '&cnpj=' + (this.state.cnpj || '') + '&nome=' + (this.state.nome || ''))
+		.get('http://localhost:1880/api/financeiro/duplicata/conferencia/busca?pedido=' + (this.state.pedido || '') + '&cnpj=' + (this.state.cnpj || '') + '&nome=' + (this.state.nome || ''))
 		.then(function (response) {
 		    console.log(response);
 		    if (response.data instanceof Array && response.data.length > 0) {

@@ -135,7 +135,7 @@ export default class Retorno extends Component {
   loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://sistema/api/tarefa/' + tarefa)
+      .get('http://localhost:1880/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({...response.data.conteudo});
@@ -154,7 +154,7 @@ export default class Retorno extends Component {
     console.log(JSON.stringify(omit(this.state, ['order', 'dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://sistema/api/financeiro/duplicata/retorno/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
+      .post('http://localhost:1880/api/financeiro/duplicata/retorno/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
       .then( (response) => {
         //alert('Tarefa concluida com sucesso');
         //browserHistory.push('/');

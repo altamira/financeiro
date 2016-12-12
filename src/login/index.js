@@ -8,6 +8,8 @@ import {
   FormControl,
   Button
 } from 'react-bootstrap';
+
+import { omit } from 'lodash';
 import md5 from 'md5';
 import axios from 'axios';
 
@@ -23,6 +25,7 @@ export default class Login extends Component {
     }
 
     this.handleChange = this.handleChange.bind(this);
+    this.handleCloseDialog = this.handleCloseDialog.bind(this);
 
     this.handleLogin = this.handleLogin.bind(this);
   }
@@ -31,9 +34,13 @@ export default class Login extends Component {
     this.setState({[element.target.id]: element.target.value})
   }
 
+  handleCloseDialog() {
+    this.setState({dialog: null});
+  }
+
   handleLogin() {
     axios
-      .post('http://sistema/api/usuario/login', {...this.state, senha: md5(this.state.senha)})
+      .post('http://localhost:1880/api/usuario/login', {...omit(this.state, 'dialog'), senha: md5(this.state.senha)})
       .then( (response) => {
         if (response.data.nome) {
           this.props.onLogin && this.props.onLogin(response.data);
@@ -42,7 +49,7 @@ export default class Login extends Component {
         }
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error erro={error.response ? error.response.data.erro : 0} mensagem={error.response ? error.response.data.mensagem : error.message} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
@@ -82,6 +89,8 @@ export default class Login extends Component {
             <Button bsStyle="primary" onClick={this.handleLogin} >Acessar</Button>
           </Modal.Footer>
 
+          {this.state.dialog}
+          
         </Modal.Dialog>
       </div>
     );
