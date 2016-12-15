@@ -38,7 +38,11 @@ export default class Cobranca extends Component {
     super(props);
 
     this.state = {
-      documento: [],
+
+      tarefa: {},
+
+      // titulos a enviar para cobranca bancária
+      cobranca: [],
 
       // campos de controle, não apagar
       carteira: null,
@@ -72,33 +76,35 @@ export default class Cobranca extends Component {
     axios
       .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
-        let carteiras = response.data;
-        this.setState({carteiras: carteiras.map( c => {
-          c.remessa_total = c.remessa;
-          return c;
-        })}, 
-          this.loadTarefas(this.props.params.id || 0)
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            carteiras: response.data.map( c => 
+            {
+              c.remessa_total = c.remessa;
+              return c;
+            })
+          }
         );
       })
       .catch( error => {
         alert('Erro ao obter as carteiras.\nErro: ' + error.message);
       })         
-  }
 
-  componentWillReceiveProps(nextProps) {
-    this.loadTarefas(nextProps.params.id);    
-  }
-  
-  loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + tarefa)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data);
+        this.setState(
+          {
+            tarefa: response.data, 
+            cobranca: response.data.documento
+          }
+        );
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
       })  
 
     // carrega documento
@@ -114,91 +120,112 @@ export default class Cobranca extends Component {
 
   }
 
+  componentWillReceiveProps(nextProps) {
+  }
+  
   handleSaveAndClose() {
     axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, {
+        ...this.state.tarefa, 
+        documento: { 
+          carteira: this.state.carteira, 
+          cobranca: this.state.cobranca
+        }
+      })
       .then( (response) => {
         console.log(response.data);
-        browserHistory.push('/');
+        this.props.router.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['carteiras', 'dialog']), null, 2));
+    console.log(JSON.stringify({
+      ...this.state.tarefa, 
+      documento: { 
+        carteira: this.state.carteira, 
+        cobranca: this.state.cobranca
+      }
+    }, null, 2));
+
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, omit(this.state, ['carteiras', 'dialog']))
+      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+        ...this.state.tarefa, 
+        documento: { 
+          carteira: this.state.carteira, 
+          cobranca: this.state.cobranca
+        }
+      })
       .then( (response) => {
         console.log(response.data);
-        browserHistory.push('/');
+        this.props.router.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error 
+          erro={error.response ? error.response.data.erro : 0} 
+          mensagem={error.message + (error.response.data.mensagem || JSON.stringify(error.response.data, null, 2))} 
+          onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
   handleSelectCarteira(carteira, index) {
-    let carteiras = this.state.carteiras.map( c => {
-      c.remessa_total = c.remessa;
-      return c;
-    });
-
-    carteira.remessa_total += this.state.documento.reduce( (total, cobranca) => total + cobranca.parcelas.reduce( (soma, parcela) => soma + (parcela.selected ? parcela.valor : 0), 0.0), 0.0);
-
-    this.setState({carteiras: carteiras, carteira: carteira});
+    this.setState({
+      carteiras: this.state.carteiras.map( c => {
+        c.remessa_total = c.remessa;
+        return c;
+      }), 
+      carteira: {
+        ...carteira, 
+        remessa_total: this.state.cobranca.reduce( (total, c) => 
+          total + c.parcelas.reduce( (soma, p) => 
+            soma + (p.selected ? p.valor : 0)
+          , 0.0)
+        , 0.0)
+      }
+    })
   }
 
   handleSelect(nosso_numero, parcela) {
-    let carteira = this.state.carteira;
-    let documento = this.state.documento;
-    parcela = documento.map( c => {
-      if (c.nosso_numero === nosso_numero) {
-        c.parcelas = c.parcelas.map( p => {
-          if (p.parcela === parcela) {
-            p.selected = true;
-            if (carteira) {
-              carteira.remessa_total = (carteira.remessa_total || 0) + p.valor;
+    this.setState({
+      cobranca: this.state.cobranca.map( c => {
+        if (c.nosso_numero === nosso_numero) {
+          c.parcelas = c.parcelas.map( p => {
+            if (p.parcela === parcela) {
+              p.selected = true;
             }
-          }
-          return p;
-        });
+            return p;
+          });
+        }
         return c;
-      }
-    })
-
-    this.setState({documento: documento, carteira: carteira});
+      })
+    });
   }
 
   handleUnselect(nosso_numero, parcela) {
-    let carteira = this.state.carteira;
-    let documento = this.state.documento;
-    parcela = documento.map( c => {
-      if (c.nosso_numero === nosso_numero) {
-        c.parcelas = c.parcelas.map( p => {
-          if (p.parcela === parcela) {
-            p.selected = false;
-            if (carteira) {
-              carteira.remessa_total = (carteira.remessa_total || 0) - p.valor;
+    this.setState({
+      cobranca: this.state.cobranca.map( c => {
+        if (c.nosso_numero === nosso_numero) {
+          c.parcelas = c.parcelas.map( p => {
+            if (p.parcela === parcela) {
+              delete p.selected;
             }
-          }
-          return p;
-        });
+            return p;
+          });
+        }
         return c;
-      }
-    })
-
-    this.setState({documento: documento, carteira: carteira});
+      })
+    });
   }
 
   handleConfirm(item) {
-    this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+    this.setState({dialog: <Confirm item={item} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleSaveAndCloseDialog() {
-    this.setState({dialog: null})
+  handleCloseDialog() {
+    this.setState({dialog: undefined})
   }
 
   // formulario
@@ -215,7 +242,10 @@ export default class Cobranca extends Component {
 
   render() {
 
-    let total = this.state.documento.reduce( (total, c) => total + (c.parcelas.reduce( (soma, p) => soma + (p.selected ? p.valor: 0), 0.0) || 0), 0.0) || 0;
+    let total = this.state.cobranca.reduce( (total, cobranca) => 
+      total + (cobranca.parcelas.reduce( (soma, parcela) => 
+        soma + (parcela.selected ? parcela.valor: 0), 0.0) || 0)
+      , 0.0) || 0;
 
     return (
 
@@ -231,7 +261,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.documento.find( c => c.parcelas.find( p => !p.carteira && p.selected)) && this.state.carteira !== null)}
+                    disabled={!(this.state.cobranca.find( cobranca => cobranca.parcelas.find( parcela => !parcela.carteira && parcela.selected)) && this.state.carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -242,62 +272,10 @@ export default class Cobranca extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={4} md={2} >
 
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Apenas gravar as alterações</Tooltip>)}
-              >
+            <Col xs={4} md={4} />
 
-                  <Button
-                    onClick={this.handleSave}
-                    style={{width: 100}}
-                  >
-                    <Glyphicon glyph="floppy-disk" />
-                    <div><span>Gravar</span></div>
-                  </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Calcular Datas das Parcelas</Tooltip>)}
-              >
-
-                <Button
-                  onClick={this.handleCalc}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="calendar" />
-                  <div><span>Calcular</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Imprimir Espelho desta Duplicata</Tooltip>)}
-              >
-
-                <Button
-                  disabled={this.state.hasChanges}
-                  onClick={this.handlePrint}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="print" />
-                  <div><span>Imprimir</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
+            <Col xs={4} md={4} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -320,69 +298,6 @@ export default class Cobranca extends Component {
             <Tabs defaultActiveKey={1} id="uncontrolled-tab-example">
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
-
-                  {/*<Row>
-                    <Col md={4}>Tipo</Col>
-                    <Col md={8}>
-                      <FormGroup validationState="success">
-                        <FormControl id="tipo" componentClass="select" placeholder="Tipo" value={this.state.tipo} onChange={this.handleChange} >
-                          <option value="DDP">BANCO DO BRASIL - AG 3333-2 CONTA 2171-7</option>
-                          <option value="DDL">BANCO ITAU - AG 0467 CONTA 20912-8</option>
-                          <option value="DDM">BANCO BRADESCO - AG 3393 CONTA 20257</option>
-                        </FormControl>
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>*/}
-
-                  {/*<Row style={{paddingTop: 20}} >
-                    <Col xs={12} md={2}>Pedido</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Data da Emissão</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleChange} />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Data da Entrega</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <DatePicker value={this.state.entrega} onChange={this.handleChange} />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={2}>CNPJ/CPF</Col>
-                    <Col xs={12} md={3}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" style={{textAlign: 'right'}} value={this.state.cliente.cnpj} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Representante</Col>
-                    <Col xs={12} md={5}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.representante.nome} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={2}>Razão Social</Col>
-                    <Col xs={12} md={10}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.cliente.nome} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>*/}
 
                   <Row>
                     <Col xs={12} md={12}>
@@ -440,7 +355,7 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
 
-                          {this.state.documento.map( (cobranca, index) => <Recebivel key={'recebivel-' + cobranca.nosso_numero} {...cobranca} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          {this.state.cobranca.map( (cobranca, index) => <Recebivel key={'recebivel-' + cobranca.nosso_numero} {...cobranca} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
                         
                       </Table>
                     </Col>
@@ -449,7 +364,7 @@ export default class Cobranca extends Component {
                   <Row>
                     <Col xs={0} md={8}></Col>
                     <Col xs={12} md={4}>
-                      {this.state.documento.find( c => c.parcelas.find( p => p.selected)) && this.state.carteira !== null ? 
+                      {this.state.cobranca.find( cobranca => cobranca.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
 
                         <Table striped bordered condensed hover>
                           <thead>
@@ -509,7 +424,7 @@ const Recebivel = (cobranca) =>
       <td colSpan={8}><h4><b>{cobranca.cliente.nome}</b></h4></td>
     </tr>
     {cobranca.parcelas.map ( (parcela, index) =>
-      <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.numero} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />
+      <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.pedido} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />
     )}
   </tbody>
 

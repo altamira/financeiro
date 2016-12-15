@@ -54,8 +54,12 @@ class App extends Component {
   }
 
   handleLogout() {
-    this.setState({usuario: undefined});
+    this.setState({usuario: undefined}, this.goHome.bind(this));
   }
+
+  goHome() {
+    this.props.router.push('/')
+  }  
 
   mountComponent() {
     var opts = {
@@ -189,10 +193,6 @@ class App extends Component {
     this.setState({tarefas: tarefas});
   }
   
-  goHome() {
-    browserHistory.push('/');
-  }
-
   render() {
 
     const tarefas = {};

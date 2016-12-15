@@ -197,7 +197,7 @@ export default class Faturamento extends Component {
   handleUpdate(parcela, index) {
     let parcelas = this.state.documento.parcelas;
     parcelas.splice(index, 1, parcela);
-    this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: null})
+    this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: undefined})
   }
 
   handleDeleteConfirm(parcela, index) {
@@ -218,7 +218,7 @@ export default class Faturamento extends Component {
             return parcela;
           })
       }, 
-      dialog: null
+      dialog: undefined
     });
   }
 
