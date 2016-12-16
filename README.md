@@ -1,7 +1,7 @@
 Financeiro
 =======================
 
-This project is a financial system made in React + Node-red + MSSQL Server 2012
+This project is a financial system made in [React](https://facebook.github.io/react/) + [Node-Red](http://nodered.org/) + [MSSQL Server 2012](https://azure.microsoft.com/pt-br/services/sql-database)
 
 ##Node-red flow
 
@@ -19,7 +19,7 @@ Run this scripts in order to setup database
 src/financeiro.sql
 src/insert.sql
 ```
-ps: the login and password are the same for all user.
+ps: the password are the same as the login name for all user.
 
 ##Business Process
 
