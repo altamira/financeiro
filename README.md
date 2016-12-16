@@ -19,6 +19,7 @@ Run this scripts in order to setup database
 src/financeiro.sql
 src/insert.sql
 ```
+ps: the login and password are the same for all user.
 
 ##Business Process
 
