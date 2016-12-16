@@ -4,7 +4,13 @@ Financeiro
 This project is a financial system made in React + Node-red + MSSQL Server 2012
 
 ##Node-red flow
+
 ![alt tag](https://github.com/altamira/financeiro/blob/master/docs/flow.png)
+
+To setup node-red flow import this file in node-red console editor
+```
+/src/financeiro.json
+```
 
 ##Setup database
 
