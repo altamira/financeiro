@@ -74,7 +74,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -93,7 +93,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -109,7 +109,7 @@ export default class Cobranca extends Component {
 
     // carrega documento
     /*axios
-      .get('http://localhost:1880/api/financeiro/cobranca')
+      .get('http://financeiro:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -125,7 +125,7 @@ export default class Cobranca extends Component {
   
   handleSaveAndClose() {
     axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -152,7 +152,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -436,7 +436,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
-    <td ><b>{parcela.carteira && parcela.carteira.nome}</b></td>
+    <td ><b>{parcela.carteira}</b></td>
     <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>
       {!parcela.carteira ? (!parcela.selected ? 

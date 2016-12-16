@@ -12,6 +12,7 @@ import {
   Table,
   Tooltip,
 } from 'react-bootstrap';
+
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
@@ -19,6 +20,8 @@ import { omit } from 'lodash';
 import axios from 'axios';
 
 import process from './process.svg';
+
+import Form from './Titulo';
 
 /*! FUNCTION: ARRAY.KEYSORT(); **/
 Array.prototype.sortByKey = function(key, desc){
@@ -34,50 +37,9 @@ export default class Retorno extends Component {
     super(props);
 
     this.state = {
-      "empresa": "",
-      "numero": 0,
-      "emissao": "2011-03-14T00:00:00.000Z",
-      "entrega": "2010-10-26T00:00:00.000Z",
-      "cliente": {
-        "cnpj": "",
-        "inscricao": "",
-        "fantasia": "",
-        "nome": "",
-        "logradouro": "",
-        "endereco": "",
-        "numero": "",
-        "complemento": "",
-        "bairro": "",
-        "municipio": 0,
-        "cidade": "",
-        "CEP": "",
-        "UF": "",
-        "ddd": "",
-        "telefone": "",
-        "contato": "",
-        "desconto": false
-      },
-      "condicao": "",
-      "representante": {
-        "codigo": "",
-        "nome": ""
-      },
-      "comissao": 0,
-      "desconto": 0,
-      "totais": {
-        "produtos": 0,
-        "ipi": 0,
-        "total": 0
-      },
-      "parcelas": [],
 
-      "cobrancas": [],
+      tarefa: {},
 
-      "remessas": [],
-
-      "retornos": [],
-
-      // campos de controle, não apagar
       carteira: {
         "id": 0,
         "banco": "",
@@ -94,6 +56,33 @@ export default class Retorno extends Component {
         "juros": 0,
         "bordero": 0
       },
+
+      retorno: [
+        {
+          "nosso_numero": 0,
+          "pedido": 0,
+          "cliente": {
+            "cnpj": "",
+            "inscricao": "",
+            "fantasia": "",
+            "nome": "",
+            "logradouro": "",
+            "endereco": "",
+            "numero": "",
+            "complemento": "",
+            "bairro": "",
+            "municipio": 0,
+            "cidade": "",
+            "CEP": "",
+            "UF": "",
+            "ddd": "",
+            "telefone": "",
+            "contato": "",
+            "desconto": 0
+          },
+          "parcelas": []
+        }
+      ],
 
       // campos de controle, não armazenar
       dialog: null,
@@ -125,55 +114,95 @@ export default class Retorno extends Component {
   }
 
   componentWillMount() {
-    this.loadTarefas(this.props.params.id || 0)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.loadTarefas(nextProps.params.id);    
-  }
-  
-  loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + tarefa)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2));
-        this.setState({...response.data.conteudo});
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState({
+          tarefa: omit(response.data, 'documento'), 
+          carteira: response.data.documento.carteira,
+          data: response.data.documento.data,
+          retorno: response.data.documento.retorno
+        });
       })
       .catch( error => {
-        alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
-      })   
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+      })
+  }
 
+  componentWillReceiveProps(props) {
+    // carrega os parametros da tarefa
+    axios
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState({
+          tarefa: omit(response.data, 'documento'), 
+          carteira: response.data.documento.carteira,
+          data: response.data.documento.data,
+          retorno: response.data.documento.retorno
+        });
+      })
+      .catch( error => {
+        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+      })    
   }
 
   handleClose() {
-    browserHistory.push('/');
+    this.props.router.push('/');
   }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['order', 'dialog']), null, 2));
+    console.log(JSON.stringify({
+      ...this.state.tarefa, 
+      documento: { 
+        carteira: this.state.carteira, 
+        retorno: this.state.retorno
+      }
+    }, null, 2));
+
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/duplicata/retorno/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
+      .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
+        ...this.state.tarefa, 
+        documento: { 
+          carteira: this.state.carteira, 
+          retorno: this.state.retorno
+        }
+      })
       .then( (response) => {
-        //alert('Tarefa concluida com sucesso');
-        //browserHistory.push('/');
+        console.log(response.data);
+        this.props.router.push('/');
       })
       .catch( error => {
-        alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
+        this.setState({dialog: <Error 
+          erro={error.response ? error.response.data.erro : 0} 
+          mensagem={error.message + (error.response.data.mensagem || JSON.stringify(error.response.data, null, 2))} 
+          onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
-  handleSelect(retorno, index) {
-    let retornos = this.state.retornos;
-    retornos[index].selected = true;
-    this.setState({retornos: retornos})
+  handleSelect(retorno) {
+    this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} onSave={this.handleSelectSave.bind(this)} />})
   }
 
-  handleUnselect(parcela, index) {
-    let retornos = this.state.retornos;
-    retornos[index].selected = false;
-    this.setState({retornos: retornos})
+  handleSelectSave(retorno) {
+    this.setState({
+      dialog: undefined,
+      retorno: this.state.retorno.map( (r, i) => {
+        
+        if (retorno.retorno_index === i) {
+          r.parcelas[retorno.parcela_index].selected = true;
+        } 
+
+        return r;
+      })
+    })
+  }
+
+  handleUnselect() {
+
   }
 
   handleConfirm(item) {
@@ -181,7 +210,7 @@ export default class Retorno extends Component {
   }
 
   handleCloseDialog() {
-    this.setState({dialog: null})
+    this.setState({dialog: undefined})
   }
 
   // formulario
@@ -198,7 +227,7 @@ export default class Retorno extends Component {
 
   render() {
 
-    let total = this.state.retornos.reduce( (soma, p) => soma + (p.selected ? p.valor : 0.0), 0.0);
+    let total = this.state.retorno.reduce( (total, r) => total + r.parcelas.reduce( (subtotal, p) => subtotal + (p.selected ? p.valor : 0.0), 0.0), 0.0);
 
     return (
 
@@ -214,7 +243,7 @@ export default class Retorno extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.retornos.find( p => p.selected) && this.state.carteira !== null)}
+                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => !p.selected))}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -225,62 +254,10 @@ export default class Retorno extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={4} md={2} >
 
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Apenas gravar as alterações</Tooltip>)}
-              >
+            <Col xs={4} md={4} />
 
-                  <Button
-                    onClick={this.handleSave}
-                    style={{width: 100}}
-                  >
-                    <Glyphicon glyph="floppy-disk" />
-                    <div><span>Gravar</span></div>
-                  </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Calcular Datas das Parcelas</Tooltip>)}
-              >
-
-                <Button
-                  onClick={this.handleCalc}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="calendar" />
-                  <div><span>Calcular</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Imprimir Espelho desta Duplicata</Tooltip>)}
-              >
-
-                <Button
-                  disabled={this.state.hasChanges}
-                  onClick={this.handlePrint}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="print" />
-                  <div><span>Imprimir</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
+            <Col xs={4} md={4} style={{textAlign: 'right'}} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -304,110 +281,63 @@ export default class Retorno extends Component {
               <Tab eventKey={1} title="Formulário">
                 <div style={{margin: 20}}>
 
-                  {/*<Row>
-                    <Col md={4}>Tipo</Col>
-                    <Col md={8}>
-                      <FormGroup validationState="success">
-                        <FormControl id="tipo" componentClass="select" placeholder="Tipo" value={this.state.tipo} onChange={this.handleChange} >
-                          <option value="DDP">BANCO DO BRASIL - AG 3333-2 CONTA 2171-7</option>
-                          <option value="DDL">BANCO ITAU - AG 0467 CONTA 20912-8</option>
-                          <option value="DDM">BANCO BRADESCO - AG 3393 CONTA 20257</option>
-                        </FormControl>
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>*/}
-
-                  {/*<Row style={{paddingTop: 20}} >
-                    <Col xs={12} md={2}>Pedido</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.numero} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Data da Emissão</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <DatePicker ref="emissao" value={this.state.emissao} onChange={this.handleChange} />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Data da Entrega</Col>
-                    <Col xs={12} md={2}>
-                      <FormGroup validationState="success">
-                        <DatePicker value={this.state.entrega} onChange={this.handleChange} />
-                      </FormGroup>
+                  <Row>
+                    <Col xs={12} md={12}>
+                      <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
+                        <thead>
+                          <tr>
+                            <th>Carteira</th>
+                            <th style={{textAlign: 'right'}}>Limite</th>
+                            <th style={{textAlign: 'right'}}>Utilizado</th>
+                            <th style={{textAlign: 'right'}}>Saldo</th>
+                            <th style={{textAlign: 'right'}}>Defasagem</th>
+                            <th style={{textAlign: 'right'}}>Enviar</th>
+                            <th style={{textAlign: 'right'}}>Remessa</th>
+                            <th style={{textAlign: 'right'}}>Retorno</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                              <td style={{textAlign: 'left'}}><h2><b>{this.state.carteira.nome}</b></h2></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.limite.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno_total || 0).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno).toLocaleString()}</b></td>
+                            </tr>                              
+                        </tbody>
+                      </Table>
                     </Col>
                   </Row>
-
-                  <Row>
-                    <Col xs={12} md={2}>CNPJ/CPF</Col>
-                    <Col xs={12} md={3}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" style={{textAlign: 'right'}} value={this.state.cliente.cnpj} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                    <Col xs={12} md={2}>Representante</Col>
-                    <Col xs={12} md={5}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.representante.nome} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={2}>Razão Social</Col>
-                    <Col xs={12} md={10}>
-                      <FormGroup validationState="success">
-                        <FormControl type="text" value={this.state.cliente.nome} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                      </FormGroup>
-                    </Col>
-                  </Row>*/}
 
                   <Row>
                     <Col xs={12} md={12}>
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th style={{width: '10%'}}>Pedido</th><td style={{width: '90%'}}><b>{this.state.numero}</b></td>
-                          </tr>
-                          <tr>
-                            <th style={{width: '10%'}}>Cliente</th><td style={{width: '90%'}}><b>{this.state.cliente.nome}</b></td>
+                            <th style={{textAlign: 'center'}}>Número</th>
+                            <th style={{textAlign: 'center'}}>Pedido</th>
+                            <th style={{textAlign: 'center'}}>Vencimento</th>
+                            <th style={{textAlign: 'center'}}>Parcela</th>
+                            <th style={{textAlign: 'center'}}>Prazo</th>
+                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{width: '110px'}} ></th>
                           </tr>
                         </thead>
+
+                          {this.state.retorno.map( (r, index) => <Titulo key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                        
                       </Table>
                     </Col>
                   </Row>
-
+                  
                   <Row>
-                    <Col xs={12} md={8}>
-                      <Table striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th>CARTEIRA</th>
-                            <th style={{textAlign: 'right'}}>LIMITE</th>
-                            <th style={{textAlign: 'right'}}>UTILIZADO</th>
-                            <th style={{textAlign: 'right'}}>SALDO</th>
-                            <th style={{textAlign: 'right'}}>DEFASAGEM</th>
-                            <th style={{textAlign: 'right'}}>ENVIAR</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td style={{textAlign: 'left'}}>{this.state.carteira.nome}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.limite).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.utilizado).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.saldo).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.defasagem).toLocaleString()}</td>
-                            <td style={{textAlign: 'right'}}>R$ {Number(this.state.carteira.descoberto).toLocaleString()}</td>
-                          </tr>                              
-                        </tbody>
-                      </Table>
-                    </Col>
+                    <Col xs={0} md={8}></Col>
                     <Col xs={12} md={4}>
+                      {this.state.retorno.find( retorno => retorno.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
+
                         <Table striped bordered condensed hover>
                           <thead>
                             <tr>
@@ -418,7 +348,7 @@ export default class Retorno extends Component {
                           <tbody>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(total).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
@@ -438,62 +368,19 @@ export default class Retorno extends Component {
                             </tr>
                           </tbody>
                         </Table>
+                          
+                        : null
+                      }
                     </Col>
-                  </Row>
-
-                  <Row>
-                    <Col xs={12} md={12}>
-                      <Table striped bordered condensed hover>
-                        <thead>
-                          <tr>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'nosso_numero')}>Número</a> {this.state.order.nosso_numero !== null ? this.state.order.nosso_numero ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'vencto')}>Vencimento</a> {this.state.order.vencto !== null ? this.state.order.vencto ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'parcela')}>Parcela</a> {this.state.order.parcela !== null ? this.state.order.parcela ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th style={{textAlign: 'center'}}>Prazo</th>
-                            <th style={{textAlign: 'right'}}><a href="#" onClick={this.handleOrderBy.bind(null, 'valor')}>Valor da Parcela</a> {this.state.order.valor !== null ? this.state.order.valor ? (<Glyphicon glyph="chevron-up" />) : <Glyphicon glyph="chevron-down" /> : null}</th>
-                            <th>CARTEIRA</th>
-                            <th>Data Envio</th>
-                            <th>Data Remessa</th>
-                            <th style={{width: '1%'}}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {this.state.retornos.map( (retorno, index) => {
-                            return (
-                              <tr key={'tr-' + index} style={{background: !retorno.carteira && retorno.selected ? 'gold' : ''}} >
-                                <td style={{textAlign: 'center'}}>{retorno.nosso_numero}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(retorno.vencto).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{retorno.parcela}/{this.state.retornos.length}</td>
-                                <td style={{textAlign: 'center'}}>{retorno.retorno === 1 && retorno.tipo === "DDP" ? 'SINAL' : retorno.tipo === 'DDP' ? retorno.prazo + ' dia(s) do PEDIDO' :  retorno.prazo + ' dia(s) da ENTREGA'}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(retorno.valor).toLocaleString()}</td>
-                                <td >{retorno.remessa && retorno.carteira.nome}</td>
-                                <td style={{textAlign: 'center'}}>{retorno.remessa && new Date(retorno.envio).toLocaleDateString()}</td>
-                                <td style={{textAlign: 'center'}}>{retorno.remessa && new Date(retorno.remessa).toLocaleDateString()}</td>
-                                <td>
-                                  {!retorno.retorno ? (!retorno.selected ? 
-                                    (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelect.bind(null, retorno, index)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                                    (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={this.handleUnselect.bind(null, retorno, index)} ><Glyphicon glyph="remove" /></Button>)) : null
-                                  }
-                                </td>
-                              </tr>                              
-                            )
-                          }
-                            
-                          )}
-                        </tbody>
-                      </Table>
-                    </Col>
-                  </Row>
-
-                  
+                  </Row>              
                 </div>
               </Tab>
-            <Tab eventKey={2} title="Procedimento">
-              <Image src={process} style={{width: '100%', height: '100%'}} />
-            </Tab>
-          </Tabs>
-        </Row>
-    </Panel>
+              <Tab eventKey={2} title="Procedimento">
+                <Image src={process} style={{width: '100%', height: '100%'}} />
+              </Tab>
+            </Tabs>
+          </Row>
+        </Panel>
 
         {this.state.dialog}
 
@@ -502,3 +389,46 @@ export default class Retorno extends Component {
     );
   }
 }
+
+const Titulo = (retorno) =>
+  <tbody>
+    <tr>
+      <td colSpan={8}><h4><b>{retorno.cliente.nome}</b></h4></td>
+    </tr>
+    {retorno.parcelas.map ( (parcela, index) =>
+      <Parcela key={'parcela-' + retorno.nosso_numero + '-' + index} {...parcela} nosso_numero={retorno.nosso_numero} pedido={retorno.pedido} cliente={retorno.cliente} retorno_index={retorno.index} parcela_index={index} handleSelect={retorno.handleSelect} handleUnselect={retorno.handleUnselect} />
+    )}
+  </tbody>
+
+const Parcela = (parcela) =>
+  <tr>
+    <td style={{textAlign: 'center'}}>{parcela.nosso_numero}</td>
+    <td style={{textAlign: 'center'}}><b>{parcela.pedido}</b></td>
+    <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
+    <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
+    <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
+    <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
+    
+    {!parcela.selected ?
+      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>
+        <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)}>
+          <Glyphicon glyph="thumbs-up" />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_naceito' + parcela.parcela_index}>Não Aceito</Tooltip>}>
+        <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)}>
+          <Glyphicon glyph="thumbs-down" />
+        </Button>
+      </OverlayTrigger></td>) 
+
+      :
+
+      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+        <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
+          <Glyphicon glyph="ok" />
+        </Button>
+      </OverlayTrigger></td>)
+    }
+    
+  </tr>
+

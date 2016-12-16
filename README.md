@@ -1,3 +1,24 @@
+Financeiro
+=======================
+
+This project is a financial system made in React + Node-red + MSSQL Server 2012
+
+##Node-red flow
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/flow.png)
+
+##Setup database
+
+Run this scripts in order to setup database
+```
+src/financeiro.sql
+src/insert.sql
+```
+
+##Business Process
+
+The business process diagram in BPMN notation describes the system workflow
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/process.png)
+
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>

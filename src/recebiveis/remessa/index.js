@@ -116,13 +116,13 @@ export default class Remessa extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
           carteira: response.data.documento.carteira,
-          data_remessa: response.data.documento.data_remessa,
+          data: response.data.documento.data,
           remessa: response.data.documento.remessa
         });
       })
@@ -134,13 +134,13 @@ export default class Remessa extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
           carteira: response.data.documento.carteira,
-          data_remessa: response.data.documento.data_remessa,
+          data: response.data.documento.data,
           remessa: response.data.documento.remessa
         });
       })
@@ -154,16 +154,32 @@ export default class Remessa extends Component {
   }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['order', 'dialog']), null, 2));
+    console.log(JSON.stringify({
+      ...this.state.tarefa, 
+      documento: { 
+        carteira: this.state.carteira, 
+        remessa: this.state.remessa
+      }
+    }, null, 2));
+
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/duplicata/remessa/concluir/' + this.props.params.id, omit(this.state, ['order', 'dialog']))
+      .post('http://financeiro:1880/api/financeiro/recebiveis/remessa/tarefa/' + this.props.params.id, {
+        ...this.state.tarefa, 
+        documento: { 
+          carteira: this.state.carteira, 
+          remessa: this.state.remessa
+        }
+      })
       .then( (response) => {
-        //alert('Tarefa concluida com sucesso');
-        //browserHistory.push('/');
+        console.log(response.data);
+        this.props.router.push('/');
       })
       .catch( error => {
-        alert('Erro ao concluir a tarefa.\nErro: ' + error.message);
+        this.setState({dialog: <Error 
+          erro={error.response ? error.response.data.erro : 0} 
+          mensagem={error.message + (error.response.data.mensagem || JSON.stringify(error.response.data, null, 2))} 
+          onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
@@ -227,7 +243,7 @@ export default class Remessa extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.remessa.find( r => r.parcelas.find( p => p.selected)) && this.state.carteira)}
+                    disabled={!!this.state.remessa.find( r => r.parcelas.find( p => !p.selected))}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -307,8 +323,6 @@ export default class Remessa extends Component {
                             <th style={{textAlign: 'center'}}>Parcela</th>
                             <th style={{textAlign: 'center'}}>Prazo</th>
                             <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th>CARTEIRA</th>
-                            <th>Data Envio</th>
                             <th style={{width: '1%'}}></th>
                           </tr>
                         </thead>
@@ -394,8 +408,6 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
-    <td ><b>{parcela.carteira && parcela.carteira.nome}</b></td>
-    <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>
       {!parcela.selected ? 
         (<Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)} ><Glyphicon glyph="time" /></Button>) : 

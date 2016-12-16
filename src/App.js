@@ -122,7 +122,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
