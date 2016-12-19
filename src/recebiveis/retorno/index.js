@@ -163,7 +163,20 @@ export default class Retorno extends Component {
       }
     }, null, 2));
 
-    this.setState({dialog: <Bordero {...{valor_bruto: 0, valor_liquido: 0, valor_contratacao: 0, valor_tarifa: 0, valor_juros: 0, taxa_juros: 0, valor_iof: 0, valor_liquido: 0}} onClose={this.handleCloseDialog.bind(this)} onSave={this.handleSaveAndClose.bind(this)} />})
+    this.setState({dialog: <Bordero 
+      bordero={{
+        valor_bruto: 0, 
+        valor_liquido: 0, 
+        valor_contratacao: 0, 
+        valor_tarifa: 0, 
+        valor_juros: 0, 
+        taxa_juros: 0, 
+        valor_iof: 0, 
+        valor_liquido: 0
+      }} 
+      onClose={this.handleCloseDialog.bind(this)} 
+      onSave={this.handleSaveAndClose.bind(this)} />
+    })
 
   }
 
@@ -192,7 +205,18 @@ export default class Retorno extends Component {
   }
 
   handleSelect(retorno, aceito) {
-    this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} aceito={aceito} onSave={this.handleSelectSave.bind(this)} />})
+    //this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} aceito={aceito} onSave={this.handleSelectSave.bind(this)} />})
+    this.setState({
+      dialog: undefined,
+      retorno: this.state.retorno.map( (r, i) => {
+        
+        if (retorno.retorno_index === i) {
+          r.parcelas[retorno.parcela_index].selected = aceito;
+        } 
+
+        return r;
+      })
+    })
   }
 
   handleSelectSave(retorno) {

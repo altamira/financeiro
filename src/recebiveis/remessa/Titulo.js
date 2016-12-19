@@ -18,6 +18,12 @@ import DatePicker from 'react-bootstrap-date-picker';
 import moment from 'moment';
 
 export default class Titulo extends Component {
+	constructor(props) {
+		super(props);
+
+		this.handleChange = this.handleChange.bind(this);
+	}
+	
 	componentWillMount() {
 		console.log(JSON.stringify(this.props, null, 2));
 	}
@@ -26,7 +32,7 @@ export default class Titulo extends Component {
 		this.props.onSave && this.props.onSave(this.props);
 	}
 
-	handleCopy() {
+	handleChange(event) {
 
 	}
 

@@ -54,7 +54,23 @@ class App extends Component {
   }
 
   handleLogout() {
-    this.setState({usuario: undefined}, this.goHome.bind(this));
+    this.setState({usuario: undefined}, this.unsubscribe.bind(this));
+  }
+
+  unsubscribe() {
+    this.state.topicos && Object.keys(this.state.topicos).forEach( (topic) => 
+      {
+        console.log('Excluido do topico: ' + topic)
+        this.client.unsubscribe(
+          topic, 
+          function(err) { 
+            err && console.log('Erro ao retirar a inscrição ao topico: ' + topic)
+          }
+        )
+      }
+    )
+    this.client.end();
+    this.props.router.push('/')
   }
 
   goHome() {
@@ -85,6 +101,7 @@ class App extends Component {
           '/debug/',
         ], 
         function(err, granted) { 
+          !err && granted.forEach( g => console.log('Inscrito no topico: ' + g.topic));
           !err ? 
             this.setState(
             {
@@ -135,12 +152,15 @@ class App extends Component {
 
   componentWillUnmount() {
     this.state.topicos && Object.keys(this.state.topicos).forEach( (topic) =>
-      this.client.unsubscribe(
-        topic, 
-        function(err) { 
-          err && console.log('Erro ao retirar a inscrição ao topico: ' + topic)
-        }
-      )
+      {
+        console.log('Excluido do topico: ' + topic)
+        this.client.unsubscribe(
+          topic, 
+          function(err) { 
+            err && console.log('Erro ao retirar a inscrição ao topico: ' + topic)
+          }
+        )
+      }
     )
     this.client.end();
   }
@@ -162,7 +182,7 @@ class App extends Component {
     let index = tarefas.findIndex( t => t.id === tarefa.id);
     if (index >= 0) {
       tarefas.splice(index, 1);
-      console.log('Tarefa concluida: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      console.log('Tarefa concluida, retirar da lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
       this.setState({tarefas: tarefas}, this.goHome);
     }
   }
@@ -172,10 +192,10 @@ class App extends Component {
     let index = tarefas.findIndex( t => t.id === tarefa.id);
     if (index >= 0) {
       tarefas.splice(index, 1, tarefa);
-      console.log('Tarefas atualizada: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      console.log('Nova tarefa, atualizar na lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
     } else {
       tarefas.push(tarefa);
-      console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      console.log('Nova tarefa, incluir na lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
     }
     this.setState({tarefas: tarefas});
   }
@@ -185,10 +205,10 @@ class App extends Component {
     let index = tarefas.findIndex( t => t.id === tarefa.id);
     if (index >= 0) {
       tarefas.splice(index, 1, tarefa);
-      console.log('Tarefas atualizada: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      console.log('Tarefa atualizada, atualizar na lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
     } else {
       tarefas.push(tarefa);
-      console.log('Nova tarefas: ' + tarefa.id + ', ' + tarefa.nome + ', ' + tarefa.titulo)
+      console.log('Tarefa atualizada, incluir na lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
     }
     this.setState({tarefas: tarefas});
   }

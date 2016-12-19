@@ -18,16 +18,24 @@ import DatePicker from 'react-bootstrap-date-picker';
 import moment from 'moment';
 
 export default class Bordero extends Component {
+	constructor(props) {
+		super(props);
+
+		this.state = props.bordero;
+
+		this.handleChange = this.handleChange.bind(this);
+	}
+
 	componentWillMount() {
-		console.log(JSON.stringify(this.props, null, 2));
+		console.log(JSON.stringify(this.state, null, 2));
 	}
 
 	handleSaveAndClose() {
-		this.props.onSave && this.props.onSave(this.props);
+		this.props.onSave && this.props.onSave(this.state);
 	}
 
-	handleCopy() {
-
+	handleChange(event) {
+		this.setState({[event.target.name]: event.target.value})
 	}
 
 	render() {
@@ -47,7 +55,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor Títulos (Bruto)</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" value={this.props.valor_bruto} onChange={this.handleChange} />
+							      	<FormControl type="text" name="valor_bruto" value={this.state.valor_bruto} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -58,7 +66,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do Juros</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" value={this.props.valor_juros} onChange={this.handleChange} />
+						      		<FormControl type="text" name="valor_juros" value={this.state.valor_juros} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -66,7 +74,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Taxa de Juros</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" value={this.props.taxa_juros} onChange={this.handleChange} />
+							      	<FormControl type="text" name="taxa_juros" value={this.state.taxa_juros} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -77,7 +85,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor da Tarifa Contratação</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" value={this.props.valor_contratacao} onChange={this.handleChange} />
+						      		<FormControl type="text" name="valor_contratacao" value={this.state.valor_contratacao} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -85,7 +93,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor da Tarifa de Títulos</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.valor_tarifa} onChange={this.handleChange} />
+								    <FormControl type="text" name="valor_tarifa" value={this.state.valor_tarifa} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -93,7 +101,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do IOF</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.valor_iof} onChange={this.handleChange} />
+								    <FormControl type="text" name="valor_iof" value={this.state.valor_iof} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -101,7 +109,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do Crédito (Líquido)</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.valor_liquido} onChange={this.handleChange} />
+								    <FormControl type="text" name="valor_liquido" value={this.state.valor_liquido} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -109,12 +117,8 @@ export default class Bordero extends Component {
 
 					<Row>
 						<Col xs={12} md={12} style={{textAlign: 'right'}} >
-							<Button onClick={this.props.onClose} style={{margin: '5px'}} >Fechar</Button>
-							{ this.props.aceito ? 
-								(<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Aceito</Button>) :
-								(<Button bsStyle="danger" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Rejeitado</Button>)
-							}
-							
+							<Button onClick={this.props.onClose} style={{margin: '5px'}} >Cancelar</Button>
+							<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Emitir Borderô</Button>							
 						</Col>
 	            	</Row>
 
