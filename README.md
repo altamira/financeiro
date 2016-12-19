@@ -1,7 +1,20 @@
 Financeiro
 =======================
 
-This project is a financial system made in [React](https://facebook.github.io/react/) + [Node-Red](http://nodered.org/) + [MSSQL Server 2012](https://azure.microsoft.com/pt-br/services/sql-database)
+This project is an account receivable management system made in [React](https://facebook.github.io/react/) + [Node-Red](http://nodered.org/) + [MSSQL Server 2012](https://azure.microsoft.com/pt-br/services/sql-database)
+
+##Screenshot
+
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen1.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen2.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen3.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen4.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen5.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen6.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen7.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen8.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen9.png)
+![alt tag](https://github.com/altamira/financeiro/blob/master/docs/screen10.png)
 
 ##Node-red flow
 

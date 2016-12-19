@@ -44,8 +44,8 @@ const NoMatch = () =>
 // colocate the entire config).
 render((
   <Router history={browserHistory}>
-    <Route path="/" component={App}>
-      <Route path="dashboard/" component={Dashboard}/>
+    <Route path="/" component={App} >
+      <Route path="dashboard" component={Dashboard}/>
     	<Route path="recebiveis/emissao" component={Emissao}/>
       <Route path="recebiveis/lancamento/:id" component={Faturamento}/>
       <Route path="recebiveis/cobranca/:id" component={Cobranca}/>

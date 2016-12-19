@@ -22,6 +22,7 @@ import axios from 'axios';
 import process from './process.svg';
 
 import Form from './Titulo';
+import Bordero from './Bordero';
 
 /*! FUNCTION: ARRAY.KEYSORT(); **/
 Array.prototype.sortByKey = function(key, desc){
@@ -162,7 +163,13 @@ export default class Retorno extends Component {
       }
     }, null, 2));
 
-    // carrega os parametros da tarefa
+    this.setState({dialog: <Bordero {...{valor_bruto: 0, valor_liquido: 0, valor_contratacao: 0, valor_tarifa: 0, valor_juros: 0, taxa_juros: 0, valor_iof: 0, valor_liquido: 0}} onClose={this.handleCloseDialog.bind(this)} onSave={this.handleSaveAndClose.bind(this)} />})
+
+  }
+
+  handleSaveAndClose(bordero) {
+    console.log('Bordero: ' + JSON.stringify(bordero, null, 2))
+        // carrega os parametros da tarefa
     axios
       .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
@@ -181,10 +188,11 @@ export default class Retorno extends Component {
           mensagem={error.message + (error.response.data.mensagem || JSON.stringify(error.response.data, null, 2))} 
           onClose={this.handleCloseDialog.bind(this)} />})
       })
+
   }
 
-  handleSelect(retorno) {
-    this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} onSave={this.handleSelectSave.bind(this)} />})
+  handleSelect(retorno, aceito) {
+    this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} aceito={aceito} onSave={this.handleSelectSave.bind(this)} />})
   }
 
   handleSelectSave(retorno) {
@@ -193,7 +201,7 @@ export default class Retorno extends Component {
       retorno: this.state.retorno.map( (r, i) => {
         
         if (retorno.retorno_index === i) {
-          r.parcelas[retorno.parcela_index].selected = true;
+          r.parcelas[retorno.parcela_index].selected = retorno.aceito;
         } 
 
         return r;
@@ -243,7 +251,7 @@ export default class Retorno extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => !p.selected))}
+                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => p.selected === undefined))}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -409,25 +417,36 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
     
-    {!parcela.selected ?
+    {parcela.selected === undefined ?
       (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>
-        <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)}>
+        <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela, true)}>
           <Glyphicon glyph="thumbs-up" />
         </Button>
       </OverlayTrigger>
       <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_naceito' + parcela.parcela_index}>Não Aceito</Tooltip>}>
-        <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)}>
+        <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela, false)}>
           <Glyphicon glyph="thumbs-down" />
         </Button>
       </OverlayTrigger></td>) 
 
       :
 
+      (parcela.selected ?
+
       (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
         <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
           <Glyphicon glyph="ok" />
         </Button>
       </OverlayTrigger></td>)
+
+      :
+
+      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+        <Button bsStyle="danger" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
+          <Glyphicon glyph="ok" />
+        </Button>
+      </OverlayTrigger></td>))
+
     }
     
   </tr>
