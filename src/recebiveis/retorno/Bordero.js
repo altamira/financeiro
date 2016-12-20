@@ -55,7 +55,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor Títulos (Bruto)</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" name="valor_bruto" value={this.state.valor_bruto} onChange={this.handleChange} />
+							      	<FormControl type="text" name="bruto" value={this.state.bruto} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -66,7 +66,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do Juros</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" name="valor_juros" value={this.state.valor_juros} onChange={this.handleChange} />
+						      		<FormControl type="text" name="juros" value={this.state.juros} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -74,7 +74,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Taxa de Juros</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" name="taxa_juros" value={this.state.taxa_juros} onChange={this.handleChange} />
+							      	<FormControl type="text" name="taxa" value={this.state.taxa} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -83,9 +83,9 @@ export default class Bordero extends Component {
 					<Row>
 						<Col xs={12} md={6}>
 							<FormGroup>
-						      	<ControlLabel>Valor da Tarifa Contratação</ControlLabel>
+						      	<ControlLabel>Valor da Tarifa Operação/Contratação</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" name="valor_contratacao" value={this.state.valor_contratacao} onChange={this.handleChange} />
+						      		<FormControl type="text" name="operacao" value={this.state.operacao} onChange={this.handleChange} />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -93,7 +93,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor da Tarifa de Títulos</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" name="valor_tarifa" value={this.state.valor_tarifa} onChange={this.handleChange} />
+								    <FormControl type="text" name="tarifa" value={this.state.tarifa} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -101,7 +101,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do IOF</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" name="valor_iof" value={this.state.valor_iof} onChange={this.handleChange} />
+								    <FormControl type="text" name="iof" value={this.state.iof} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -109,7 +109,7 @@ export default class Bordero extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor do Crédito (Líquido)</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" name="valor_liquido" value={this.state.valor_liquido} onChange={this.handleChange} />
+								    <FormControl type="text" name="liquido" value={this.state.liquido} onChange={this.handleChange} />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>

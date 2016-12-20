@@ -254,6 +254,7 @@ export default class Cobranca extends Component {
         <Panel header={'Cobrança Bancária e Antecipaçao de Recebíveis'} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
+          
             <Col xs={4} md={4} >
 
               <OverlayTrigger 
@@ -275,14 +276,14 @@ export default class Cobranca extends Component {
 
             <Col xs={4} md={4} />
 
-            <Col xs={4} md={4} >
+            <Col xs={4} md={4} style={{textAlign: 'right'}} >
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleSaveAndClose}
+                    onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
@@ -304,15 +305,15 @@ export default class Cobranca extends Component {
                       <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
                         <thead>
                           <tr>
-                            <th>Carteira</th>
-                            <th style={{textAlign: 'right'}}>Limite</th>
-                            <th style={{textAlign: 'right'}}>Utilizado</th>
-                            <th style={{textAlign: 'right'}}>Saldo</th>
-                            <th style={{textAlign: 'right'}}>Defasagem</th>
-                            <th style={{textAlign: 'right'}}>Enviar</th>
-                            <th style={{textAlign: 'right'}}>Remessa</th>
-                            <th style={{textAlign: 'right'}}>Retorno</th>
-                            <th style={{width: '1%'}}></th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Carteira</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '1%'}}></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -343,15 +344,15 @@ export default class Cobranca extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th style={{textAlign: 'center'}}>Número</th>
-                            <th style={{textAlign: 'center'}}>Pedido</th>
-                            <th style={{textAlign: 'center'}}>Vencimento</th>
-                            <th style={{textAlign: 'center'}}>Parcela</th>
-                            <th style={{textAlign: 'center'}}>Prazo</th>
-                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th>CARTEIRA</th>
-                            <th>Data Envio</th>
-                            <th style={{width: '1%'}}></th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Número</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Pedido</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Vencimento</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Prazo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >CARTEIRA</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Data Envio</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '1%'}}></th>
                           </tr>
                         </thead>
 
@@ -421,7 +422,7 @@ export default class Cobranca extends Component {
 const Recebivel = (cobranca) =>
   <tbody>
     <tr>
-      <td colSpan={8}><h4><b>{cobranca.cliente.nome}</b></h4></td>
+      <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{cobranca.cliente.nome}</b></h4></td>
     </tr>
     {cobranca.parcelas.map ( (parcela, index) =>
       <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.pedido} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />

@@ -4,8 +4,7 @@ import { Link, browserHistory } from 'react-router';
 //import logo from './logo.svg';
 import './App.css';
 
-import { Nav, Navbar, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
-import { Col } from 'react-bootstrap';
+import { Nav, Navbar, NavItem, NavDropdown, MenuItem, Row, Col, Table } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
 import { assign, omit } from 'lodash';
@@ -28,6 +27,12 @@ class App extends Component {
     super(props);
 
     this.state = {
+
+      carteiras: [],
+
+      remessa: [],
+
+      retorno: [],
 
       tarefas: [],
 
@@ -148,6 +153,52 @@ class App extends Component {
       .catch( error => {
         alert('Erro ao obter a lista de tarefas.');
       })
+
+    axios
+      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            carteiras: response.data.map( c => 
+            {
+              c.remessa_total = c.remessa;
+              return c;
+            })
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
+      })
+
+    axios
+      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            remessa: response.data
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as remessas.\nErro: ' + error.message);
+      })
+
+    axios
+      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            retorno: response.data
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as retornos.\nErro: ' + error.message);
+      })
   }
 
   componentWillUnmount() {
@@ -221,6 +272,135 @@ class App extends Component {
       tarefas[tarefa.nome].push(tarefa)
     })
 
+    const dashboard = (
+      <div>
+        <Row>
+          <Col xs={12} md={12}>
+            <h2 style={{color: 'gray'}} >Resumo Cobrança</h2>
+            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
+              <thead>
+                <tr>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
+                </tr>
+              </thead>
+              <tbody>
+                {this.state.carteiras.map( (carteira, index) => {
+                  return (
+                    <tr key={'tr-carteiras-' + index} >
+                      <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa_total || 0).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno).toLocaleString()}</b></td>
+                    </tr>                              
+                  )
+                }
+                  
+                )}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+
+        <Row>
+          <Col xs={12} md={12}>
+            <h2 style={{color: 'gray'}} >Remessas de Cobrança em Aberto (Borderô)</h2>
+            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
+              <thead>
+                <tr>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Remessa</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Crédito</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                {this.state.remessa.map( (remessa, index) => {
+                  return (
+                    <tr key={'tr-remessa-' + index} >
+                      <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
+                      <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.operacao.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.tarifa.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.juros.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.iof.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.taxa.toFixed(2)).toLocaleString()}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.liquido.toFixed(2)).toLocaleString()}</b></td>
+                    </tr>                              
+                  )
+                }
+                  
+                )}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+        
+        <Row>
+          <Col xs={12} md={12}>
+            <h2 style={{color: 'gray'}} >Últimos Retornos de Cobrança (Borderô)</h2>
+            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
+              <thead>
+                <tr>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Remessa</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Crédito</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
+                </tr>
+              </thead>
+              <tbody>
+
+                {this.state.retorno.map( (retorno, index) => {
+                  return (
+                    <tr key={'tr-retorno-' + index} >
+                      <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
+                      <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.operacao.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.tarifa.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.juros.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.iof.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.taxa.toFixed(2)).toLocaleString()}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.liquido.toFixed(2)).toLocaleString()}</b></td>
+                    </tr>                              
+                  )
+                }
+                  
+                )}
+              </tbody>
+            </Table>
+          </Col>
+
+        </Row>
+      </div>
+    );
+
     if (this.state.usuario) {
       return (
        
@@ -235,17 +415,17 @@ class App extends Component {
             <Navbar.Collapse>
               <Nav>
                 <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
-                  <MenuItem eventKey={3.1}>Banco</MenuItem>
-                  <MenuItem eventKey={3.2}>Conta Corrente</MenuItem>
-                  <MenuItem eventKey={3.3}>Clientes</MenuItem>
+                  <MenuItem eventKey={3.1} >Banco</MenuItem>
+                  <MenuItem eventKey={3.2} >Conta Corrente</MenuItem>
+                  <MenuItem eventKey={3.3} >Clientes</MenuItem>
                   <MenuItem divider />
-                  <MenuItem eventKey={3.3}>Usuarios</MenuItem>
+                  <MenuItem eventKey={3.3} >Usuarios</MenuItem>
                 </NavDropdown>
-                <NavItem eventKey={1} href="dashboard/">Resumo Financeiro</NavItem>
-                <NavItem eventKey={2} href="#">Configurações</NavItem>
+                <NavItem eventKey={1} >Resumo Financeiro</NavItem>
+                <NavItem eventKey={2} >Configurações</NavItem>
               </Nav>
               <Nav pullRight>
-                <NavItem eventKey={1} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario.nome} (Sair)</span></NavItem>
+                <NavItem eventKey={4} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario.nome} (Sair)</span></NavItem>
               </Nav>
             </Navbar.Collapse>
           </Navbar>
@@ -271,7 +451,7 @@ class App extends Component {
           </Col>
 
           <Col md={9} >
-            {this.props.children}
+            {this.props.children ? this.props.children : dashboard}
           </Col>
 
           {this.state.dialog}

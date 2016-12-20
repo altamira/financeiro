@@ -286,6 +286,7 @@ export default class Faturamento extends Component {
         <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
+
             <Col xs={4} md={4} >
 
               <OverlayTrigger 
@@ -304,69 +305,17 @@ export default class Faturamento extends Component {
               </OverlayTrigger>
 
             </Col>
-            <Col xs={4} md={2} >
 
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Apenas gravar as alterações</Tooltip>)}
-              >
+            <Col xs={4} md={4} />
 
-                  <Button
-                    onClick={this.handleSaveAndClose}
-                    style={{width: 100}}
-                  >
-                    <Glyphicon glyph="floppy-disk" />
-                    <div><span>Gravar</span></div>
-                  </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Calcular Datas das Parcelas</Tooltip>)}
-              >
-
-                <Button
-                  onClick={this.handleCalc}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="calendar" />
-                  <div><span>Calcular</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
-
-              {/*<OverlayTrigger 
-                placement="top" 
-                overlay={(<Tooltip id="tooltip">Imprimir Espelho desta Duplicata</Tooltip>)}
-              >
-
-                <Button
-                  disabled={this.state.hasChanges}
-                  onClick={this.handlePrint}
-                  style={{width: 100}}
-                >
-                  <Glyphicon glyph="print" />
-                  <div><span>Imprimir</span></div>
-                </Button>
-
-              </OverlayTrigger>*/}
-
-            </Col>
-            <Col xs={4} md={2} >
+            <Col xs={4} md={4} style={{textAlign: 'right'}} >
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para terminar depois, as alteração serão salvas.</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleSaveAndClose}
+                    onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
@@ -376,6 +325,7 @@ export default class Faturamento extends Component {
               </OverlayTrigger>
 
             </Col>
+
           </Row>
 
           <Row>
@@ -391,9 +341,9 @@ export default class Faturamento extends Component {
                         <FormControl type="text" id="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                         <InputGroup.Addon className='btn-success' style={{cursor: 'pointer'}} >
-                        <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
-                            <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
-                        </OverlayTrigger>
+                          <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
+                              <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
+                          </OverlayTrigger>
                         </InputGroup.Addon>
                         </InputGroup>
                       </FormGroup>
@@ -490,13 +440,16 @@ export default class Faturamento extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th style={{textAlign: 'center'}}>Origem</th>
-                            <th style={{textAlign: 'center'}}>Forma Pagto</th>
-                            <th>Vencimento</th>
-                            <th>Parcela</th>
-                            <th>Prazo</th>
-                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th style={{width: '1%'}}><Button style={{width: '110px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th colSpan={7} style={{width: '100', textAlign: 'right'}} ><Button style={{width: '110px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                          </tr>
+                          <tr>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Origem</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Forma Pagto</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Vencimento</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Prazo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '120'}}></th>
                           </tr>
                         </thead>
                         <tbody>

@@ -10,7 +10,9 @@ import {
   Button,
   Panel,
   InputGroup,
-  Glyphicon
+  Glyphicon,
+  OverlayTrigger,
+  Tooltip
 } from 'react-bootstrap';
 
 import CopyToClipboard from 'react-copy-to-clipboard';
@@ -82,7 +84,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 						      		<FormControl type="text" value={this.props.nosso_numero + '/' + this.props.parcela} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.nosso_numero.toString() + '/' + this.props.parcela.toString()} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.nosso_numero.toString() + '/' + this.props.parcela.toString()} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -95,7 +97,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.vencto} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.vencto} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.vencto} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -108,7 +110,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.valor} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.valor.toString()} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.valor.toString()} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -124,7 +126,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.cnpj} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.cnpj} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.cnpj} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -137,7 +139,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.inscricao} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.inscricao} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.inscricao} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -153,7 +155,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.nome} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.nome} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.nome} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -169,7 +171,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -185,7 +187,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.numero} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.numero} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.numero} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -198,7 +200,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.complemento} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.complemento} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.complemento} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -211,7 +213,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.CEP} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.CEP} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.CEP} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -227,7 +229,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.bairro} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.bairro} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.bairro} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -240,7 +242,7 @@ export default class Titulo extends Component {
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.cidade} onChange={this.handleChange} />
 						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.cidade} onCopy={this.handleCopy}>
+						      			<CopyToClipboard className='btn-success' style={{cursor: 'pointer'}} text={this.props.cliente.cidade} onCopy={this.handleCopy}>
 							          		<Glyphicon glyph="transfer" />
 							          	</CopyToClipboard>
 							        </InputGroup.Addon>
@@ -255,11 +257,13 @@ export default class Titulo extends Component {
 						      	<ControlLabel>Telefone</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.telefone} onChange={this.handleChange} />
-						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.telefone} onCopy={this.handleCopy}>
-							          		<Glyphicon glyph="transfer" />
-							          	</CopyToClipboard>
-							        </InputGroup.Addon>
+					      			<CopyToClipboard text={this.props.cliente.telefone} onCopy={this.handleCopy}>
+							      		<InputGroup.Addon className='btn-success' style={{cursor: 'pointer', color: 'white'}} >
+							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_contato'}>Copiar</Tooltip>}>
+									          		<Glyphicon glyph="transfer" />
+								          	</OverlayTrigger>
+								        </InputGroup.Addon>
+						          	</CopyToClipboard>
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -268,11 +272,13 @@ export default class Titulo extends Component {
 						      	<ControlLabel>Contato</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.contato} onChange={this.handleChange} />
-						      		<InputGroup.Addon>
-						      			<CopyToClipboard style={{cursor: 'pointer'}} text={this.props.cliente.contato} onCopy={this.handleCopy}>
-							          		<Glyphicon glyph="transfer" />
-							          	</CopyToClipboard>
-							        </InputGroup.Addon>
+					      			<CopyToClipboard text={this.props.cliente.contato} onCopy={this.handleCopy}>
+							      		<InputGroup.Addon className='btn-success' style={{cursor: 'pointer', color: 'white'}} >
+							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_contato'}>Copiar</Tooltip>}>
+									          		<Glyphicon glyph="transfer" />
+								          	</OverlayTrigger>
+								        </InputGroup.Addon>
+						          	</CopyToClipboard>
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>

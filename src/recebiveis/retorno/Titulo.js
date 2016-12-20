@@ -206,8 +206,8 @@ export default class Titulo extends Component {
 						<Col xs={12} md={12} style={{textAlign: 'right'}} >
 							<Button onClick={this.props.onClose} style={{margin: '5px'}} >Fechar</Button>
 							{ this.props.aceito ? 
-								(<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Aceito</Button>) :
-								(<Button bsStyle="danger" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Recusado</Button>)
+								(<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Aceito pelo Banco</Button>) :
+								(<Button bsStyle="danger" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Recusado pelo Banco</Button>)
 							}
 							
 						</Col>

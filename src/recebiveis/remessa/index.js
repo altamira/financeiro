@@ -57,6 +57,16 @@ export default class Remessa extends Component {
         "bordero": 0
       },
 
+      bordero: {
+        bruto: 0, 
+        liquido: 0, 
+        operacao: 0, 
+        tarifa: 0, 
+        juros: 0, 
+        iof: 0, 
+        taxa: 0, 
+      },
+
       remessa: [
         {
           "nosso_numero": 0,
@@ -121,8 +131,8 @@ export default class Remessa extends Component {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
-          carteira: response.data.documento.carteira,
           data: response.data.documento.data,
+          carteira: response.data.documento.carteira,
           remessa: response.data.documento.remessa
         });
       })
@@ -139,8 +149,8 @@ export default class Remessa extends Component {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
-          carteira: response.data.documento.carteira,
           data: response.data.documento.data,
+          carteira: response.data.documento.carteira,
           remessa: response.data.documento.remessa
         });
       })
@@ -158,7 +168,8 @@ export default class Remessa extends Component {
       ...this.state.tarefa, 
       documento: { 
         carteira: this.state.carteira, 
-        remessa: this.state.remessa
+        bordero: this.state.bordero,
+        remessa: this.state.remessa,
       }
     }, null, 2));
 
@@ -168,7 +179,8 @@ export default class Remessa extends Component {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
-          remessa: this.state.remessa
+          bordero: this.state.bordero,
+          remessa: this.state.remessa,
         }
       })
       .then( (response) => {
@@ -236,6 +248,7 @@ export default class Remessa extends Component {
         <Panel header={'Remessa de Cobrança'} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
+          
             <Col xs={4} md={4} >
 
               <OverlayTrigger 
@@ -261,19 +274,20 @@ export default class Remessa extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para fazer depois</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
               >
                   <Button
                     onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
-                    <div><span>Fazer depois</span></div>
+                    <div><span>Terminar depois</span></div>
                   </Button>
 
               </OverlayTrigger>
 
             </Col>
+
           </Row>
 
           <Row>
@@ -286,14 +300,14 @@ export default class Remessa extends Component {
                       <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
                         <thead>
                           <tr>
-                            <th>Carteira</th>
-                            <th style={{textAlign: 'right'}}>Limite</th>
-                            <th style={{textAlign: 'right'}}>Utilizado</th>
-                            <th style={{textAlign: 'right'}}>Saldo</th>
-                            <th style={{textAlign: 'right'}}>Defasagem</th>
-                            <th style={{textAlign: 'right'}}>Enviar</th>
-                            <th style={{textAlign: 'right'}}>Remessa</th>
-                            <th style={{textAlign: 'right'}}>Retorno</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Carteira</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -317,13 +331,13 @@ export default class Remessa extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th style={{textAlign: 'center'}}>Número</th>
-                            <th style={{textAlign: 'center'}}>Pedido</th>
-                            <th style={{textAlign: 'center'}}>Vencimento</th>
-                            <th style={{textAlign: 'center'}}>Parcela</th>
-                            <th style={{textAlign: 'center'}}>Prazo</th>
-                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th style={{width: '1%'}}></th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Número</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Pedido</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Vencimento</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Prazo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '1%'}}></th>
                           </tr>
                         </thead>
 
@@ -393,7 +407,7 @@ export default class Remessa extends Component {
 const Titulo = (remessa) =>
   <tbody>
     <tr>
-      <td colSpan={8}><h4><b>{remessa.cliente.nome}</b></h4></td>
+      <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{remessa.cliente.nome}</b></h4></td>
     </tr>
     {remessa.parcelas.map ( (parcela, index) =>
       <Parcela key={'parcela-' + remessa.nosso_numero + '-' + index} {...parcela} nosso_numero={remessa.nosso_numero} pedido={remessa.pedido} cliente={remessa.cliente} remessa_index={remessa.index} parcela_index={index} handleSelect={remessa.handleSelect} handleUnselect={remessa.handleUnselect} />

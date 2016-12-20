@@ -58,6 +58,16 @@ export default class Retorno extends Component {
         "bordero": 0
       },
 
+      bordero: {
+        bruto: 0, 
+        liquido: 0, 
+        operacao: 0, 
+        tarifa: 0, 
+        juros: 0, 
+        iof: 0, 
+        taxa: 0, 
+      },
+
       retorno: [
         {
           "nosso_numero": 0,
@@ -122,8 +132,8 @@ export default class Retorno extends Component {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
-          carteira: response.data.documento.carteira,
           data: response.data.documento.data,
+          carteira: response.data.documento.carteira,
           retorno: response.data.documento.retorno
         });
       })
@@ -140,8 +150,8 @@ export default class Retorno extends Component {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
           tarefa: omit(response.data, 'documento'), 
-          carteira: response.data.documento.carteira,
           data: response.data.documento.data,
+          carteira: response.data.documento.carteira,
           retorno: response.data.documento.retorno
         });
       })
@@ -159,21 +169,13 @@ export default class Retorno extends Component {
       ...this.state.tarefa, 
       documento: { 
         carteira: this.state.carteira, 
+        bordero: this.state.bordero,
         retorno: this.state.retorno
       }
     }, null, 2));
 
     this.setState({dialog: <Bordero 
-      bordero={{
-        valor_bruto: 0, 
-        valor_liquido: 0, 
-        valor_contratacao: 0, 
-        valor_tarifa: 0, 
-        valor_juros: 0, 
-        taxa_juros: 0, 
-        valor_iof: 0, 
-        valor_liquido: 0
-      }} 
+      bordero={this.state.bordero} 
       onClose={this.handleCloseDialog.bind(this)} 
       onSave={this.handleSaveAndClose.bind(this)} />
     })
@@ -181,14 +183,22 @@ export default class Retorno extends Component {
   }
 
   handleSaveAndClose(bordero) {
-    console.log('Bordero: ' + JSON.stringify(bordero, null, 2))
+    console.log(JSON.stringify({
+      ...this.state.tarefa, 
+      documento: { 
+        carteira: this.state.carteira, 
+        retorno: this.state.retorno,
+        bordero: bordero
+      }
+    }, null, 2));
         // carrega os parametros da tarefa
     axios
       .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
-          retorno: this.state.retorno
+          retorno: this.state.retorno,
+          bordero: bordero
         }
       })
       .then( (response) => {
@@ -211,7 +221,7 @@ export default class Retorno extends Component {
       retorno: this.state.retorno.map( (r, i) => {
         
         if (retorno.retorno_index === i) {
-          r.parcelas[retorno.parcela_index].selected = aceito;
+          r.parcelas[retorno.parcela_index].aceito = aceito;
         } 
 
         return r;
@@ -225,7 +235,7 @@ export default class Retorno extends Component {
       retorno: this.state.retorno.map( (r, i) => {
         
         if (retorno.retorno_index === i) {
-          r.parcelas[retorno.parcela_index].selected = retorno.aceito;
+          r.parcelas[retorno.parcela_index].aceito = retorno.aceito;
         } 
 
         return r;
@@ -259,7 +269,7 @@ export default class Retorno extends Component {
 
   render() {
 
-    let total = this.state.retorno.reduce( (total, r) => total + r.parcelas.reduce( (subtotal, p) => subtotal + (p.selected ? p.valor : 0.0), 0.0), 0.0);
+    let total = this.state.retorno.reduce( (total, r) => total + r.parcelas.reduce( (subtotal, p) => subtotal + (p.aceito ? p.valor : 0.0), 0.0), 0.0);
 
     return (
 
@@ -268,6 +278,7 @@ export default class Retorno extends Component {
         <Panel header={'Retorno de Cobrança'} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
+          
             <Col xs={4} md={4} >
 
               <OverlayTrigger 
@@ -275,7 +286,7 @@ export default class Retorno extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => p.selected === undefined))}
+                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => p.aceito === undefined))}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -293,19 +304,20 @@ export default class Retorno extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Deixar para fazer depois</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
               >
                   <Button
                     onClick={this.handleClose}
                     style={{width: 120}}
                   >
                     <Glyphicon glyph="time" />
-                    <div><span>Fazer depois</span></div>
+                    <div><span>Terminar depois</span></div>
                   </Button>
 
               </OverlayTrigger>
 
             </Col>
+
           </Row>
 
           <Row>
@@ -318,14 +330,14 @@ export default class Retorno extends Component {
                       <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
                         <thead>
                           <tr>
-                            <th>Carteira</th>
-                            <th style={{textAlign: 'right'}}>Limite</th>
-                            <th style={{textAlign: 'right'}}>Utilizado</th>
-                            <th style={{textAlign: 'right'}}>Saldo</th>
-                            <th style={{textAlign: 'right'}}>Defasagem</th>
-                            <th style={{textAlign: 'right'}}>Enviar</th>
-                            <th style={{textAlign: 'right'}}>Remessa</th>
-                            <th style={{textAlign: 'right'}}>Retorno</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Carteira</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -349,13 +361,13 @@ export default class Retorno extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th style={{textAlign: 'center'}}>Número</th>
-                            <th style={{textAlign: 'center'}}>Pedido</th>
-                            <th style={{textAlign: 'center'}}>Vencimento</th>
-                            <th style={{textAlign: 'center'}}>Parcela</th>
-                            <th style={{textAlign: 'center'}}>Prazo</th>
-                            <th style={{textAlign: 'right'}}>Valor da Parcela</th>
-                            <th style={{width: '110px'}} ></th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Número</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Pedido</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Vencimento</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Prazo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '110px'}} ></th>
                           </tr>
                         </thead>
 
@@ -368,7 +380,7 @@ export default class Retorno extends Component {
                   <Row>
                     <Col xs={0} md={8}></Col>
                     <Col xs={12} md={4}>
-                      {this.state.retorno.find( retorno => retorno.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
+                      {this.state.retorno.find( retorno => retorno.parcelas.find( parcela => parcela.aceito)) && this.state.carteira !== null ? 
 
                         <Table striped bordered condensed hover>
                           <thead>
@@ -425,7 +437,7 @@ export default class Retorno extends Component {
 const Titulo = (retorno) =>
   <tbody>
     <tr>
-      <td colSpan={8}><h4><b>{retorno.cliente.nome}</b></h4></td>
+      <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{retorno.cliente.nome}</b></h4></td>
     </tr>
     {retorno.parcelas.map ( (parcela, index) =>
       <Parcela key={'parcela-' + retorno.nosso_numero + '-' + index} {...parcela} nosso_numero={retorno.nosso_numero} pedido={retorno.pedido} cliente={retorno.cliente} retorno_index={retorno.index} parcela_index={index} handleSelect={retorno.handleSelect} handleUnselect={retorno.handleUnselect} />
@@ -441,8 +453,8 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
     
-    {parcela.selected === undefined ?
-      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>
+    {parcela.aceito === undefined ?
+      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>
         <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela, true)}>
           <Glyphicon glyph="thumbs-up" />
         </Button>
@@ -455,9 +467,9 @@ const Parcela = (parcela) =>
 
       :
 
-      (parcela.selected ?
+      (parcela.aceito ?
 
-      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
         <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
           <Glyphicon glyph="ok" />
         </Button>
@@ -465,7 +477,7 @@ const Parcela = (parcela) =>
 
       :
 
-      (<td><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
         <Button bsStyle="danger" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
           <Glyphicon glyph="ok" />
         </Button>
