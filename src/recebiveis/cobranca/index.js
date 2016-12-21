@@ -74,7 +74,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -93,7 +93,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -109,7 +109,7 @@ export default class Cobranca extends Component {
 
     // carrega documento
     /*axios
-      .get('http://financeiro:1880/api/financeiro/cobranca')
+      .get('http://localhost:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -125,7 +125,7 @@ export default class Cobranca extends Component {
   
   handleSaveAndClose() {
     axios
-      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -152,7 +152,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -422,7 +422,7 @@ export default class Cobranca extends Component {
 const Recebivel = (cobranca) =>
   <tbody>
     <tr>
-      <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{cobranca.cliente.nome}</b></h4></td>
+      <td colSpan={9} style={{borderBottom: '2px solid black'}} ><h4><b>{cobranca.cliente.nome}</b></h4></td>
     </tr>
     {cobranca.parcelas.map ( (parcela, index) =>
       <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.pedido} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />

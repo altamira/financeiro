@@ -30,6 +30,16 @@ export default class Titulo extends Component {
 
 	}
 
+	ValorValidationState() {
+	    var regex = /^[0-9]{1,9}([.]([0-9]{3}))*[,]([.]{0})[0-9]{0,2}$/;
+	    const length = this.state.valor.length;
+	     if (regex.test(this.state.valor)&&(length<10)){
+	      return 'success';
+	    } else {
+	      return 'error';
+	    }
+	}
+
 	render() {
 
 		return(
@@ -44,7 +54,7 @@ export default class Titulo extends Component {
 
 		   			<Row>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Pedido</ControlLabel>
 						      	<InputGroup>
 							      	<FormControl type="text" value={this.props.pedido} onChange={this.handleChange} />
@@ -52,7 +62,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Parcela</ControlLabel>
 						      	<InputGroup>
 						      		<FormControl type="text" value={this.props.parcela} onChange={this.handleChange} />
@@ -60,7 +70,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Data Remessa</ControlLabel>
 						      	<InputGroup>
 							      	<FormControl type="text" value={this.props.data} onChange={this.handleChange} />
@@ -71,7 +81,7 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Nosso Número</ControlLabel>
 						      	<InputGroup>
 						      		<FormControl type="text" value={this.props.nosso_numero + '/' + this.props.parcela} onChange={this.handleChange} />
@@ -79,7 +89,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Vencimento</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.vencto} onChange={this.handleChange} />
@@ -87,7 +97,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Valor</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.valor} onChange={this.handleChange} />
@@ -98,7 +108,7 @@ export default class Titulo extends Component {
 				
 					<Row>
 						<Col xs={12} md={7}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>CNPJ/CPF</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.cnpj} onChange={this.handleChange} />
@@ -106,7 +116,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={5}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Inscricao</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.inscricao} onChange={this.handleChange} />
@@ -117,7 +127,7 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={12}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Razão Social</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.nome} onChange={this.handleChange} />
@@ -128,7 +138,7 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={12}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Endereço</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onChange={this.handleChange} />
@@ -139,7 +149,7 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={3}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Numero</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.numero} onChange={this.handleChange} />
@@ -147,7 +157,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={5}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Complemento</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.complemento} onChange={this.handleChange} />
@@ -155,7 +165,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>CEP</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.CEP} onChange={this.handleChange} />
@@ -166,7 +176,7 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={5}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Bairro</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.bairro} onChange={this.handleChange} />
@@ -174,7 +184,7 @@ export default class Titulo extends Component {
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={7}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Cidade</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.cidade} onChange={this.handleChange} />
@@ -185,19 +195,19 @@ export default class Titulo extends Component {
 
 					<Row>
 						<Col xs={12} md={4}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Telefone</ControlLabel>
 						      	<InputGroup>
 								    <FormControl type="text" value={this.props.cliente.telefone} onChange={this.handleChange} />
+								    <FormControl.Feedback />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={8}>
-							<FormGroup>
+							<FormGroup validationState={this.onValidate()} >
 						      	<ControlLabel>Contato</ControlLabel>
-						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.contato} onChange={this.handleChange} />
-						      	</InputGroup>
+								<FormControl type="text" value={this.props.cliente.contato} onChange={this.handleChange} />
+						      	<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
 					</Row>
@@ -206,8 +216,8 @@ export default class Titulo extends Component {
 						<Col xs={12} md={12} style={{textAlign: 'right'}} >
 							<Button onClick={this.props.onClose} style={{margin: '5px'}} >Fechar</Button>
 							{ this.props.aceito ? 
-								(<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Aceito pelo Banco</Button>) :
-								(<Button bsStyle="danger" onClick={this.handleSaveAndClose.bind(this)} style={{margin: '5px'}} >Titulo Recusado pelo Banco</Button>)
+								(<Button bsStyle="success" onClick={this.handleSaveAndClose.bind(this)} disable={false} style={{margin: '5px'}} >Titulo Aceito pelo Banco</Button>) :
+								(<Button bsStyle="danger" onClick={this.handleSaveAndClose.bind(this)} disable={false} style={{margin: '5px'}} >Titulo Recusado pelo Banco</Button>)
 							}
 							
 						</Col>

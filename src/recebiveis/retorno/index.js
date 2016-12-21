@@ -127,7 +127,7 @@ export default class Retorno extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -145,7 +145,7 @@ export default class Retorno extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -175,7 +175,13 @@ export default class Retorno extends Component {
     }, null, 2));
 
     this.setState({dialog: <Bordero 
-      bordero={this.state.bordero} 
+      bordero={{
+        ...this.state.bordero, 
+        bruto: Number(this.state.retorno.reduce( (total, pagador) => 
+          total + pagador.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
+            subtotal + parcela.valor, 0)
+        , 0).toFixed(2)).toLocaleString()
+      }} 
       onClose={this.handleCloseDialog.bind(this)} 
       onSave={this.handleSaveAndClose.bind(this)} />
     })
@@ -193,12 +199,12 @@ export default class Retorno extends Component {
     }, null, 2));
         // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
           retorno: this.state.retorno,
-          bordero: bordero
+          Bordero: bordero
         }
       })
       .then( (response) => {
