@@ -300,8 +300,8 @@ class App extends Component {
                       <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa_total || 0).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
                     </tr>                              
                   )
                 }
@@ -338,13 +338,13 @@ class App extends Component {
                       <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
                       <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.bruto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.taxa.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_juros.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_iof.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
                     </tr>                              
                   )
                 }
@@ -381,13 +381,13 @@ class App extends Component {
                       <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
                       <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.bruto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.taxa.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_juros.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_iof.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
                     </tr>                              
                   )
                 }

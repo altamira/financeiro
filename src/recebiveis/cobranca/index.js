@@ -21,6 +21,7 @@ import Confirm from './Confirm';
 
 import { assign, omit } from 'lodash';
 import axios from 'axios';
+import moment from 'moment';
 
 import process from './process.svg';
 
@@ -242,10 +243,51 @@ export default class Cobranca extends Component {
 
   render() {
 
-    let total = this.state.cobranca.reduce( (total, cobranca) => 
+    let valor_bruto = this.state.cobranca.reduce( (total, cobranca) => 
       total + (cobranca.parcelas.reduce( (soma, parcela) => 
         soma + (parcela.selected ? parcela.valor: 0), 0.0) || 0)
       , 0.0) || 0;
+
+    let prazo = (this.state.carteira &&
+      this.state.cobranca.reduce( (total, cobranca) =>
+        total + (cobranca.parcelas.reduce( (dias, parcela) => 
+          dias + (parcela.selected ? moment(parcela.vencto).diff(moment(), 'days'): 0), 0) || 0)
+        , 0)) || 0;
+
+    let parcelas = (this.state.carteira &&
+      this.state.cobranca.reduce( (total, cobranca) =>
+        total + (cobranca.parcelas.reduce( (parcelas, parcela) => 
+          parcelas + (parcela.selected ? 1: 0), 0) || 0)
+        , 0)) || 0;
+
+    let valor_juros = (this.state.carteira &&
+      this.state.cobranca.reduce( (total, cobranca) =>
+        total + (cobranca.parcelas.reduce( (soma, parcela) => 
+          soma + (parcela.selected ? parcela.valor * (this.state.carteira.taxa_juros / 100): 0), 0.0) || 0)
+        , 0.0)) || 0.0;
+
+    let iof_contratacao = 0.038;
+    let iof_diario = 0.00041;
+
+    let valor_iof_contratacao = (this.state.carteira && 
+      this.state.cobranca.reduce( (total, cobranca) =>
+        total + (cobranca.parcelas.reduce( (soma, parcela) => 
+          soma + (parcela.selected ? parcela.valor * iof_contratacao: 0), 0.0) || 0)
+        , 0.0)) || 0.0;
+
+    let valor_iof_diario = (this.state.carteira && 
+      this.state.cobranca.reduce( (total, cobranca) =>
+        total + (cobranca.parcelas.reduce( (soma, parcela) => 
+          soma + (parcela.selected ? parcela.valor * (iof_diario * moment(parcela.vencto).diff(moment(), 'days')): 0), 0.0) || 0)
+        , 0.0)) || 0.0;
+
+    console.log(JSON.stringify({
+      valor_bruto: valor_bruto, 
+      prazo: prazo, 
+      valor_juros: valor_juros, 
+      valor_iof_contratacao: valor_iof_contratacao, 
+      valor_iof_diario: valor_iof_diario
+    }, null, 2))
 
     return (
 
@@ -363,8 +405,8 @@ export default class Cobranca extends Component {
                   </Row>
                   
                   <Row>
-                    <Col xs={0} md={8}></Col>
-                    <Col xs={12} md={4}>
+                    <Col xs={0} md={6}></Col>
+                    <Col xs={12} md={6}>
                       {this.state.cobranca.find( cobranca => cobranca.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
 
                         <Table striped bordered condensed hover>
@@ -377,23 +419,39 @@ export default class Cobranca extends Component {
                           <tbody>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_bruto.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Taxa Juros ({Number((this.state.carteira.taxa_juros).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((valor_bruto * (this.state.carteira.taxa_juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Quantidade de Parcelas</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(parcelas.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Total de dias</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(prazo.toFixed(2)).toLocaleString()} dias</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Total IOF Contratação (3,8%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_iof_contratacao.toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Total IOF Diário (0,041%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_iof_diario.toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Tarifas do Borderô/Operação</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.carteira.total_tarifas.toFixed(2)).toLocaleString()}</b></td>
+                            </tr>
+                            <tr>
+                              <td style={{textAlign: 'right'}}><b>Valor Juros ({Number(valor_juros.toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_juros.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((valor_bruto - valor_iof_contratacao - valor_iof_diario - valor_juros - this.state.carteira.total_tarifas).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>

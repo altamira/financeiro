@@ -17,8 +17,6 @@ import moment from 'moment';
 
 import CopyToClipboard from 'react-copy-to-clipboard';
 import DatePicker from 'react-bootstrap-date-picker';
-import CurrencyMaskedInput from 'react-currency-masked-input';
-import SimpleCurrencyInput from 'react-simple-currency';
 
 export default class Bordero extends Component {
 	constructor(props) {
@@ -38,7 +36,7 @@ export default class Bordero extends Component {
 	parseStateToFloatNumbers() {
 		return Object.keys(this.state).reduce( (newState, key) => 
 			{
-				newState[key] = parseFloat(this.state[key].toString().replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2);
+				newState[key] = parseFloat(Number(this.state[key].toString().replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2));
 				return newState;
 			}
 		, {})
@@ -61,6 +59,17 @@ export default class Bordero extends Component {
 
 		let state = this.parseStateToFloatNumbers();
 
+		console.log(JSON.stringify({
+			valor_bruto: state.valor_bruto, 
+			valor_liquido: state.valor_bruto - state.valor_operacao - state.valor_tarifa - state.valor_juros - state.valor_iof,
+			valor_liquido: state.valor_liquido, 
+			valor_operacao: state.valor_operacao,
+			valor_tarifa: state.valor_tarifa,
+			valor_iof: state.valor_iof,
+			valor_juros: state.valor_juros,
+			taxa_juros: this.state.carteira.taxa_juros,
+		}, null, 2))
+
 		return(
 
 	        <Modal.Dialog>
@@ -75,35 +84,8 @@ export default class Bordero extends Component {
 						<Col xs={12} md={6}>
 							<FormGroup validationState={this.onValidate('bruto') ? 'success' : 'error'} >
 						      	<ControlLabel>Valor Títulos (Bruto)</ControlLabel>
-						      	<FormControl style={{textAlign: 'right'}} name="bruto" readOnly value={this.state.bruto} onChange={this.handleChange} />
+						      	<FormControl style={{textAlign: 'right'}} name="valor_bruto" readOnly value={this.state.valor_bruto} onChange={this.handleChange} />
 								<FormControl.Feedback />
-						    </FormGroup>						    
-						</Col>
-					</Row>
-
-					<Row>
-						<Col xs={12} md={6}>
-							<FormGroup validationState={this.onValidate('juros') ? 'success' : 'error'} >
-						      	<ControlLabel>Valor do Juros</ControlLabel>
-						      	<FormControl style={{textAlign: 'right'}} name="juros" value={this.state.juros} onChange={this.handleChange} />
-						      	{/*<SimpleCurrencyInput 
-						      		name="juros" 
-						      		value={this.state.juros} 
-						      		onInputChange={this.handleInputChange} 
-						      		className=''
-									precision={2}
-									separator=','
-									delimiter='.'
-									unit='R$'
-						      	/>*/}
-								<FormControl.Feedback />
-						    </FormGroup>						    
-						</Col>
-						<Col xs={12} md={6}>
-							<FormGroup validationState={this.onValidate('taxa') ? 'success' : 'error'} >
-						      	<ControlLabel>Taxa de Juros</ControlLabel>
-						      	<FormControl style={{textAlign: 'right'}} type="text" name="taxa" value={this.state.taxa} onChange={this.handleChange} />
-						      	<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
 					</Row>
@@ -112,28 +94,48 @@ export default class Bordero extends Component {
 						<Col xs={12} md={6}>
 							<FormGroup validationState={this.onValidate('operacao') ? 'success' : 'error'} >
 						      	<ControlLabel>Valor da Tarifa Operação/Contratação</ControlLabel>
-						      	<FormControl style={{textAlign: 'right'}} type="text" name="operacao" value={this.state.operacao} onChange={this.handleChange} />
+						      	<FormControl style={{textAlign: 'right'}} type="text" name="valor_operacao" value={this.state.valor_operacao} onChange={this.handleChange} />
 								<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={6}>
 							<FormGroup validationState={this.onValidate('tarifa') ? 'success' : 'error'} >
 						      	<ControlLabel>Valor da Tarifa de Títulos</ControlLabel>
-								<FormControl style={{textAlign: 'right'}} type="text" name="tarifa" value={this.state.tarifa} onChange={this.handleChange} />
+								<FormControl style={{textAlign: 'right'}} type="text" name="valor_tarifa" value={this.state.valor_tarifa} onChange={this.handleChange} />
 						      	<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
+					</Row>
+
+					<Row>
+						<Col xs={12} md={6}>
+							<FormGroup validationState={this.onValidate('juros') ? 'success' : 'error'} >
+						      	<ControlLabel>Valor do Juros</ControlLabel>
+						      	<FormControl style={{textAlign: 'right'}} name="valor_juros" value={this.state.valor_juros} onChange={this.handleChange} />
+								<FormControl.Feedback />
+						    </FormGroup>						    
+						</Col>
+						<Col xs={12} md={6}>
+							<FormGroup validationState={this.onValidate('taxa') ? 'success' : 'error'} >
+						      	<ControlLabel>Taxa de Juros</ControlLabel>
+						      	<FormControl style={{textAlign: 'right'}} type="text" name="taxa_juros" value={this.state.taxa_juros} onChange={this.handleChange} />
+						      	<FormControl.Feedback />
+						    </FormGroup>						    
+						</Col>
+					</Row>
+
+					<Row>
 						<Col xs={12} md={6}>
 							<FormGroup validationState={this.onValidate('iof') ? 'success' : 'error'} >
 						      	<ControlLabel>Valor do IOF</ControlLabel>
-								<FormControl style={{textAlign: 'right'}} type="text" name="iof" value={this.state.iof} onChange={this.handleChange} />
+								<FormControl style={{textAlign: 'right'}} type="text" name="iof" value={this.state.valor_iof} onChange={this.handleChange} />
 						      	<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
 						<Col xs={12} md={6}>
 							<FormGroup validationState={this.onValidate('liquido') ? 'success' : 'error'} >
 						      	<ControlLabel>Valor do Crédito (Líquido)</ControlLabel>
-								<FormControl style={{textAlign: 'right'}} type="text" name="liquido" value={this.state.liquido} onChange={this.handleChange} />
+								<FormControl style={{textAlign: 'right'}} type="text" name="liquido" value={this.state.valor_liquido} onChange={this.handleChange} />
 						      	<FormControl.Feedback />
 						    </FormGroup>						    
 						</Col>
@@ -153,7 +155,7 @@ export default class Bordero extends Component {
 									this.onValidate('tarifa') &&
 									this.onValidate('iof') &&
 									this.onValidate('liquido') && 
-									state.liquido === state.bruto - state.operacao - state.tarifa - state.juros - state.iof /*&& 
+									state.valor_liquido === state.valor_bruto - state.valor_operacao - state.valor_tarifa - state.valor_juros - state.valor_iof /*&& 
 									state.iof === state.bruto * (state.taxa / 100) */
 								)} style={{margin: '5px'}} >Emitir Borderô</Button>							
 						</Col>

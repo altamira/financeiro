@@ -59,13 +59,13 @@ export default class Retorno extends Component {
       },
 
       bordero: {
-        bruto: 0, 
-        liquido: 0, 
-        operacao: 0, 
-        tarifa: 0, 
-        juros: 0, 
-        iof: 0, 
-        taxa: 0, 
+        valor_bruto: 0, 
+        valor_liquido: 0, 
+        valor_operacao: 0, 
+        valor_tarifa: 0, 
+        valor_iof: 0, 
+        valor_juros: 0, 
+        taxa_juros: 0, 
       },
 
       retorno: [
@@ -204,7 +204,7 @@ export default class Retorno extends Component {
         documento: { 
           carteira: this.state.carteira, 
           retorno: this.state.retorno,
-          Bordero: bordero
+          bordero: bordero
         }
       })
       .then( (response) => {
@@ -354,8 +354,8 @@ export default class Retorno extends Component {
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno_total || 0).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
                             </tr>                              
                         </tbody>
                       </Table>
@@ -383,7 +383,7 @@ export default class Retorno extends Component {
                     </Col>
                   </Row>
                   
-                  <Row>
+                  {/*<Row>
                     <Col xs={0} md={8}></Col>
                     <Col xs={12} md={4}>
                       {this.state.retorno.find( retorno => retorno.parcelas.find( parcela => parcela.aceito)) && this.state.carteira !== null ? 
@@ -401,20 +401,20 @@ export default class Retorno extends Component {
                               <td style={{textAlign: 'right'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.iof / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.valor_iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.valor_iof / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.juros / 100)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.valor_juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.valor_juros / 100)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.bordero).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.valor_tarifas).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                             <tr>
                               <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.iof + this.state.carteira.juros) / 100) + this.state.carteira.bordero)).toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.valor_iof + this.state.carteira.valor_juros) / 100) + this.state.carteira.valor_tarifas)).toFixed(2)).toLocaleString()}</b></td>
                             </tr>
                           </tbody>
                         </Table>
@@ -422,7 +422,7 @@ export default class Retorno extends Component {
                         : null
                       }
                     </Col>
-                  </Row>              
+                  </Row>*/}             
                 </div>
               </Tab>
               <Tab eventKey={2} title="Procedimento">

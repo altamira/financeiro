@@ -54,17 +54,19 @@ export default class Remessa extends Component {
         "descoberto": 0,
         "iof": 0,
         "juros": 0,
-        "bordero": 0
+        "bordero": 0,
+        remessa: 0,
+        retorno: 0
       },
 
       bordero: {
-        bruto: 0, 
-        liquido: 0, 
-        operacao: 0, 
-        tarifa: 0, 
-        juros: 0, 
-        iof: 0, 
-        taxa: 0, 
+        valor_bruto: 0, 
+        valor_liquido: 0, 
+        valor_operacao: 0, 
+        valor_tarifa: 0, 
+        valor_iof: 0, 
+        valor_juros: 0, 
+        taxa_juros: 0, 
       },
 
       remessa: [
@@ -318,8 +320,8 @@ export default class Remessa extends Component {
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
                               <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.remessa_total || 0).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
                             </tr>                              
                         </tbody>
                       </Table>
@@ -347,7 +349,7 @@ export default class Remessa extends Component {
                     </Col>
                   </Row>
                   
-                  <Row>
+                  {/*<Row>
                     <Col xs={0} md={8}></Col>
                     <Col xs={12} md={4}>
                       {this.state.remessa.find( remessa => remessa.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
@@ -386,7 +388,7 @@ export default class Remessa extends Component {
                         : null
                       }
                     </Col>
-                  </Row>              
+                  </Row> */}             
                 </div>
               </Tab>
               <Tab eventKey={2} title="Procedimento">

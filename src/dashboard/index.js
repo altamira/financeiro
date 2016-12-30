@@ -73,24 +73,24 @@ export default class Dashboard extends Component {
       <div>
         <Row>
           <Col xs={12} md={12}>
-            <h2>Resumo Cobrança</h2>
+            <h2 style={{color: 'gray'}} >Resumo Cobrança</h2>
             <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
               <thead>
                 <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black'}} >Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Limite</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Utilizado</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Saldo</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Defasagem</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Enviar</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Retorno</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
                 </tr>
               </thead>
               <tbody>
                 {this.state.carteiras.map( (carteira, index) => {
                   return (
-                    <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
+                    <tr key={'tr-carteiras-' + index} >
                       <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
