@@ -18,10 +18,13 @@ import { Image } from 'react-bootstrap';
 import Error from './../../Error';
 
 import Confirm from './Confirm';
+import Bordero from './Bordero.jsx';
 
 import { assign, omit } from 'lodash';
 import axios from 'axios';
 import moment from 'moment';
+
+import bordero from './bordero';
 
 import process from './process.svg';
 
@@ -42,13 +45,17 @@ export default class Cobranca extends Component {
 
       tarefa: {},
 
+      // carteira selecionada
+      carteira: null,
+
+      // lista de carteiras
+      carteiras: [],
+
       // titulos a enviar para cobranca bancária
       cobranca: [],
 
-      // campos de controle, não apagar
-      carteira: null,
-
-      carteiras: [],
+      // calculo bordero
+      bordero: bordero,
 
       // campos de controle, não armazenar
       dialog: null,
@@ -75,16 +82,12 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
           {
-            carteiras: response.data.map( c => 
-            {
-              c.remessa_total = c.remessa;
-              return c;
-            })
+            carteiras: response.data
           }
         );
       })
@@ -94,7 +97,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -105,12 +108,12 @@ export default class Cobranca extends Component {
         );
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })  
 
     // carrega documento
     /*axios
-      .get('http://localhost:1880/api/financeiro/cobranca')
+      .get('http://financeiro:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -121,16 +124,48 @@ export default class Cobranca extends Component {
 
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(props) {
+    axios
+      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            carteiras: response.data
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
+      })         
+
+    // carrega os parametros da tarefa
+    axios
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            tarefa: response.data, 
+            cobranca: response.data.documento
+          }
+        );
+      })
+      .catch( error => {
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
+      })  
   }
   
   handleSaveAndClose() {
+    let { carteira, cobranca, bordero } = this.state;
+
     axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
-          carteira: this.state.carteira, 
-          cobranca: this.state.cobranca
+          carteira: carteira, 
+          cobranca: cobranca,
+          bordero: bordero.calculo(carteira, cobranca)
         }
       })
       .then( (response) => {
@@ -138,26 +173,30 @@ export default class Cobranca extends Component {
         this.props.router.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
   handleComplete(data) {
+    let { carteira, cobranca, bordero } = this.state;
+
     console.log(JSON.stringify({
       ...this.state.tarefa, 
       documento: { 
-        carteira: this.state.carteira, 
-        cobranca: this.state.cobranca
+        carteira: carteira, 
+        cobranca: cobranca,
+        bordero: bordero.calculo(carteira, cobranca)
       }
     }, null, 2));
 
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
-          carteira: this.state.carteira, 
-          cobranca: this.state.cobranca
+          carteira: carteira, 
+          cobranca: cobranca,
+          bordero: bordero
         }
       })
       .then( (response) => {
@@ -173,20 +212,7 @@ export default class Cobranca extends Component {
   }
 
   handleSelectCarteira(carteira, index) {
-    this.setState({
-      carteiras: this.state.carteiras.map( c => {
-        c.remessa_total = c.remessa;
-        return c;
-      }), 
-      carteira: {
-        ...carteira, 
-        remessa_total: this.state.cobranca.reduce( (total, c) => 
-          total + c.parcelas.reduce( (soma, p) => 
-            soma + (p.selected ? p.valor : 0)
-          , 0.0)
-        , 0.0)
-      }
-    })
+    this.setState({carteira: carteira})
   }
 
   handleSelect(nosso_numero, parcela) {
@@ -243,51 +269,9 @@ export default class Cobranca extends Component {
 
   render() {
 
-    let valor_bruto = this.state.cobranca.reduce( (total, cobranca) => 
-      total + (cobranca.parcelas.reduce( (soma, parcela) => 
-        soma + (parcela.selected ? parcela.valor: 0), 0.0) || 0)
-      , 0.0) || 0;
+    let { carteira, cobranca, bordero } = this.state;
 
-    let prazo = (this.state.carteira &&
-      this.state.cobranca.reduce( (total, cobranca) =>
-        total + (cobranca.parcelas.reduce( (dias, parcela) => 
-          dias + (parcela.selected ? moment(parcela.vencto).diff(moment(), 'days'): 0), 0) || 0)
-        , 0)) || 0;
-
-    let parcelas = (this.state.carteira &&
-      this.state.cobranca.reduce( (total, cobranca) =>
-        total + (cobranca.parcelas.reduce( (parcelas, parcela) => 
-          parcelas + (parcela.selected ? 1: 0), 0) || 0)
-        , 0)) || 0;
-
-    let valor_juros = (this.state.carteira &&
-      this.state.cobranca.reduce( (total, cobranca) =>
-        total + (cobranca.parcelas.reduce( (soma, parcela) => 
-          soma + (parcela.selected ? parcela.valor * (this.state.carteira.taxa_juros / 100): 0), 0.0) || 0)
-        , 0.0)) || 0.0;
-
-    let iof_contratacao = 0.038;
-    let iof_diario = 0.00041;
-
-    let valor_iof_contratacao = (this.state.carteira && 
-      this.state.cobranca.reduce( (total, cobranca) =>
-        total + (cobranca.parcelas.reduce( (soma, parcela) => 
-          soma + (parcela.selected ? parcela.valor * iof_contratacao: 0), 0.0) || 0)
-        , 0.0)) || 0.0;
-
-    let valor_iof_diario = (this.state.carteira && 
-      this.state.cobranca.reduce( (total, cobranca) =>
-        total + (cobranca.parcelas.reduce( (soma, parcela) => 
-          soma + (parcela.selected ? parcela.valor * (iof_diario * moment(parcela.vencto).diff(moment(), 'days')): 0), 0.0) || 0)
-        , 0.0)) || 0.0;
-
-    console.log(JSON.stringify({
-      valor_bruto: valor_bruto, 
-      prazo: prazo, 
-      valor_juros: valor_juros, 
-      valor_iof_contratacao: valor_iof_contratacao, 
-      valor_iof_diario: valor_iof_diario
-    }, null, 2))
+    bordero.calculo(carteira, cobranca);
 
     return (
 
@@ -304,7 +288,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(this.state.cobranca.find( cobranca => cobranca.parcelas.find( parcela => !parcela.carteira && parcela.selected)) && this.state.carteira !== null)}
+                    disabled={!(cobranca.find( c => c.parcelas.find( parcela => !parcela.carteira && parcela.selected)) && carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -359,18 +343,18 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
                         <tbody>
-                          {this.state.carteiras.map( (carteira, index) => {
+                          {this.state.carteiras.map( (c, index) => {
                             return (
-                              <tr key={'tr-carteiras-' + index} style={{background: this.state.carteira && this.state.carteira.id === carteira.id ? 'gold' : ''}} >
-                                <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa_total || 0).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno).toLocaleString()}</b></td>
-                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, carteira, index)} ><Glyphicon glyph="ok" /></Button></td>
+                              <tr key={'tr-carteiras-' + index} style={{background: carteira && carteira.id === c.id ? 'gold' : ''}} >
+                                <td style={{textAlign: 'left'}}><b>{c.nome}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.limite.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.utilizado.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.saldo.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.defasagem.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.descoberto.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.remessa.toFixed(2)).toLocaleString()}</b></td>
+                                <td style={{textAlign: 'right'}}><b>{Number(c.retorno.toFixed(2)).toLocaleString()}</b></td>
+                                <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, c, index)} ><Glyphicon glyph="ok" /></Button></td>
                               </tr>                              
                             )
                           }
@@ -390,7 +374,8 @@ export default class Cobranca extends Component {
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Pedido</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Vencimento</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Parcela</th>
-                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Prazo</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Condição Pagto</th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Dias do Vencto</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >CARTEIRA</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Data Envio</th>
@@ -398,7 +383,7 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
 
-                          {this.state.cobranca.map( (cobranca, index) => <Recebivel key={'recebivel-' + cobranca.nosso_numero} {...cobranca} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          {cobranca.map( (c, index) => <Pagador key={'recebivel-' + c.nosso_numero} {...c} {...bordero} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
                         
                       </Table>
                     </Col>
@@ -407,56 +392,8 @@ export default class Cobranca extends Component {
                   <Row>
                     <Col xs={0} md={6}></Col>
                     <Col xs={12} md={6}>
-                      {this.state.cobranca.find( cobranca => cobranca.parcelas.find( parcela => parcela.selected)) && this.state.carteira !== null ? 
-
-                        <Table striped bordered condensed hover>
-                          <thead>
-                            <tr>
-                              <th style={{textAlign: 'right'}}>DESCONTOS</th>
-                              <th style={{textAlign: 'right'}}>VALOR</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_bruto.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Taxa Juros ({Number((this.state.carteira.taxa_juros).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((valor_bruto * (this.state.carteira.taxa_juros / 100)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Quantidade de Parcelas</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(parcelas.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Total de dias</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(prazo.toFixed(2)).toLocaleString()} dias</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Total IOF Contratação (3,8%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_iof_contratacao.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Total IOF Diário (0,041%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_iof_diario.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Tarifas do Borderô/Operação</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.carteira.total_tarifas.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Juros ({Number(valor_juros.toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(valor_juros.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((valor_bruto - valor_iof_contratacao - valor_iof_diario - valor_juros - this.state.carteira.total_tarifas).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                          </tbody>
-                        </Table>
-                          
-                        : null
+                      {cobranca.find( c => c.parcelas.find( parcela => parcela.selected)) && carteira !== null ? 
+                        <Bordero carteira={carteira} bordero={bordero} /> : null
                       }
                     </Col>
                   </Row>                  
@@ -477,13 +414,13 @@ export default class Cobranca extends Component {
   }
 }
 
-const Recebivel = (cobranca) =>
+const Pagador = (cobranca) =>
   <tbody>
     <tr>
-      <td colSpan={9} style={{borderBottom: '2px solid black'}} ><h4><b>{cobranca.cliente.nome}</b></h4></td>
+      <td colSpan={10} style={{borderBottom: '2px solid black'}} ><h4><b>{cobranca.cliente.nome}</b></h4></td>
     </tr>
     {cobranca.parcelas.map ( (parcela, index) =>
-      <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} nosso_numero={cobranca.nosso_numero} pedido={cobranca.pedido} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />
+      <Parcela key={'parcela-' + parcela.nosso_numero + '-' + index} {...parcela} {...cobranca} nosso_numero={cobranca.nosso_numero} pedido={cobranca.pedido} index={index} handleSelect={cobranca.handleSelect} handleUnselect={cobranca.handleUnselect} />
     )}
   </tbody>
 
@@ -494,11 +431,12 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
+    <td style={{textAlign: 'center'}}>{moment(parcela.vencto).diff(moment(parcela.data_operacao), 'days') + ' dia(s)'}</td>
     <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
     <td ><b>{parcela.carteira}</b></td>
     <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>
-      {!parcela.carteira ? (!parcela.selected ? 
+      {!parcela.carteira && moment(parcela.vencto).diff(moment(parcela.data_operacao), 'days') >= 0 ? (!parcela.selected ? 
         (<Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela.nosso_numero, parcela.parcela)} ><Glyphicon glyph="ok" /></Button>) :                                 
         (<Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela.nosso_numero, parcela.parcela)} ><Glyphicon glyph="remove" /></Button>)) : null
       }

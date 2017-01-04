@@ -115,7 +115,7 @@ export default class Faturamento extends Component {
   loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + tarefa)
+      .get('http://financeiro:1880/api/tarefa/' + tarefa)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
@@ -133,7 +133,7 @@ export default class Faturamento extends Component {
 
   handleSaveAndClose() {
     axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -147,7 +147,7 @@ export default class Faturamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -249,7 +249,7 @@ export default class Faturamento extends Component {
 
   handleNossoNumero() {
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })

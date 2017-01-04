@@ -54,6 +54,54 @@ class App extends Component {
 
   }
 
+  componentWillReceiveProps(props) {
+    axios
+      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            carteiras: response.data.map( c => 
+            {
+              c.remessa_total = c.remessa;
+              return c;
+            })
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
+      })
+
+    axios
+      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            remessa: response.data
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as remessas.\nErro: ' + error.message);
+      })
+
+    axios
+      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+        this.setState(
+          {
+            retorno: response.data
+          }
+        );
+      })
+      .catch( error => {
+        alert('Erro ao obter as retornos.\nErro: ' + error.message);
+      })
+  }
+
   handleLogin(usuario) {
     this.setState({usuario: usuario}, this.mountComponent);
   }
@@ -144,7 +192,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
@@ -155,7 +203,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -173,7 +221,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/remessa/')
+      .get('http://financeiro:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -187,7 +235,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/retorno/')
+      .get('http://financeiro:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -338,7 +386,7 @@ class App extends Component {
                       <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
                       <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_titulos.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_juros.toFixed(2)).toLocaleString()}</b></td>
@@ -381,7 +429,7 @@ class App extends Component {
                       <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
                       <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_titulos.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
                       <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_juros.toFixed(2)).toLocaleString()}</b></td>

@@ -53,19 +53,32 @@ export default class Retorno extends Component {
         "saldo": 0,
         "defasagem": 0,
         "descoberto": 0,
-        "iof": 0,
-        "juros": 0,
-        "bordero": 0
+        "valor_operacao": 0,
+        "valor_tarifa": 0,
+        "taxa_juros": 0,
+        "total_iof": 0,
+        "total_juros": 0,
+        "total_tarifas": 0,
+        "remessa": 0,
+        "retorno": 0,
       },
 
       bordero: {
-        valor_bruto: 0, 
-        valor_liquido: 0, 
-        valor_operacao: 0, 
-        valor_tarifa: 0, 
-        valor_iof: 0, 
-        valor_juros: 0, 
-        taxa_juros: 0, 
+        "data": new Date().toISOString(),
+        "valor_titulos": 0,
+        "total_dias": 0,
+        "valor_juros": 0,
+        "valor_base": 0,
+        "numero_parcelas": 0,
+        "iof_adicional": 0,
+        "iof_diario": 0,
+        "valor_iof_adicional": 0,
+        "valor_iof_diario": 0,
+        "valor_operacao": 0,
+        "valor_tarifa": 0,
+        "valor_liquido": 0,
+        "valor_cet": 0,
+        "cet": 0
       },
 
       retorno: [
@@ -127,7 +140,7 @@ export default class Retorno extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -138,14 +151,14 @@ export default class Retorno extends Component {
         });
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -156,7 +169,7 @@ export default class Retorno extends Component {
         });
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })    
   }
 
@@ -169,15 +182,15 @@ export default class Retorno extends Component {
       ...this.state.tarefa, 
       documento: { 
         carteira: this.state.carteira, 
+        retorno: this.state.retorno,
         bordero: this.state.bordero,
-        retorno: this.state.retorno
       }
     }, null, 2));
 
     this.setState({dialog: <Bordero 
       bordero={{
         ...this.state.bordero, 
-        bruto: Number(this.state.retorno.reduce( (total, pagador) => 
+        valor_titulos: Number(this.state.retorno.reduce( (total, pagador) => 
           total + pagador.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
             subtotal + parcela.valor, 0)
         , 0).toFixed(2)).toLocaleString()
@@ -199,7 +212,7 @@ export default class Retorno extends Component {
     }, null, 2));
         // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -212,10 +225,7 @@ export default class Retorno extends Component {
         this.props.router.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error 
-          erro={error.response ? error.response.data.erro : 0} 
-          mensagem={error.message + (error.response.data.mensagem || JSON.stringify(error.response.data, null, 2))} 
-          onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
   }
@@ -377,52 +387,12 @@ export default class Retorno extends Component {
                           </tr>
                         </thead>
 
-                          {this.state.retorno.map( (r, index) => <Titulo key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          {this.state.retorno.map( (r, index) => <Pagador key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
                         
                       </Table>
                     </Col>
                   </Row>
-                  
-                  {/*<Row>
-                    <Col xs={0} md={8}></Col>
-                    <Col xs={12} md={4}>
-                      {this.state.retorno.find( retorno => retorno.parcelas.find( parcela => parcela.aceito)) && this.state.carteira !== null ? 
-
-                        <Table striped bordered condensed hover>
-                          <thead>
-                            <tr>
-                              <th style={{textAlign: 'right'}}>DESCONTOS</th>
-                              <th style={{textAlign: 'right'}}>VALOR</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Bruto</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number(total.toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>IOF ({Number((this.state.carteira.valor_iof / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.valor_iof / 100)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Juros ({Number((this.state.carteira.valor_juros / 100).toFixed(2)).toLocaleString()}%)</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total * (this.state.carteira.valor_juros / 100)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Taxa do Borderô</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((this.state.carteira.valor_tarifas).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                            <tr>
-                              <td style={{textAlign: 'right'}}><b>Valor Líquido</b></td>
-                              <td style={{textAlign: 'right'}}><b>R$ {Number((total - (total * ((this.state.carteira.valor_iof + this.state.carteira.valor_juros) / 100) + this.state.carteira.valor_tarifas)).toFixed(2)).toLocaleString()}</b></td>
-                            </tr>
-                          </tbody>
-                        </Table>
-                          
-                        : null
-                      }
-                    </Col>
-                  </Row>*/}             
+                              
                 </div>
               </Tab>
               <Tab eventKey={2} title="Procedimento">
@@ -440,7 +410,7 @@ export default class Retorno extends Component {
   }
 }
 
-const Titulo = (retorno) =>
+const Pagador = (retorno) =>
   <tbody>
     <tr>
       <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{retorno.cliente.nome}</b></h4></td>
