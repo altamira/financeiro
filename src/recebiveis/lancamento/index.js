@@ -34,7 +34,7 @@ import axios from 'axios';
 
 import process from './process.svg';
 
-export default class Faturamento extends Component {
+export default class Lancamento extends Component {
   constructor(props) {
     super(props);
 
@@ -105,41 +105,72 @@ export default class Faturamento extends Component {
   }
 
   componentWillMount() {
-    this.loadTarefas(this.props.params.id || 0);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.loadTarefas(nextProps.params.id);    
-  }
-  
-  loadTarefas(tarefa) {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + tarefa)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
         if (response.data.concluido) {
           this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
         } else {
-          this.setState(response.data, this.handleNossoNumero);
+          this.setState(response.data);
         }
         
       })
       .catch( error => {
-        alert('Erro ao obter a tarefa: ' + tarefa + '.\nErro: ' + error.message);
-      })      
+        alert('Erro ao obter a tarefa: ' + this.props.params.id + '.\nErro: ' + error.message);
+      })    
+
+    axios
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .then( (response) => {
+        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
+      })
+      .catch( error => {
+        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+      })
+
   }
 
+  componentWillReceiveProps(props) {
+    // carrega os parametros da tarefa
+    axios
+      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .then( (response) => {
+        console.log(JSON.stringify(response.data, null, 2))
+
+        if (response.data.concluido) {
+          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        } else {
+          this.setState(response.data);
+        }
+        
+      })
+      .catch( error => {
+        alert('Erro ao obter a tarefa: ' + props.params.id + '.\nErro: ' + error.message);
+      })      
+
+    axios
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .then( (response) => {
+        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
+      })
+      .catch( error => {
+        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+      })
+
+  }
+  
   handleSaveAndClose() {
     axios
-      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -147,13 +178,13 @@ export default class Faturamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -166,28 +197,28 @@ export default class Faturamento extends Component {
           tipo_vencto: 'DDL',
           emissao: this.state.documento.emissao, 
           entrega: this.state.documento.entrega, 
-          inicial: this.state.documento.entrega,
+          data_base: this.state.documento.entrega,
           vencto: this.state.documento.entrega,
           parcela: this.state.documento.parcelas.length + 1,
-          prazo: 0,
-          porcentagem: 0,
-          descricao: "",
-          valor: 0.0
+          prazo: "0",
+          valor: "0,00"
         }}      
       onSave={this.handleAdd.bind(this)} 
       onClose={this.handleSaveAndCloseDialog.bind(this)} />})
   }
 
   handleAdd(parcela) {
-    this.setState({documento: {...this.state.documento, parcelas: this.state.documento.parcelas.concat([parcela])}, dialog: null});
+    this.setState({documento: {...this.state.documento, parcelas: this.state.documento.parcelas.concat([{...parcela, valor: parseFloat(Number(parcela.valor.replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2)), prazo: parseInt(parcela.prazo)}])}, dialog: null});
   }
 
   handleFormEdit(parcela, index) {
     this.setState({dialog: <Edit 
       parcela={{...parcela, 
-          emissao: this.state.documento.emissao, 
-          entrega: this.state.documento.entrega, 
-          inicial: this.state.documento.tipo === 'DDP' ? this.state.documento.emissao : this.state.documento.entrega
+          prazo: parcela.prazo.toString(),
+          emissao: parcela.emissao, 
+          entrega: parcela.entrega, 
+          data_base: parcela.tipo_vencto === 'DDP' ? this.state.documento.emissao : this.state.documento.entrega,
+          valor: parcela.valor.toFixed(2).replace('.', '-').replace(',', '').replace('-', ',')
         }} 
       index={index}
       onSave={this.handleUpdate.bind(this)} 
@@ -196,7 +227,7 @@ export default class Faturamento extends Component {
 
   handleUpdate(parcela, index) {
     let parcelas = this.state.documento.parcelas;
-    parcelas.splice(index, 1, parcela);
+    parcelas.splice(index, 1, {...parcela, valor: parseFloat(Number(parcela.valor.replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2)), prazo: parseInt(parcela.prazo)});
     this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: undefined})
   }
 
@@ -244,17 +275,21 @@ export default class Faturamento extends Component {
 
   // formulario
   handleChange(value) {
-    this.setState({documento: {...this.state.documento, [value.target.id]: value.target.value}});
+    //this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
+  }
+
+  handleChangeDate(value, formattedValue) {
+    //this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
   }
 
   handleNossoNumero() {
     axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error.response.data} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
   }
 
@@ -283,7 +318,7 @@ export default class Faturamento extends Component {
 
       <div>
 
-        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.numero)} bsStyle="primary" >
+        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.documento.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
 
@@ -338,7 +373,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup>
                         <InputGroup>
-                        <FormControl type="text" id="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
+                        <FormControl type="text" name="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
                         <FormControl.Feedback />
                         <InputGroup.Addon className='btn-success' style={{cursor: 'pointer'}} >
                           <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
@@ -354,7 +389,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
-                        <FormControl type="text" id="numero" value={this.state.documento.numero} onChange={this.handleChange} />
+                        <FormControl type="text" name="numero" value={this.state.documento.numero} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -364,7 +399,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker id="emissao" value={this.state.documento.emissao} onChange={this.handleChange} />
+                        <DatePicker name="emissao" value={this.state.documento.emissao} onChange={this.handleChangeDate} disabled={true} showClearButton={false} />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={1}>Entrega</Col>
@@ -373,7 +408,7 @@ export default class Faturamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker id="entrega" value={this.state.documento.entrega} onChange={this.handleChange} />
+                        <DatePicker name="entrega" value={this.state.documento.entrega} onChange={this.handleChangeDate} disabled={true} showClearButton={false} />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -383,7 +418,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} id="cnpj" value={this.state.documento.cliente.cnpj} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} name="cnpj" value={this.state.documento.cliente.cnpj} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -391,7 +426,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={5}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" id="representante" value={this.state.documento.representante.nome} onChange={this.handleChange} />
+                        <FormControl type="text" name="representante" value={this.state.documento.representante.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -402,7 +437,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={10}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" id="nome" value={this.state.documento.cliente.nome} onChange={this.handleChange} />
+                        <FormControl type="text" name="nome" value={this.state.documento.cliente.nome} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -413,7 +448,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.produtos.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" name="produtos" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.produtos.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -421,7 +456,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.ipi.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" name="ipi" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.ipi.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -429,7 +464,7 @@ export default class Faturamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} value={'R$ ' + Number(this.state.documento.totais.total.toFixed(2)).toLocaleString()} onChange={this.handleChange} />
+                        <FormControl type="text" name="total" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.total.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -440,7 +475,7 @@ export default class Faturamento extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th colSpan={7} style={{width: '100', textAlign: 'right'}} ><Button style={{width: '110px'}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th colSpan={7} style={{width: 100, textAlign: 'right'}} ><Button style={{width: 110}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                           <tr>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Origem</th>
@@ -449,7 +484,7 @@ export default class Faturamento extends Component {
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Parcela</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}} >Prazo</th>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor da Parcela</th>
-                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: '120'}}></th>
+                            <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', width: 120}}></th>
                           </tr>
                         </thead>
                         <tbody>
@@ -461,7 +496,7 @@ export default class Faturamento extends Component {
                                 <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.documento.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
-                                <td style={{textAlign: 'right'}}>R$ {Number(parcela.valor.toFixed(2)).toLocaleString()}</td>
+                                <td style={{textAlign: 'right'}}>R$ {parcela.valor.toFixed(2).replace('.', ',')}</td>
                                 <td>
                                   <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_duplicar' + index} >Duplicar</Tooltip>}>
                                     <Button bsStyle="info" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleCopy.bind(null, parcela, index)}>
@@ -488,7 +523,7 @@ export default class Faturamento extends Component {
                           <tr>
                             <td colSpan={4}></td>
                             <td style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
-                            <td style={{textAlign: 'right'}}><b>R$ {Number(this.state.documento.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2)).toLocaleString()}</b></td>
+                            <td style={{textAlign: 'right'}}><b>R$ {this.state.documento.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2).replace('.', ',')}</b></td>
                             <td></td>
                           </tr>
                         </tbody>

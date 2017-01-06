@@ -6,9 +6,20 @@ import {
   Button
 } from 'react-bootstrap';
 
-export default class Delete extends Component {
+export default class Error extends Component {
 	
 	render() {
+
+		let erro = '';
+		let mensagem = '';
+
+		if (this.props.response && this.props.response.data) {
+			erro = this.props.response.data.erro;
+			mensagem = this.props.response.data.mensagem;
+		} else if (this.props.message) {
+			erro = this.props.message.error;
+			mensagem = this.props.message.message;
+		}
 
 		return(
 
@@ -23,8 +34,8 @@ export default class Delete extends Component {
 		          	<Table>
 		          		<tbody>
 							<tr>
-			                    <td style={{textAlign: 'center'}}>{this.props.erro}</td>
-			                    <td style={{textAlign: 'center'}}>{this.props.mensagem}</td>
+			                    <td style={{textAlign: 'center'}}>{erro}</td>
+			                    <td style={{textAlign: 'center'}}>{mensagem}</td>
 			                </tr>
 		                </tbody> 
 	                </Table>

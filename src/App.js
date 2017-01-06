@@ -42,8 +42,6 @@ class App extends Component {
     this.handleLogin = this.handleLogin.bind(this);
     this.handleLogout = this.handleLogout.bind(this);
 
-    this.mountComponent = this.mountComponent.bind(this);
-    
     this.goHome = this.goHome.bind(this);
 
     this.handleErro = this.handleErro.bind(this);
@@ -55,8 +53,8 @@ class App extends Component {
   }
 
   componentWillReceiveProps(props) {
-    axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+    /*axios
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -74,7 +72,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .get('http://localhost:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -88,7 +86,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .get('http://localhost:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -99,11 +97,11 @@ class App extends Component {
       })
       .catch( error => {
         alert('Erro ao obter as retornos.\nErro: ' + error.message);
-      })
+      })*/
   }
 
   handleLogin(usuario) {
-    this.setState({usuario: usuario}, this.mountComponent);
+    this.setState({usuario: usuario}, this.componentWillMount);
   }
 
   handleLogout() {
@@ -130,7 +128,10 @@ class App extends Component {
     this.props.router.push('/')
   }  
 
-  mountComponent() {
+  componentWillMount() {
+
+    if (!this.state.usuario) return;
+    
     var opts = {
       host: '192.168.0.1', //'test.mosquitto.org'
       port: 61614,
@@ -192,18 +193,18 @@ class App extends Component {
     })
 
     axios
-      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
         }
       })
       .catch( error => {
-        alert('Erro ao obter a lista de tarefas.');
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -217,11 +218,11 @@ class App extends Component {
         );
       })
       .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .get('http://localhost:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -231,11 +232,11 @@ class App extends Component {
         );
       })
       .catch( error => {
-        alert('Erro ao obter as remessas.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .get('http://localhost:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -245,7 +246,7 @@ class App extends Component {
         );
       })
       .catch( error => {
-        alert('Erro ao obter as retornos.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 

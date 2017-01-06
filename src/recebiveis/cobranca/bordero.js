@@ -19,7 +19,7 @@ export default {
     "valor_cet": 0,
     "cet": 0,
 
-    calculo: function(carteira, cobranca) {
+    calculo: function (carteira, cobranca) {
         
         let bordero = this;
 
@@ -30,11 +30,10 @@ export default {
               soma + (parcela.selected ? parcela.valor: 0), 0.0) || 0)
             , 0.0) || 0
 
-        this.total_dias = (carteira &&
-            cobranca.reduce( (total, c) =>
-              total + (c.parcelas.reduce( (dias, parcela) => 
-                dias + (parcela.selected ? moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0) || 0)
-              , 0)) || 0       
+        this.total_dias = cobranca.reduce( (total, c) =>
+            total + (c.parcelas.reduce( (dias, parcela) => 
+              dias + (parcela.selected ? moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0) || 0)
+            , 0) || 0       
 
         this.taxa_juros = carteira ? carteira.taxa_juros : 0
 

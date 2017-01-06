@@ -40,7 +40,7 @@ export default class Login extends Component {
 
   handleLogin() {
     axios
-      .post('http://financeiro:1880/api/usuario/login', {...omit(this.state, 'dialog'), senha: md5(this.state.senha)})
+      .post('http://localhost:1880/api/usuario/login', {...omit(this.state, 'dialog'), senha: md5(this.state.senha)})
       .then( (response) => {
         if (response.data.nome) {
           this.props.onLogin && this.props.onLogin(response.data);
@@ -49,7 +49,7 @@ export default class Login extends Component {
         }
       })
       .catch( error => {
-        this.setState({dialog: <Error erro={error.response ? error.response.data.erro : 0} mensagem={error.response ? error.response.data.mensagem : error.message} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
