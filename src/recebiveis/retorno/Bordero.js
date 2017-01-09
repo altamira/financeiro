@@ -9,14 +9,7 @@ import {
   FormControl,
   Button,
   Panel,
-  InputGroup,
-  Glyphicon
 } from 'react-bootstrap';
-
-import moment from 'moment';
-
-import CopyToClipboard from 'react-copy-to-clipboard';
-import DatePicker from 'react-bootstrap-date-picker';
 
 export default class Bordero extends Component {
 	constructor(props) {

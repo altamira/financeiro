@@ -1,6 +1,5 @@
 
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -21,17 +20,7 @@ import axios from 'axios';
 
 import process from './process.svg';
 
-import Form from './Titulo';
 import Bordero from './Bordero';
-
-/*! FUNCTION: ARRAY.KEYSORT(); **/
-Array.prototype.sortByKey = function(key, desc){
-  this.sort(function(a, b) {
-    var result = desc ? (a[key] < b[key]) : (a[key] > b[key]);
-    return result ? 1 : -1;
-  });
-  return this;
-}
 
 export default class Retorno extends Component {
   constructor(props) {
@@ -133,8 +122,6 @@ export default class Retorno extends Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
 
-    this.handleOrderBy = this.handleOrderBy.bind(this);
-
   }
 
   componentWillMount() {
@@ -190,10 +177,10 @@ export default class Retorno extends Component {
     this.setState({dialog: <Bordero 
       bordero={{
         ...this.state.bordero, 
-        valor_titulos: Number(this.state.retorno.reduce( (total, pagador) => 
+        valor_titulos: this.state.retorno.reduce( (total, pagador) => 
           total + pagador.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
-            subtotal + parcela.valor, 0)
-        , 0).toFixed(2)).toLocaleString()
+            subtotal + parcela.valor, 0.0)
+        , 0.0).toFixed(2).replace(',', '').replace('.', ',')
       }} 
       onClose={this.handleCloseDialog.bind(this)} 
       onSave={this.handleSaveAndClose.bind(this)} />
@@ -231,7 +218,6 @@ export default class Retorno extends Component {
   }
 
   handleSelect(retorno, aceito) {
-    //this.setState({dialog: <Form {...retorno} onClose={this.handleCloseDialog.bind(this)} aceito={aceito} onSave={this.handleSelectSave.bind(this)} />})
     this.setState({
       dialog: undefined,
       retorno: this.state.retorno.map( (r, i) => {
@@ -285,7 +271,7 @@ export default class Retorno extends Component {
 
   render() {
 
-    let total = this.state.retorno.reduce( (total, r) => total + r.parcelas.reduce( (subtotal, p) => subtotal + (p.aceito ? p.valor : 0.0), 0.0), 0.0);
+    let { carteira } = this.state;
 
     return (
 
@@ -358,14 +344,14 @@ export default class Retorno extends Component {
                         </thead>
                         <tbody>
                             <tr>
-                              <td style={{textAlign: 'left'}}><h2><b>{this.state.carteira.nome}</b></h2></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.limite.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(this.state.carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'left'}}><h2><b>{carteira.nome}</b></h2></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                             </tr>                              
                         </tbody>
                       </Table>
@@ -427,7 +413,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-    <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
+    <td style={{textAlign: 'right'}}><b>R$ {parcela.valor.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
     
     {parcela.aceito === undefined ?
       (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>

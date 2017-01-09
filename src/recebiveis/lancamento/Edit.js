@@ -70,7 +70,7 @@ export default class Edit extends Component {
   }
 
   handleSave() {
-    this.props.onSave && this.props.onSave({...this.state, valor: parseFloat(Number(this.state.valor.replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2))}, this.props.index);
+    this.props.onSave && this.props.onSave(this.state, this.props.index);
   }
 
   onValidateDate(propriedade) {

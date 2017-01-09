@@ -1,19 +1,11 @@
 
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 
 import {
-  OverlayTrigger, 
-  Button, 
-  Glyphicon, 
-  Panel,  
   Col, 
   Row, 
   Table,
-  Tooltip,
 } from 'react-bootstrap';
-
-import { Tabs, Tab } from 'react-bootstrap';
 
 import axios from 'axios';
 

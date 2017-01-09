@@ -11,7 +11,7 @@ import Dashboard from './dashboard';
 import Emissao from './recebiveis/emissao';
 import Faturamento from './recebiveis/lancamento';
 import Cobranca from './recebiveis/cobranca';
-import Remessa from './recebiveis/remessa';
+import Remessa from './recebiveis/remessa/';
 import Retorno from './recebiveis/retorno';
 
 const About = () =>

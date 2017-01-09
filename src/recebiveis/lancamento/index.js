@@ -12,9 +12,7 @@ import {
   FormGroup,
   FormControl,
   Table,
-  Checkbox,
   Tooltip,
-  Label,
   InputGroup
 } from 'react-bootstrap';
 import { Tabs, Tab } from 'react-bootstrap';
@@ -208,7 +206,14 @@ export default class Lancamento extends Component {
   }
 
   handleAdd(parcela) {
-    this.setState({documento: {...this.state.documento, parcelas: this.state.documento.parcelas.concat([{...parcela, valor: parseFloat(Number(parcela.valor.replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2)), prazo: parseInt(parcela.prazo)}])}, dialog: null});
+    this.setState({
+      documento: {
+        ...this.state.documento, 
+        parcelas: this.state.documento.parcelas.concat([{
+          ...parcela, valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
+          prazo: parseInt(parcela.prazo, 10)
+        }])
+      }, dialog: null});
   }
 
   handleFormEdit(parcela, index) {
@@ -227,7 +232,11 @@ export default class Lancamento extends Component {
 
   handleUpdate(parcela, index) {
     let parcelas = this.state.documento.parcelas;
-    parcelas.splice(index, 1, {...parcela, valor: parseFloat(Number(parcela.valor.replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2)), prazo: parseInt(parcela.prazo)});
+    parcelas.splice(index, 1, {
+      ...parcela, 
+      valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
+      prazo: parseInt(parcela.prazo, 10)
+    });
     this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: undefined})
   }
 
@@ -243,7 +252,7 @@ export default class Lancamento extends Component {
         ...this.state.documento, 
         parcelas: 
           this.state.documento.parcelas
-          .filter( (parcela, i) => i != index)
+          .filter( (parcela, i) => i !== index)
           .map( (parcela, i) => {
             parcela.parcela = i + 1;
             return parcela;

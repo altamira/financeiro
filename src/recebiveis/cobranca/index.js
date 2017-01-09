@@ -1,6 +1,5 @@
 
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -20,22 +19,12 @@ import Error from './../../Error';
 import Confirm from './Confirm';
 import Bordero from './Bordero.jsx';
 
-import { assign, omit } from 'lodash';
 import axios from 'axios';
 import moment from 'moment';
 
 import bordero from './bordero';
 
 import process from './process.svg';
-
-/*! FUNCTION: ARRAY.KEYSORT(); **/
-Array.prototype.sortByKey = function(key, desc){
-  this.sort(function(a, b) {
-    var result = desc ? (a[key] < b[key]) : (a[key] > b[key]);
-    return result ? 1 : -1;
-  });
-  return this;
-}
 
 export default class Cobranca extends Component {
   constructor(props) {
@@ -75,8 +64,6 @@ export default class Cobranca extends Component {
     this.handleUnselect = this.handleUnselect.bind(this);
 
     this.handleSelectCarteira = this.handleSelectCarteira.bind(this);
-
-    this.handleOrderBy = this.handleOrderBy.bind(this);
 
   }
 
@@ -257,13 +244,6 @@ export default class Cobranca extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
-  handleOrderBy(key) {
-    let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
-    let parcelas = this.state.parcelas;
-    order[key] = !this.state.order[key];
-    this.setState({parcelas: parcelas.sortByKey(key, order[key]), order: order });
-  }
-
   render() {
 
     let { carteira, cobranca, bordero } = this.state;
@@ -344,13 +324,13 @@ export default class Cobranca extends Component {
                             return (
                               <tr key={'tr-carteiras-' + index} style={{background: carteira && carteira.id === c.id ? 'gold' : ''}} >
                                 <td style={{textAlign: 'left'}}><b>{c.nome}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.limite.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.saldo.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.remessa.toFixed(2)).toLocaleString()}</b></td>
-                                <td style={{textAlign: 'right'}}><b>{Number(c.retorno.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{c.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                                 <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, c, index)} ><Glyphicon glyph="ok" /></Button></td>
                               </tr>                              
                             )
@@ -429,7 +409,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'center'}}>{moment(parcela.vencto).diff(moment(parcela.data_operacao), 'days') + ' dia(s)'}</td>
-    <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
+    <td style={{textAlign: 'right'}}><b>R$ {parcela.valor.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
     <td ><b>{parcela.carteira}</b></td>
     <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>

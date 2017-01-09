@@ -1,6 +1,5 @@
 
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -24,46 +23,11 @@ import process from './process.svg';
 import Form from './Titulo';
 import Bordero from '../cobranca/Bordero.jsx';
 
-import tarefa from '../tarefa';
-import carteira from '../carteira';
-import remessa from '../remessa';
-import bordero from '../cobranca/bordero.js';
-
-/*! FUNCTION: ARRAY.KEYSORT(); **/
-Array.prototype.sortByKey = function(key, desc){
-  this.sort(function(a, b) {
-    var result = desc ? (a[key] < b[key]) : (a[key] > b[key]);
-    return result ? 1 : -1;
-  });
-  return this;
-}
-
 export default class Remessa extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-
-      tarefa: tarefa,
-
-      carteira: carteira,
-
-      bordero: bordero.calculo(carteira, [remessa]),
-
-      remessa: [remessa],
-
-      // campos de controle, não armazenar
-      dialog: null,
-
-      // false = ascending order, true = descending order
-      order: {
-        nosso_numero: null, 
-        vencto: null,
-        nome: null,
-        parcela: null,
-        valor: null, 
-      }
-    }
+    this.state = {};
 
     // comandos
     this.handleClose = this.handleClose.bind(this);
@@ -76,8 +40,6 @@ export default class Remessa extends Component {
 
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
-
-    this.handleOrderBy = this.handleOrderBy.bind(this);
 
   }
 
@@ -100,7 +62,7 @@ export default class Remessa extends Component {
       })
   }
 
-  /*componentWillReceiveProps(props) {
+  componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
       .get('http://localhost:1880/api/tarefa/' + props.params.id)
@@ -117,7 +79,7 @@ export default class Remessa extends Component {
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })    
-  }*/
+  }
 
   handleClose() {
     this.props.router.push('/');
@@ -187,16 +149,9 @@ export default class Remessa extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
-  handleOrderBy(key) {
-    let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
-    let remessas = this.state.remessas;
-    order[key] = !this.state.order[key];
-    this.setState({remessas: remessas.sortByKey(key, order[key]), order: order });
-  }
-
   render() {
 
-    let { carteira, cobranca, bordero } = this.state;
+    let { carteira, remessa, bordero } = this.state || {};
 
     return (
 
@@ -213,7 +168,7 @@ export default class Remessa extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!!this.state.remessa.find( r => r.parcelas.find( p => !p.selected))}
+                    disabled={remessa && !!remessa.find( r => r.parcelas.find( p => !p.selected))}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -267,18 +222,20 @@ export default class Remessa extends Component {
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
                           </tr>
                         </thead>
+                        {carteira ? 
                         <tbody>
                             <tr>
                               <td style={{textAlign: 'left'}}><h2><b>{carteira.nome}</b></h2></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{carteira.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                             </tr>                              
                         </tbody>
+                        : null }
                       </Table>
                     </Col>
                   </Row>
@@ -298,7 +255,7 @@ export default class Remessa extends Component {
                           </tr>
                         </thead>
 
-                          {this.state.remessa.map( (r, index) => <Pagador key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          {remessa && remessa.map( (r, index) => <Pagador key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
                         
                       </Table>
                     </Col>
@@ -307,7 +264,9 @@ export default class Remessa extends Component {
                   <Row>
                     <Col xs={0} md={6}></Col>
                     <Col xs={12} md={6}>
+                    {carteira && bordero ?
                       <Bordero carteira={carteira} bordero={bordero} />
+                    : null}
                     </Col>
                   </Row>                  
 
@@ -345,7 +304,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-    <td style={{textAlign: 'right'}}><b>R$ {Number(parcela.valor).toLocaleString()}</b></td>
+    <td style={{textAlign: 'right'}}><b>R$ {parcela.valor.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
     <td>
       {!parcela.selected ? 
         (<Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela)} ><Glyphicon glyph="time" /></Button>) : 

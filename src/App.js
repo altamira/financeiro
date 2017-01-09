@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, browserHistory } from 'react-router';
+import { Link } from 'react-router';
 
 //import logo from './logo.svg';
 import './App.css';
@@ -7,7 +7,7 @@ import './App.css';
 import { Nav, Navbar, NavItem, NavDropdown, MenuItem, Row, Col, Table } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
-import { assign, omit } from 'lodash';
+import { assign } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
 
@@ -344,13 +344,13 @@ class App extends Component {
                   return (
                     <tr key={'tr-carteiras-' + index} >
                       <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{carteira.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                     </tr>                              
                   )
                 }
@@ -367,9 +367,8 @@ class App extends Component {
             <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
               <thead>
                 <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Crédito</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
@@ -384,16 +383,15 @@ class App extends Component {
                 {this.state.remessa.map( (remessa, index) => {
                   return (
                     <tr key={'tr-remessa-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{new Date(remessa.data).toLocaleDateString()}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_titulos.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_titulos.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_operacao.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_tarifa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_juros.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_iof.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.taxa_juros.toFixed(2).replace(',', '').replace('.', ',')}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{remessa.valor_liquido.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                     </tr>                              
                   )
                 }
@@ -410,9 +408,8 @@ class App extends Component {
             <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
               <thead>
                 <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Data da Crédito</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
                   <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
@@ -427,16 +424,15 @@ class App extends Component {
                 {this.state.retorno.map( (retorno, index) => {
                   return (
                     <tr key={'tr-retorno-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{new Date(retorno.data).toLocaleDateString()}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_titulos.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_titulos.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_operacao.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_tarifa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_juros.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_iof.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.taxa_juros.toFixed(2).replace(',', '').replace('.', ',')}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{retorno.valor_liquido.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
                     </tr>                              
                   )
                 }
@@ -457,7 +453,7 @@ class App extends Component {
           <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
             <Navbar.Header>
               <Navbar.Brand>
-                <Link to='/'>Altamira</Link>
+                <Link to='/'>Resumo Financeiro</Link>
               </Navbar.Brand>
               <Navbar.Toggle />
             </Navbar.Header>
@@ -470,7 +466,6 @@ class App extends Component {
                   <MenuItem divider />
                   <MenuItem eventKey={3.3} >Usuarios</MenuItem>
                 </NavDropdown>
-                <NavItem eventKey={1} >Resumo Financeiro</NavItem>
                 <NavItem eventKey={2} >Configurações</NavItem>
               </Nav>
               <Nav pullRight>

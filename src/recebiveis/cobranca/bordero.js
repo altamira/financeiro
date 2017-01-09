@@ -55,7 +55,7 @@ export default {
               parcelas + (parcela.selected ? 1: 0), 0) || 0)
             , 0)) || 0
 
-        this.iof_adicional = 0.38 / 100, // %
+        this.iof_adicional = 0.38 / 100 // %
 
         this.iof_diario = 0.0041 / 100 // %
 
