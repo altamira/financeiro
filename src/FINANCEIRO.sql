@@ -1,12 +1,12 @@
 USE [master]
 GO
-/****** Object:  Database [FINANCEIRO]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Database [FINANCEIRO]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE DATABASE [FINANCEIRO]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'FINANCEIRO', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
  LOG ON 
-( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 29504KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 32448KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
 GO
 ALTER DATABASE [FINANCEIRO] SET COMPATIBILITY_LEVEL = 110
 GO
@@ -77,7 +77,7 @@ EXEC sys.sp_db_vardecimal_storage_format N'FINANCEIRO', N'ON'
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  User [financeiro]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  User [financeiro]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE USER [financeiro] FOR LOGIN [financeiro] WITH DEFAULT_SCHEMA=[dbo]
 GO
 ALTER ROLE [db_datareader] ADD MEMBER [financeiro]
@@ -86,7 +86,7 @@ ALTER ROLE [db_datawriter] ADD MEMBER [financeiro]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE SEQUENCE [dbo].[ERR_LOG_SEQ] 
  AS [int]
  START WITH 1
@@ -97,7 +97,7 @@ CREATE SEQUENCE [dbo].[ERR_LOG_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE SEQUENCE [dbo].[REMESSA_SEQ] 
  AS [int]
  START WITH 1
@@ -108,7 +108,7 @@ CREATE SEQUENCE [dbo].[REMESSA_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE SEQUENCE [dbo].[RETORNO_SEQ] 
  AS [int]
  START WITH 1
@@ -119,7 +119,7 @@ CREATE SEQUENCE [dbo].[RETORNO_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ] 
  AS [bigint]
  START WITH 1
@@ -130,7 +130,7 @@ CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE SEQUENCE [dbo].[TAREFA_SEQ] 
  AS [int]
  START WITH 1
@@ -139,7 +139,7 @@ CREATE SEQUENCE [dbo].[TAREFA_SEQ]
  MAXVALUE 2147483647
  CACHE 
 GO
-/****** Object:  Table [dbo].[BAN]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[BAN]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -154,7 +154,7 @@ CREATE TABLE [dbo].[BAN](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CLI]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[CLI]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -188,7 +188,7 @@ CREATE TABLE [dbo].[CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[COB]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[COB]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -236,7 +236,7 @@ CREATE TABLE [dbo].[COB](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CRT]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[CRT]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -272,7 +272,7 @@ CREATE TABLE [dbo].[CRT](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[DUP]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -312,7 +312,7 @@ CREATE TABLE [dbo].[DUP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -324,7 +324,7 @@ CREATE TABLE [dbo].[DUP_CRT](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ERR]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[ERR]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -339,7 +339,7 @@ CREATE TABLE [dbo].[ERR](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -360,7 +360,7 @@ CREATE TABLE [dbo].[ERR_LOG](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[PED]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -382,7 +382,7 @@ CREATE TABLE [dbo].[PED](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_CLI]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[PED_CLI]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -397,7 +397,7 @@ CREATE TABLE [dbo].[PED_CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_DUP]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[PED_DUP]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -409,7 +409,7 @@ CREATE TABLE [dbo].[PED_DUP](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED_REP]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[PED_REP]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -424,7 +424,7 @@ CREATE TABLE [dbo].[PED_REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[RCB]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[RCB]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -459,7 +459,7 @@ CREATE TABLE [dbo].[RCB](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[RCB_PED]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[RCB_PED]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -475,7 +475,7 @@ CREATE TABLE [dbo].[RCB_PED](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[RCBD]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[RCBD]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -501,30 +501,31 @@ CREATE TABLE [dbo].[RCBD](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REM]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[REM]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[REM](
 	[remessa] [int] NOT NULL,
-	[data] [date] NOT NULL CONSTRAINT [DF_REM_data]  DEFAULT (getdate()),
-	[valor_titulos] [money] NOT NULL CONSTRAINT [DF_REM_valor_bruto]  DEFAULT ((0)),
-	[total_dias] [int] NOT NULL CONSTRAINT [DF_REM_total_dias]  DEFAULT ((0)),
-	[valor_base] [money] NOT NULL CONSTRAINT [DF_REM_valor_base]  DEFAULT ((0)),
-	[valor_liquido] [money] NOT NULL CONSTRAINT [DF_REM_valor_liquido]  DEFAULT ((0)),
-	[valor_operacao] [money] NOT NULL CONSTRAINT [DF_REM_valor_operacao]  DEFAULT ((0)),
-	[valor_tarifa] [money] NOT NULL CONSTRAINT [DF_REM_valor_tarifa]  DEFAULT ((0)),
-	[valor_iof] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof]  DEFAULT ((0.00)),
-	[valor_juros] [money] NOT NULL CONSTRAINT [DF_REM_valor_juros]  DEFAULT ((0.00)),
-	[taxa_juros] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_taxa_juros_1]  DEFAULT ((0.00)),
-	[numero_parcelas] [int] NOT NULL CONSTRAINT [DF_REM_numero_parcelas]  DEFAULT ((0)),
-	[iof_adicional] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_iof_adicional]  DEFAULT ((0)),
-	[iof_diario] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_iof_diario]  DEFAULT ((0)),
-	[valor_iof_diario] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof_diario]  DEFAULT ((0)),
-	[valor_iof_adicional] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof_adicional]  DEFAULT ((0)),
-	[cet] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_cet]  DEFAULT ((0)),
-	[valor_cet] [money] NOT NULL CONSTRAINT [DF_REM_valor_cet]  DEFAULT ((0)),
+	[carteira] [int] NOT NULL,
+	[data] [date] NOT NULL,
+	[valor_titulos] [money] NOT NULL,
+	[total_dias] [int] NOT NULL,
+	[valor_base] [money] NOT NULL,
+	[valor_liquido] [money] NOT NULL,
+	[valor_operacao] [money] NOT NULL,
+	[valor_tarifa] [money] NOT NULL,
+	[valor_iof] [money] NOT NULL,
+	[valor_juros] [money] NOT NULL,
+	[taxa_juros] [decimal](18, 3) NOT NULL,
+	[numero_parcelas] [int] NOT NULL,
+	[iof_adicional] [decimal](18, 3) NOT NULL,
+	[iof_diario] [decimal](18, 3) NOT NULL,
+	[valor_iof_diario] [money] NOT NULL,
+	[valor_iof_adicional] [money] NOT NULL,
+	[cet] [decimal](18, 3) NOT NULL,
+	[valor_cet] [money] NOT NULL,
  CONSTRAINT [PK_REM] PRIMARY KEY CLUSTERED 
 (
 	[remessa] ASC
@@ -532,7 +533,7 @@ CREATE TABLE [dbo].[REM](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[REMD]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[REMD]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -560,7 +561,7 @@ CREATE TABLE [dbo].[REMD](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REP]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[REP]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -579,23 +580,24 @@ CREATE TABLE [dbo].[REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[RET]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[RET]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[RET](
 	[retorno] [int] NOT NULL,
-	[data] [date] NOT NULL CONSTRAINT [DF_RET_data]  DEFAULT (getdate()),
-	[valor_titulos] [money] NOT NULL CONSTRAINT [DF_RET_valor_titulos]  DEFAULT ((0)),
-	[valor_liquido] [money] NOT NULL CONSTRAINT [DF_RET_valor_liquido]  DEFAULT ((0)),
-	[valor_operacao] [money] NOT NULL CONSTRAINT [DF_RET_valor_operacao_1]  DEFAULT ((0)),
-	[valor_tarifa] [money] NOT NULL CONSTRAINT [DF_RET_valor_tarifa]  DEFAULT ((0)),
-	[valor_iof] [money] NOT NULL CONSTRAINT [DF_RET_valor_iof]  DEFAULT ((0.00)),
-	[valor_juros] [money] NOT NULL CONSTRAINT [DF_RET_valor_juros]  DEFAULT ((0.00)),
-	[taxa_juros] [decimal](18, 3) NOT NULL CONSTRAINT [DF_RET_taxa_juros_1]  DEFAULT ((0.00)),
-	[cet] [decimal](18, 3) NOT NULL CONSTRAINT [DF_RET_cet]  DEFAULT ((0)),
-	[aceito] [bit] NOT NULL CONSTRAINT [DF_RET_aceito]  DEFAULT ((0)),
+	[carteira] [int] NOT NULL,
+	[data] [date] NOT NULL,
+	[valor_titulos] [money] NOT NULL,
+	[valor_liquido] [money] NOT NULL,
+	[valor_operacao] [money] NOT NULL,
+	[valor_tarifa] [money] NOT NULL,
+	[valor_iof] [money] NOT NULL,
+	[valor_juros] [money] NOT NULL,
+	[taxa_juros] [decimal](18, 3) NOT NULL,
+	[cet] [decimal](18, 3) NOT NULL,
+	[aceito] [bit] NOT NULL,
  CONSTRAINT [PK_RET] PRIMARY KEY CLUSTERED 
 (
 	[retorno] ASC
@@ -603,7 +605,7 @@ CREATE TABLE [dbo].[RET](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[RETD]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[RETD]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -620,7 +622,7 @@ CREATE TABLE [dbo].[RETD](
 	[vencto] [date] NOT NULL,
 	[prazo] [int] NOT NULL,
 	[valor] [money] NOT NULL,
-	[aceito] [bit] NOT NULL CONSTRAINT [DF_RETD_aceito]  DEFAULT ((0)),
+	[aceito] [bit] NOT NULL,
  CONSTRAINT [PK_RETD] PRIMARY KEY CLUSTERED 
 (
 	[nosso_numero] ASC,
@@ -632,7 +634,7 @@ CREATE TABLE [dbo].[RETD](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[TAREFA_NAV]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[TAREFA_NAV]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -650,7 +652,7 @@ CREATE TABLE [dbo].[TAREFA_NAV](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[TAREFAS]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[TAREFAS]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -677,7 +679,7 @@ CREATE TABLE [dbo].[TAREFAS](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[USUARIOS]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Table [dbo].[USUARIOS]    Script Date: 09/01/2017 17:03:03 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -704,7 +706,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Index [IX_CLI]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI] ON [dbo].[CLI]
 (
 	[nome] ASC
@@ -713,13 +715,13 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI_1]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Index [IX_CLI_1]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI_1] ON [dbo].[CLI]
 (
 	[fantasia] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_REMD]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Index [IX_REMD]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_REMD] ON [dbo].[REMD]
 (
 	[nosso_numero] ASC,
@@ -727,7 +729,7 @@ CREATE UNIQUE NONCLUSTERED INDEX [IX_REMD] ON [dbo].[REMD]
 	[carteira] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RETD]    Script Date: 09/01/2017 12:07:33 ******/
+/****** Object:  Index [IX_RETD]    Script Date: 09/01/2017 17:03:03 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_RETD] ON [dbo].[RETD]
 (
 	[nosso_numero] ASC,
@@ -738,6 +740,66 @@ GO
 ALTER TABLE [dbo].[CLI] ADD  CONSTRAINT [DF_CLI_DESCONTO]  DEFAULT ((1)) FOR [desconto]
 GO
 ALTER TABLE [dbo].[PED] ADD  CONSTRAINT [DF_PED_NUMERO]  DEFAULT ((0)) FOR [numero]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_carteira]  DEFAULT ((0)) FOR [carteira]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_data]  DEFAULT (getdate()) FOR [data]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_bruto]  DEFAULT ((0)) FOR [valor_titulos]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_total_dias]  DEFAULT ((0)) FOR [total_dias]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_base]  DEFAULT ((0)) FOR [valor_base]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_liquido]  DEFAULT ((0)) FOR [valor_liquido]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_operacao]  DEFAULT ((0)) FOR [valor_operacao]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_tarifa]  DEFAULT ((0)) FOR [valor_tarifa]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof]  DEFAULT ((0.00)) FOR [valor_iof]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_juros]  DEFAULT ((0.00)) FOR [valor_juros]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_taxa_juros_1]  DEFAULT ((0.00)) FOR [taxa_juros]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_numero_parcelas]  DEFAULT ((0)) FOR [numero_parcelas]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_iof_adicional]  DEFAULT ((0)) FOR [iof_adicional]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_iof_diario]  DEFAULT ((0)) FOR [iof_diario]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof_diario]  DEFAULT ((0)) FOR [valor_iof_diario]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof_adicional]  DEFAULT ((0)) FOR [valor_iof_adicional]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_cet]  DEFAULT ((0)) FOR [cet]
+GO
+ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_cet]  DEFAULT ((0)) FOR [valor_cet]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_carteira]  DEFAULT ((0)) FOR [carteira]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_data]  DEFAULT (getdate()) FOR [data]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_titulos]  DEFAULT ((0)) FOR [valor_titulos]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_liquido]  DEFAULT ((0)) FOR [valor_liquido]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_operacao_1]  DEFAULT ((0)) FOR [valor_operacao]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_tarifa]  DEFAULT ((0)) FOR [valor_tarifa]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_iof]  DEFAULT ((0.00)) FOR [valor_iof]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_juros]  DEFAULT ((0.00)) FOR [valor_juros]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_taxa_juros_1]  DEFAULT ((0.00)) FOR [taxa_juros]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_cet]  DEFAULT ((0)) FOR [cet]
+GO
+ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_aceito]  DEFAULT ((0)) FOR [aceito]
+GO
+ALTER TABLE [dbo].[RETD] ADD  CONSTRAINT [DF_RETD_aceito]  DEFAULT ((0)) FOR [aceito]
 GO
 ALTER TABLE [dbo].[BAN]  WITH CHECK ADD  CONSTRAINT [FK_BAN_CRT] FOREIGN KEY([codigo])
 REFERENCES [dbo].[CRT] ([id])
