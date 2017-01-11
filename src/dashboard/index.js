@@ -26,7 +26,7 @@ export default class Dashboard extends Component {
 
   componentWillMount() {
     axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -44,7 +44,7 @@ export default class Dashboard extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/remessa/')
+      .get('http://financeiro:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(

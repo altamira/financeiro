@@ -32,6 +32,8 @@ import axios from 'axios';
 
 import process from './process.svg';
 
+import jsPDF from 'jspdf';
+
 export default class Lancamento extends Component {
   constructor(props) {
     super(props);
@@ -105,7 +107,7 @@ export default class Lancamento extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
@@ -121,7 +123,7 @@ export default class Lancamento extends Component {
       })    
 
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
@@ -134,7 +136,7 @@ export default class Lancamento extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
@@ -150,7 +152,7 @@ export default class Lancamento extends Component {
       })      
 
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
@@ -162,7 +164,7 @@ export default class Lancamento extends Component {
   
   handleSaveAndClose() {
     axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -176,7 +178,7 @@ export default class Lancamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -293,13 +295,76 @@ export default class Lancamento extends Component {
 
   handleNossoNumero() {
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
       })
+  }
+
+  handlePrint() {
+    var doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+
+    doc.setFont('Arial');
+
+    // Quadros
+    doc.rect(5, 5, 200, 13); 
+    doc.rect(5, 20, 200, 80); 
+
+    // Quadros internos
+    doc.rect(5, 28, 200, 10); 
+
+    doc.setFontSize(12);
+    doc.text(163, 10, 'Emissão:' + '10/02/2017');
+
+    doc.setFontSize(18);
+    doc.text(70, 13, 'Cobrança de Título');
+
+    doc.setFontSize(16);
+
+    doc.text(8, 25, 'Fatura');
+    doc.text(40, 25, 'Nosso Número');
+    doc.text(90, 25, 'Pedido');
+    doc.text(120, 25, 'Valor');
+
+    doc.text(8, 35, '18377');
+    doc.text(40, 35, '18377-2');
+    doc.text(90, 35, '74709');
+    doc.text(120, 35, 'R$ 713,25');
+
+    doc.setFontSize(16);
+    doc.text(160, 25, 'Vencimento');
+    doc.text(160, 35, '26/01/2017');
+
+    doc.setFontSize(14);
+    doc.setFontStyle('bold');
+
+    doc.text(8, 45, 'CNPJ');
+    doc.text(8, 52, 'Inscrição Estadual');
+    doc.text(8, 59, 'Nome do Sacado');
+    doc.text(8, 66, 'Endereço');
+    doc.text(8, 73, 'Cidade');
+    doc.text(8, 80, 'UF');
+    doc.text(8, 87, 'CEP');
+    doc.text(8, 94, 'Telefone');
+
+    doc.setFontStyle('normal');
+
+    doc.text(60, 45, '02.736.467/0002-00');
+    doc.text(60, 52, '133174660117');
+    doc.text(60, 59, 'FRUGAL IMPORTADORA E EXPORTADORA LTDA');
+    doc.text(60, 66, 'AV BOLONHA, 423');
+    doc.text(60, 73, 'SAO PAULO');
+    doc.text(60, 80, 'SP');
+    doc.text(60, 87, '05334-000');
+    doc.text(60, 94, '(11) 3643-8933');
+
   }
 
   render() {

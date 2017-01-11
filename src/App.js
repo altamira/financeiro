@@ -54,7 +54,7 @@ class App extends Component {
 
   componentWillReceiveProps(props) {
     /*axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -72,7 +72,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/remessa/')
+      .get('http://financeiro:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -86,7 +86,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/retorno/')
+      .get('http://financeiro:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -193,7 +193,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
@@ -204,7 +204,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/carteira/')
+      .get('http://financeiro:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -222,7 +222,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/remessa/')
+      .get('http://financeiro:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -236,7 +236,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://localhost:1880/api/financeiro/retorno/')
+      .get('http://financeiro:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
