@@ -34,6 +34,8 @@ import process from './process.svg';
 
 import jsPDF from 'jspdf';
 
+import PrintPreview from './print';
+
 export default class Lancamento extends Component {
   constructor(props) {
     super(props);
@@ -86,6 +88,7 @@ export default class Lancamento extends Component {
     // comandos
     this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
+    this.handlePrint = this.handlePrint.bind(this);
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
@@ -112,7 +115,7 @@ export default class Lancamento extends Component {
         console.log(JSON.stringify(response.data, null, 2))
 
         if (response.data.concluido) {
-          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleCloseDialog.bind(this)} />})
         } else {
           this.setState(response.data);
         }
@@ -128,7 +131,7 @@ export default class Lancamento extends Component {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
   }
@@ -141,7 +144,7 @@ export default class Lancamento extends Component {
         console.log(JSON.stringify(response.data, null, 2))
 
         if (response.data.concluido) {
-          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleCloseDialog.bind(this)} />})
         } else {
           this.setState(response.data);
         }
@@ -157,7 +160,7 @@ export default class Lancamento extends Component {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
 
   }
@@ -170,7 +173,7 @@ export default class Lancamento extends Component {
         browserHistory.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
@@ -184,7 +187,7 @@ export default class Lancamento extends Component {
         browserHistory.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
@@ -204,7 +207,7 @@ export default class Lancamento extends Component {
           valor: "0,00"
         }}      
       onSave={this.handleAdd.bind(this)} 
-      onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+      onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleAdd(parcela) {
@@ -229,7 +232,7 @@ export default class Lancamento extends Component {
         }} 
       index={index}
       onSave={this.handleUpdate.bind(this)} 
-      onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+      onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleUpdate(parcela, index) {
@@ -243,7 +246,7 @@ export default class Lancamento extends Component {
   }
 
   handleDeleteConfirm(parcela, index) {
-    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleDelete(parcela, index) {
@@ -280,7 +283,7 @@ export default class Lancamento extends Component {
     });
   }
 
-  handleSaveAndCloseDialog() {
+  handleCloseDialog() {
     this.setState({dialog: null})
   }
 
@@ -300,11 +303,13 @@ export default class Lancamento extends Component {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleSaveAndCloseDialog.bind(this)} />})
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
   handlePrint() {
+    console.log('imprimir...');
+
     var doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -365,6 +370,7 @@ export default class Lancamento extends Component {
     doc.text(60, 87, '05334-000');
     doc.text(60, 94, '(11) 3643-8933');
 
+    this.setState({dialog: <PrintPreview src={doc.output('bloburi')} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   render() {
@@ -415,7 +421,23 @@ export default class Lancamento extends Component {
 
             </Col>
 
-            <Col xs={4} md={4} />
+            <Col xs={4} md={4} >
+
+              <OverlayTrigger 
+                placement="top" 
+                overlay={(<Tooltip id="tooltip">Confirmar lançamentos</Tooltip>)}
+              >
+                  <Button
+                    onClick={this.handlePrint}
+                    style={{width: 120}}
+                    bsStyle="success"
+                  >
+                    <Glyphicon glyph="ok" />
+                    <div><span>Imprimir</span></div>
+                  </Button>
+              </OverlayTrigger>
+
+            </Col>
 
             <Col xs={4} md={4} style={{textAlign: 'right'}} >
 
