@@ -289,7 +289,7 @@ export default class Lancamento extends Component {
 
   // formulario
   handleChange(value) {
-    //this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
+    this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
   }
 
   handleChangeDate(value, formattedValue) {
@@ -318,57 +318,79 @@ export default class Lancamento extends Component {
 
     doc.setFont('Arial');
 
-    // Quadros
-    doc.rect(5, 5, 200, 13); 
-    doc.rect(5, 20, 200, 80); 
+    this.state.documento.parcelas.forEach(function(parcela, index) {
+  
+      let margin_top = 0;
 
-    // Quadros internos
-    doc.rect(5, 28, 200, 10); 
+      if (index > 0 && !(index % 2)) {
+        doc.addPage();
+      }
 
-    doc.setFontSize(12);
-    doc.text(163, 10, 'Emissão:' + '10/02/2017');
+      if (index % 2) {
+        margin_top = 148
+      }
 
-    doc.setFontSize(18);
-    doc.text(70, 13, 'Cobrança de Título');
+      // Quadros
+      doc.rect(5, margin_top + 5, 200, 13); 
+      doc.rect(5, margin_top + 20, 200, 110); 
 
-    doc.setFontSize(16);
+      // Quadros internos
+      doc.rect(5, margin_top + 28, 200, 10); 
 
-    doc.text(8, 25, 'Fatura');
-    doc.text(40, 25, 'Nosso Número');
-    doc.text(90, 25, 'Pedido');
-    doc.text(120, 25, 'Valor');
+      doc.setFontSize(12);
+      doc.text(163, margin_top + 10, 'Emissão:' + new Date().toLocaleDateString());
 
-    doc.text(8, 35, '18377');
-    doc.text(40, 35, '18377-2');
-    doc.text(90, 35, '74709');
-    doc.text(120, 35, 'R$ 713,25');
+      doc.setFontSize(18);
+      doc.text(70, margin_top + 13, 'Cobrança de Título');
 
-    doc.setFontSize(16);
-    doc.text(160, 25, 'Vencimento');
-    doc.text(160, 35, '26/01/2017');
+      doc.setFontSize(16);
 
-    doc.setFontSize(14);
-    doc.setFontStyle('bold');
+      doc.text(8, margin_top + 26, 'Fatura');
+      doc.text(40, margin_top + 26, 'Nosso Número');
+      doc.text(90, margin_top + 26, 'Pedido');
+      doc.text(120, margin_top + 26, 'Valor');
 
-    doc.text(8, 45, 'CNPJ');
-    doc.text(8, 52, 'Inscrição Estadual');
-    doc.text(8, 59, 'Nome do Sacado');
-    doc.text(8, 66, 'Endereço');
-    doc.text(8, 73, 'Cidade');
-    doc.text(8, 80, 'UF');
-    doc.text(8, 87, 'CEP');
-    doc.text(8, 94, 'Telefone');
+      doc.text(8, margin_top + 35, this.nosso_numero.toString());
+      doc.text(40, margin_top + 35, this.nosso_numero.toString() + '-' + parcela.parcela.toString());
+      doc.text(90, margin_top + 35, this.numero.toString());
+      doc.text(120, margin_top + 35, 'R$ ' + parcela.valor.toFixed(2).replace('.', ','));
 
-    doc.setFontStyle('normal');
+      doc.setFontSize(16);
+      doc.text(160, margin_top + 26, 'Vencimento');
+      doc.text(160, margin_top + 35, new Date(parcela.vencto).toLocaleDateString());
 
-    doc.text(60, 45, '02.736.467/0002-00');
-    doc.text(60, 52, '133174660117');
-    doc.text(60, 59, 'FRUGAL IMPORTADORA E EXPORTADORA LTDA');
-    doc.text(60, 66, 'AV BOLONHA, 423');
-    doc.text(60, 73, 'SAO PAULO');
-    doc.text(60, 80, 'SP');
-    doc.text(60, 87, '05334-000');
-    doc.text(60, 94, '(11) 3643-8933');
+      doc.setFontSize(14);
+      doc.setFontStyle('bold');
+
+      doc.text(8, margin_top + 45, 'CNPJ');
+      doc.text(8, margin_top + 52, 'Inscrição Estadual');
+      doc.text(8, margin_top + 59, 'Nome do Sacado');
+      doc.text(8, margin_top + 66, 'Endereço');
+      doc.text(8, margin_top + 73, 'Complemento/Bairro');
+      doc.text(8, margin_top + 80, 'Cidade');
+      doc.text(8, margin_top + 87, 'UF');
+      doc.text(8, margin_top + 94, 'CEP');
+      doc.text(8, margin_top + 101, 'Telefone');
+      doc.text(8, margin_top + 108, 'Contato');
+      doc.text(8, margin_top + 115, 'Representante');
+      doc.text(8, margin_top + 122, 'Cond. Pagto');
+
+      doc.setFontStyle('normal');
+
+      doc.text(60, margin_top + 45, this.cliente.cnpj);
+      doc.text(60, margin_top + 52, this.cliente.inscricao);
+      doc.text(60, margin_top + 59, this.cliente.nome.trim());
+      doc.text(60, margin_top + 66, this.cliente.logradouro.trim() + ' ' + this.cliente.endereco.trim() + ' ' + this.cliente.numero.trim());
+      doc.text(60, margin_top + 73, this.cliente.complemento.trim() + ' ' + this.cliente.bairro.trim());
+      doc.text(60, margin_top + 80, this.cliente.cidade.trim());
+      doc.text(60, margin_top + 87, this.cliente.UF);
+      doc.text(60, margin_top + 94, this.cliente.CEP);
+      doc.text(60, margin_top + 101, '(' + this.cliente.ddd + ') ' + this.cliente.telefone.trim());
+      doc.text(60, margin_top + 108, this.cliente.contato.trim());
+      doc.text(60, margin_top + 115, this.representante.codigo + ' ' + this.representante.nome.trim());
+      doc.text(60, margin_top + 122, parcela.prazo.toString() + ' ' + parcela.tipo_vencto + ' - ' + parcela.forma_pagto + ' ' + parcela.origem);
+
+    }.bind(this.state.documento))
 
     this.setState({dialog: <PrintPreview src={doc.output('bloburi')} onClose={this.handleCloseDialog.bind(this)} />})
   }
@@ -495,7 +517,7 @@ export default class Lancamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker name="emissao" value={this.state.documento.emissao} onChange={this.handleChangeDate} disabled={true} showClearButton={false} />
+                        <DatePicker name="emissao" value={this.state.documento.emissao} onChange={this.handleChangeDate} disabled={true} showClearButton={false} readOnly />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={1}>Entrega</Col>
@@ -514,7 +536,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" style={{textAlign: 'right'}} name="cnpj" value={this.state.documento.cliente.cnpj} onChange={this.handleChange} />
+                        <FormControl type="text" style={{textAlign: 'right'}} name="cnpj" value={this.state.documento.cliente.cnpj} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -522,7 +544,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={5}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="representante" value={this.state.documento.representante.nome} onChange={this.handleChange} />
+                        <FormControl type="text" name="representante" value={this.state.documento.representante.nome} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -533,7 +555,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={10}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="nome" value={this.state.documento.cliente.nome} onChange={this.handleChange} />
+                        <FormControl type="text" name="nome" value={this.state.documento.cliente.nome} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -544,7 +566,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="produtos" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.produtos.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
+                        <FormControl type="text" name="produtos" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.produtos.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -552,7 +574,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="ipi" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.ipi.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
+                        <FormControl type="text" name="ipi" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.ipi.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -560,7 +582,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="total" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.total.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
+                        <FormControl type="text" name="total" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.total.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
