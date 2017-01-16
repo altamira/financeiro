@@ -16,6 +16,7 @@ import {
 } from 'react-bootstrap';
 
 import CopyToClipboard from 'react-copy-to-clipboard';
+import format from 'number-format.js';
 
 export default class Titulo extends Component {
 	constructor(props) {
@@ -110,9 +111,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.valor.toFixed(2).replace('.', ',')} onChange={this.handleChange} />
+								    <FormControl type="text" value={format('########0,00', this.props.valor)} onChange={this.handleChange} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.valor.toFixed(2).replace('.', ',')} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={format('########0,00', this.props.valor)} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_valor'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>

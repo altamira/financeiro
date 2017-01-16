@@ -21,6 +21,7 @@ import Bordero from './Bordero.jsx';
 
 import axios from 'axios';
 import moment from 'moment';
+import format from 'number-format.js';
 
 import bordero from './bordero';
 
@@ -69,7 +70,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -84,7 +85,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -100,7 +101,7 @@ export default class Cobranca extends Component {
 
     // carrega documento
     /*axios
-      .get('http://financeiro:1880/api/financeiro/cobranca')
+      .get('http://localhost:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -113,7 +114,7 @@ export default class Cobranca extends Component {
 
   componentWillReceiveProps(props) {
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -128,7 +129,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -147,7 +148,7 @@ export default class Cobranca extends Component {
     let { carteira, cobranca, bordero } = this.state;
 
     axios
-      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 
@@ -178,7 +179,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 
@@ -324,13 +325,13 @@ export default class Cobranca extends Component {
                             return (
                               <tr key={'tr-carteiras-' + index} style={{background: carteira && carteira.id === c.id ? 'gold' : ''}} >
                                 <td style={{textAlign: 'left'}}><b>{c.nome}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{c.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.limite)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.utilizado)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.saldo)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.defasagem)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.descoberto)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.remessa)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', c.retorno)}</b></td>
                                 <td><Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleSelectCarteira.bind(null, c, index)} ><Glyphicon glyph="ok" /></Button></td>
                               </tr>                              
                             )
@@ -409,7 +410,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'center'}}>{moment(parcela.vencto).diff(moment(parcela.data_operacao), 'days') + ' dia(s)'}</td>
-    <td style={{textAlign: 'right'}}><b>R$ {parcela.valor.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+    <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', parcela.valor)}</b></td>
     <td ><b>{parcela.carteira}</b></td>
     <td style={{textAlign: 'center'}}><b>{parcela.carteira && new Date(parcela.remessa).toLocaleDateString()}</b></td>
     <td>

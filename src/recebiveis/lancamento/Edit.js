@@ -45,7 +45,7 @@ export default class Edit extends Component {
     this.setState(
       {
         data_base: data_base.toDate().toISOString(), 
-        vencto: data_base.clone().add(this.state.prazo, 'd').toDate().toISOString(), 
+        vencto: data_base.clone().add(parseInt(this.state.prazo, 10), 'd').toDate().toISOString(), 
         tipo_vencto: element.target.value
       });
   }
@@ -57,12 +57,12 @@ export default class Edit extends Component {
 
   handleChangePrazo(element) {
     let data_base = moment(this.state.data_base);
-    let vencto = data_base.add(element.target.value, 'd').toDate().toISOString();
+    let vencto = data_base.add(parseInt(element.target.value, 10), 'd').toDate().toISOString();
     this.setState({vencto: vencto, prazo: element.target.value});
   }
 
   handleChangeVencto(vencto) {
-    this.setState({vencto: vencto,  prazo: moment(vencto).diff(moment(this.state.data_base), 'days')})
+    this.setState({vencto: vencto/*,  prazo: moment(vencto).diff(moment(this.state.data_base), 'days').toString()*/})
   }
  
   handleChangeValor(element) {

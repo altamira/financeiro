@@ -11,6 +11,8 @@ import { assign } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
 import axios from 'axios';
 
+import format from 'number-format.js';
+
 import Login from './login';
 import Error from './Error';
 
@@ -54,7 +56,7 @@ class App extends Component {
 
   componentWillReceiveProps(props) {
     /*axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -72,7 +74,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .get('http://localhost:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -86,7 +88,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .get('http://localhost:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -193,7 +195,7 @@ class App extends Component {
     })
 
     axios
-      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
+      .get('http://localhost:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState({tarefas: response.data});
@@ -204,7 +206,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('http://localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -222,7 +224,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
+      .get('http://localhost:1880/api/financeiro/remessa/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -236,7 +238,7 @@ class App extends Component {
       })
 
     axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
+      .get('http://localhost:1880/api/financeiro/retorno/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -344,13 +346,13 @@ class App extends Component {
                   return (
                     <tr key={'tr-carteiras-' + index} >
                       <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{carteira.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.limite)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.utilizado)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.saldo)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.defasagem)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.descoberto)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.remessa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.retorno)}</b></td>
                     </tr>                              
                   )
                 }
@@ -385,13 +387,13 @@ class App extends Component {
                     <tr key={'tr-remessa-' + index} >
                       <td style={{textAlign: 'right'}}><b>{new Date(remessa.data).toLocaleDateString()}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_titulos.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_operacao.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_tarifa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_juros.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_iof.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.taxa_juros.toFixed(2).replace(',', '').replace('.', ',')}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.valor_liquido.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_titulos)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_operacao)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_tarifa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_juros)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_iof)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('##0,00', remessa.taxa_juros)}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_liquido)}</b></td>
                     </tr>                              
                   )
                 }
@@ -426,13 +428,13 @@ class App extends Component {
                     <tr key={'tr-retorno-' + index} >
                       <td style={{textAlign: 'right'}}><b>{new Date(retorno.data).toLocaleDateString()}</b></td>
                       <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_titulos.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_operacao.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_tarifa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_juros.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_iof.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.taxa_juros.toFixed(2).replace(',', '').replace('.', ',')}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.valor_liquido.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_titulos)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_operacao)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_tarifa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_juros)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_iof)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('##0,00', retorno.taxa_juros)}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_liquido)}</b></td>
                     </tr>                              
                   )
                 }

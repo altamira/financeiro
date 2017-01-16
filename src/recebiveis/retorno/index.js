@@ -17,6 +17,7 @@ import { Image } from 'react-bootstrap';
 
 import { omit } from 'lodash';
 import axios from 'axios';
+import format from 'number-format.js';
 
 import process from './process.svg';
 
@@ -127,7 +128,7 @@ export default class Retorno extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -145,7 +146,7 @@ export default class Retorno extends Component {
   componentWillReceiveProps(props) { 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -177,10 +178,20 @@ export default class Retorno extends Component {
     this.setState({dialog: <Bordero 
       bordero={{
         ...this.state.bordero, 
-        valor_titulos: this.state.retorno.reduce( (total, pagador) => 
+        valor_titulos: format('########0,00', this.state.retorno.reduce( (total, pagador) => 
           total + pagador.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
             subtotal + parcela.valor, 0.0)
-        , 0.0).toFixed(2).replace(',', '').replace('.', ',')
+        , 0.0)),
+        valor_base: format('########0,00', this.state.bordero.valor_base || 0.0),
+        valor_cet: format('########0,00', this.state.bordero.valor_cet || 0.0),
+        valor_iof: format('########0,00', this.state.bordero.valor_iof || 0.0),
+        valor_iof_adicional: format('########0,00', this.state.bordero.valor_iof_adicional || 0.0),
+        valor_iof_diario: format('########0,00', this.state.bordero.valor_iof_diario || 0.0),
+        valor_operacao: format('########0,00', this.state.bordero.valor_operacao || 0.0),
+        valor_tarifa: format('########0,00', this.state.bordero.valor_tarifa || 0.0),
+        valor_juros: format('########0,00', this.state.bordero.valor_juros || 0.0),
+        taxa_juros: format('########0,00', this.state.bordero.taxa_juros || 0.0),
+        valor_liquido: format('########0,00', this.state.bordero.valor_liquido || 0.0)
       }} 
       onClose={this.handleCloseDialog.bind(this)} 
       onSave={this.handleSaveAndClose.bind(this)} />
@@ -199,7 +210,7 @@ export default class Retorno extends Component {
     }, null, 2));
         // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
+      .post('http://localhost:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -345,13 +356,13 @@ export default class Retorno extends Component {
                         <tbody>
                             <tr>
                               <td style={{textAlign: 'left'}}><h2><b>{carteira.nome}</b></h2></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.limite.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.utilizado.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.saldo.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.defasagem.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.descoberto.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.remessa.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
-                              <td style={{textAlign: 'right'}}><b>{carteira.retorno.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.limite)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.utilizado)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.saldo)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.defasagem)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.descoberto)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.remessa)}</b></td>
+                              <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.retorno)}</b></td>
                             </tr>                              
                         </tbody>
                       </Table>
@@ -413,7 +424,7 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
-    <td style={{textAlign: 'right'}}><b>R$ {parcela.valor.toFixed(2).replace(',', '').replace('.', ',')}</b></td>
+    <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', parcela.valor)}</b></td>
     
     {parcela.aceito === undefined ?
       (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_aceito' + parcela.parcela_index} >Aceito</Tooltip>}>

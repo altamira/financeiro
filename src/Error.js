@@ -10,6 +10,8 @@ export default class Error extends Component {
 	
 	render() {
 
+       	console.log('Erro:' + JSON.stringify(this.props, null, 2))
+
 		let erro = '';
 		let mensagem = '';
 

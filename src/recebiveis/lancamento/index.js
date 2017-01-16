@@ -32,6 +32,8 @@ import axios from 'axios';
 
 import process from './process.svg';
 
+import format from 'number-format.js';
+
 import jsPDF from 'jspdf';
 
 import PrintPreview from './print';
@@ -110,7 +112,7 @@ export default class Lancamento extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
@@ -126,7 +128,7 @@ export default class Lancamento extends Component {
       })    
 
     axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
@@ -139,7 +141,7 @@ export default class Lancamento extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .get('http://localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
 
@@ -155,7 +157,7 @@ export default class Lancamento extends Component {
       })      
 
     axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
@@ -167,7 +169,7 @@ export default class Lancamento extends Component {
   
   handleSaveAndClose() {
     axios
-      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -181,7 +183,7 @@ export default class Lancamento extends Component {
     console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
     // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -298,7 +300,7 @@ export default class Lancamento extends Component {
 
   handleNossoNumero() {
     axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
       })
@@ -353,11 +355,14 @@ export default class Lancamento extends Component {
       doc.text(8, margin_top + 35, this.nosso_numero.toString());
       doc.text(40, margin_top + 35, this.nosso_numero.toString() + '-' + parcela.parcela.toString());
       doc.text(90, margin_top + 35, this.numero.toString());
-      doc.text(120, margin_top + 35, 'R$ ' + parcela.valor.toFixed(2).replace('.', ','));
+      doc.text(120, margin_top + 35, format('R$ ###.###.##0,00', parcela.valor));
 
       doc.setFontSize(16);
       doc.text(160, margin_top + 26, 'Vencimento');
-      doc.text(160, margin_top + 35, new Date(parcela.vencto).toLocaleDateString());
+
+      let vencto = new Date(parcela.vencto);
+      vencto.setTime(vencto.getTime() + vencto.getTimezoneOffset() * 60 * 1000);
+      doc.text(160, margin_top + 35, vencto.toLocaleDateString());
 
       doc.setFontSize(14);
       doc.setFontStyle('bold');
@@ -566,7 +571,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="produtos" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.produtos.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
+                        <FormControl type="text" name="produtos" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.documento.totais.produtos)} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -574,7 +579,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={2}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="ipi" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.ipi.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
+                        <FormControl type="text" name="ipi" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.documento.totais.ipi)} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -582,7 +587,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                        <FormControl type="text" name="total" style={{textAlign: 'right'}} value={'R$ ' + this.state.documento.totais.total.toFixed(2).replace('.', ',')} onChange={this.handleChange} readOnly />
+                        <FormControl type="text" name="total" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.documento.totais.total)} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -607,14 +612,17 @@ export default class Lancamento extends Component {
                         </thead>
                         <tbody>
                           {this.state.documento.parcelas.map( (parcela, index) => {
+                            let vencto = new Date(parcela.vencto);
+                            vencto.setTime(vencto.getTime() + vencto.getTimezoneOffset() * 60 * 1000);
+
                             return (
                               <tr key={'tr-' + index} id={'tr-' + index} >
                                 <td style={{textAlign: 'center'}}>{origem[parcela.origem]}</td>
                                 <td style={{textAlign: 'center'}}>{forma_pagto[parcela.forma_pagto]}</td>
-                                <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center'}}>{vencto.toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.documento.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
-                                <td style={{textAlign: 'right'}}>R$ {parcela.valor.toFixed(2).replace('.', ',')}</td>
+                                <td style={{textAlign: 'right'}}>{format('R$ ###.###.##0,00', parcela.valor)}</td>
                                 <td>
                                   <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_duplicar' + index} >Duplicar</Tooltip>}>
                                     <Button bsStyle="info" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleCopy.bind(null, parcela, index)}>
@@ -641,7 +649,7 @@ export default class Lancamento extends Component {
                           <tr>
                             <td colSpan={4}></td>
                             <td style={{textAlign: 'right'}}><b>Total das Parcelas</b></td>
-                            <td style={{textAlign: 'right'}}><b>R$ {this.state.documento.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0).toFixed(2).replace('.', ',')}</b></td>
+                            <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', this.state.documento.parcelas.reduce( (soma, parcela) => soma + parcela.valor, 0.0))}</b></td>
                             <td></td>
                           </tr>
                         </tbody>
