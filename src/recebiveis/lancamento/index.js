@@ -94,6 +94,7 @@ export default class Lancamento extends Component {
 
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
+    this.onValidate = this.onValidate.bind(this);
 
     // manipulação da lista de parcelas
     this.handleFormAdd = this.handleFormAdd.bind(this);
@@ -115,22 +116,16 @@ export default class Lancamento extends Component {
       .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-
-        if (response.data.concluido) {
-          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleCloseDialog.bind(this)} />})
-        } else {
-          this.setState(response.data);
-        }
-        
+        this.setState(response.data);
       })
       .catch( error => {
-        alert('Erro ao obter a tarefa: ' + this.props.params.id + '.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })    
 
     axios
       .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
+        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
@@ -144,22 +139,16 @@ export default class Lancamento extends Component {
       .get('http://localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-
-        if (response.data.concluido) {
-          this.setState({...response.data, dialog: <Error erro={0} mensagem={'Esta tarefa já foi concluída !'} onClose={this.handleCloseDialog.bind(this)} />})
-        } else {
-          this.setState(response.data);
-        }
-        
+        this.setState(response.data);
       })
       .catch( error => {
-        alert('Erro ao obter a tarefa: ' + props.params.id + '.\nErro: ' + error.message);
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })      
 
     axios
       .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
+        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
@@ -290,8 +279,8 @@ export default class Lancamento extends Component {
   }
 
   // formulario
-  handleChange(value) {
-    this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
+  handleChange(element) {
+    this.setState({documento: {...this.state.documento, [element.target.name]: element.target.value}});
   }
 
   handleChangeDate(value, formattedValue) {
@@ -302,11 +291,16 @@ export default class Lancamento extends Component {
     axios
       .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: response.data.nosso_numero + 1}})
+        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
+  }
+
+  onValidate(propriedade) {
+      var regex = /^\$?[0-9]{1,7}?$/;
+      return regex.test(this.state.documento[propriedade]) && this.state.documento[propriedade].length < 10;
   }
 
   handlePrint() {
@@ -437,7 +431,9 @@ export default class Lancamento extends Component {
               >
                   <Button
                     onClick={this.handleComplete}
-                    disabled={!this.state.documento.parcelas.length}
+                    disabled={!(
+                      this.onValidate('nosso_numero') &&
+                      this.state.documento.parcelas.length)}
                     style={{width: 120}}
                     bsStyle="success"
                   >
@@ -494,15 +490,18 @@ export default class Lancamento extends Component {
                   <Row style={{paddingTop: 20}} >
                     <Col xs={12} md={2}>Nosso Número</Col>
                     <Col xs={12} md={3}>
-                      <FormGroup>
+                      <FormGroup validationState={this.onValidate('nosso_numero') ? 'success' : 'error'} >
                         <InputGroup>
-                        <FormControl type="text" name="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
-                        <FormControl.Feedback />
-                        <InputGroup.Addon className='btn-success' style={{cursor: 'pointer'}} >
-                          <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
-                              <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
-                          </OverlayTrigger>
-                        </InputGroup.Addon>
+                          <FormControl type="text" name="nosso_numero" value={this.state.documento.nosso_numero} onChange={this.handleChange} />
+                          {this.onValidate('nosso_numero') ? 
+                            <FormControl.Feedback />
+                          :
+                            <InputGroup.Addon className='btn-danger' style={{cursor: 'pointer'}} >
+                              <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
+                                  <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
+                              </OverlayTrigger>
+                            </InputGroup.Addon>
+                          }
                         </InputGroup>
                       </FormGroup>
                     </Col>

@@ -29,8 +29,11 @@ export default class Bordero extends Component {
 	parseStateToFloatNumbers() {
 		return Object.keys(this.state).reduce( (newState, key) => 
 			{
-				if (key.substring(0, 6) === 'valor_') {
+				if (key.substring(0, 6) === 'valor_' || 
+					key === 'taxa_juros') {
 					newState[key] = parseFloat(Number(this.state[key].toString().replace(',', '-').replace('.', '').replace('-', '.')).toFixed(2));	
+				} else {
+					newState[key] = this.state[key];
 				}
 				return newState;
 			}

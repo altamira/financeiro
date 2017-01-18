@@ -18,6 +18,8 @@ import DatePicker from 'react-bootstrap-date-picker';
 
 import axios from 'axios';
 
+import Error from './../../Error';
+
 import Buscar from './Buscar';
 
 import process from './process.svg';

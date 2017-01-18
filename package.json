@@ -13,6 +13,7 @@
     "md5": "^2.2.1",
     "moment": "^2.17.0",
     "mqtt": "^1.14.1",
+    "msnodesqlv8": "^0.2.11",
     "node-uuid": "^1.4.7",
     "number-format.js": "^1.1.10",
     "react": "^15.3.2",

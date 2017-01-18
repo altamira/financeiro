@@ -21,6 +21,8 @@ import format from 'number-format.js';
 
 import process from './process.svg';
 
+import Error from './../../Error';
+
 import Bordero from './Bordero';
 
 export default class Retorno extends Component {

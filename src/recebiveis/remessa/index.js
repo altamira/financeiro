@@ -19,6 +19,8 @@ import { omit } from 'lodash';
 import axios from 'axios';
 import format from 'number-format.js';
 
+import Error from './../../Error';
+
 import process from './process.svg';
 
 import Form from './Titulo';
