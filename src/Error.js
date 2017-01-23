@@ -16,8 +16,8 @@ export default class Error extends Component {
 		let mensagem = '';
 
 		if (this.props.response && this.props.response.data) {
-			erro = this.props.response.data.erro;
-			mensagem = this.props.response.data.mensagem;
+			erro = this.props.response.data.erro || 9999;
+			mensagem = this.props.response.data.mensagem || 'Erro imprevisto, nenhuma mensagem recebida.';
 		} else if (this.props.message) {
 			mensagem = this.props.message;
 		}
@@ -27,24 +27,26 @@ export default class Error extends Component {
 			<div className="static-modal">
 		        <Modal.Dialog>
 		          <Modal.Header>
-		            <Modal.Title>Mensagem de erro</Modal.Title>
+		            <Modal.Title>Mensagem {erro ? '(código do erro: ' + erro + ')': ''}</Modal.Title>
 		          </Modal.Header>
 
 		          <Modal.Body>
-		          	<h4 style={{textAlign: 'center'}}>Ocorreu um erro ao executar esta operação</h4>
-		          	<Table>
+		          	
+		          	<h4 style={{textAlign: 'center'}}>{mensagem}</h4>
+
+		          	{/*<Table>
 		          		<tbody>
 							<tr>
 			                    <td style={{textAlign: 'center'}}>{erro}</td>
 			                    <td style={{textAlign: 'center'}}>{mensagem}</td>
 			                </tr>
 		                </tbody> 
-	                </Table>
+	                </Table>*/}
 
 		          </Modal.Body>
 
 		          <Modal.Footer>
-		            <Button bsStyle="danger" onClick={this.props.onClose} >Fechar</Button>
+		            <Button bsStyle={erro ? 'danger' : 'success'} onClick={this.props.onClose} >Fechar</Button>
 		          </Modal.Footer>
 
 		        </Modal.Dialog>

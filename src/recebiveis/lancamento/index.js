@@ -178,7 +178,7 @@ export default class Lancamento extends Component {
         browserHistory.push('/');
       })
       .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
+        this.setState({documento: {...this.state.documento, nosso_numero: error.erro = 1235 ? '' : this.state.documento.nosso_numero}, dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 
