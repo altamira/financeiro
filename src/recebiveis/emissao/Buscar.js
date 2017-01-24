@@ -49,8 +49,7 @@ export default class Buscar extends Component {
 		   	}
 		}.bind(this))
 		.catch(function (error) {
-		    console.log(error);
-		    alert('Erro ao buscar pedidos:\n' + JSON.stringify(error));
+		    this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
 		});
 	}
 

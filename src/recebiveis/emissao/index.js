@@ -54,7 +54,7 @@ export default class Emissao extends Component {
         }
       })
       .catch( error => {
-        alert('Erro ao obter a lista de tarefas.');
+        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })
   }
 

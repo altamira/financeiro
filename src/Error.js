@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import {
   Modal,
-  Table,
   Button
 } from 'react-bootstrap';
 

@@ -1,12 +1,12 @@
 USE [master]
 GO
-/****** Object:  Database [FINANCEIRO]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Database [FINANCEIRO]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE DATABASE [FINANCEIRO]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'FINANCEIRO', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
  LOG ON 
-( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 84416KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 102144KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
 GO
 ALTER DATABASE [FINANCEIRO] SET COMPATIBILITY_LEVEL = 110
 GO
@@ -77,7 +77,7 @@ EXEC sys.sp_db_vardecimal_storage_format N'FINANCEIRO', N'ON'
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  User [financeiro]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  User [financeiro]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE USER [financeiro] FOR LOGIN [financeiro] WITH DEFAULT_SCHEMA=[dbo]
 GO
 ALTER ROLE [db_owner] ADD MEMBER [financeiro]
@@ -88,7 +88,7 @@ ALTER ROLE [db_datawriter] ADD MEMBER [financeiro]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE SEQUENCE [dbo].[ERR_LOG_SEQ] 
  AS [int]
  START WITH 1
@@ -99,7 +99,7 @@ CREATE SEQUENCE [dbo].[ERR_LOG_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE SEQUENCE [dbo].[REMESSA_SEQ] 
  AS [int]
  START WITH 1
@@ -110,7 +110,7 @@ CREATE SEQUENCE [dbo].[REMESSA_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE SEQUENCE [dbo].[RETORNO_SEQ] 
  AS [int]
  START WITH 1
@@ -121,7 +121,7 @@ CREATE SEQUENCE [dbo].[RETORNO_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ] 
  AS [bigint]
  START WITH 1
@@ -132,7 +132,7 @@ CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 23/01/2017 11:20:35 ******/
+/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE SEQUENCE [dbo].[TAREFA_SEQ] 
  AS [int]
  START WITH 1
@@ -141,18 +141,23 @@ CREATE SEQUENCE [dbo].[TAREFA_SEQ]
  MAXVALUE 2147483647
  CACHE 
 GO
-/****** Object:  UserDefinedTableType [dbo].[COB_LANCAMENTO_TYPE]    Script Date: 23/01/2017 11:20:35 ******/
-CREATE TYPE [dbo].[COB_LANCAMENTO_TYPE] AS TABLE(
+/****** Object:  UserDefinedTableType [dbo].[COB_PARCELA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+CREATE TYPE [dbo].[COB_PARCELA_TYPE] AS TABLE(
+	[carteira] [int] NOT NULL,
 	[nosso_numero] [int] NOT NULL,
 	[parcela] [int] NOT NULL,
-	[carteira] [int] NOT NULL,
-	[conta_contabil] [varchar](56) NOT NULL,
 	[forma_pagto] [varchar](10) NOT NULL,
 	[tipo_vencto] [varchar](3) NOT NULL,
 	[vencto] [date] NOT NULL,
 	[prazo] [int] NOT NULL,
-	[valor] [money] NOT NULL,
-	[origem] [varchar](10) NOT NULL,
+	[valor] [money] NOT NULL
+)
+GO
+/****** Object:  UserDefinedTableType [dbo].[COB_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+CREATE TYPE [dbo].[COB_TYPE] AS TABLE(
+	[carteira] [int] NOT NULL,
+	[nosso_numero] [int] NOT NULL,
+	[conta_contabil] [varchar](56) NOT NULL,
 	[cnpj] [varchar](20) NOT NULL,
 	[inscricao] [varchar](12) NULL,
 	[fantasia] [varchar](30) NULL,
@@ -171,7 +176,7 @@ CREATE TYPE [dbo].[COB_LANCAMENTO_TYPE] AS TABLE(
 	[contato] [varchar](20) NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[REC_PARCELA_TYPE]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  UserDefinedTableType [dbo].[REC_PARCELA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE TYPE [dbo].[REC_PARCELA_TYPE] AS TABLE(
 	[nosso_numero] [int] NOT NULL,
 	[parcela] [int] NOT NULL,
@@ -183,7 +188,7 @@ CREATE TYPE [dbo].[REC_PARCELA_TYPE] AS TABLE(
 	[origem] [varchar](10) NOT NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[TAREFA_NOTIFICACAO_TYPE]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  UserDefinedTableType [dbo].[TAREFA_NOTIFICACAO_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE TYPE [dbo].[TAREFA_NOTIFICACAO_TYPE] AS TABLE(
 	[id] [int] NOT NULL,
 	[nome] [nvarchar](100) NOT NULL,
@@ -199,7 +204,7 @@ CREATE TYPE [dbo].[TAREFA_NOTIFICACAO_TYPE] AS TABLE(
 	[topico] [nvarchar](100) NOT NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[TAREFA_TYPE]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  UserDefinedTableType [dbo].[TAREFA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE TYPE [dbo].[TAREFA_TYPE] AS TABLE(
 	[id] [int] NOT NULL,
 	[nome] [nvarchar](100) NOT NULL,
@@ -217,7 +222,7 @@ CREATE TYPE [dbo].[TAREFA_TYPE] AS TABLE(
 	[versao] [int] NOT NULL
 )
 GO
-/****** Object:  StoredProcedure [dbo].[COB_INSERE]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  StoredProcedure [dbo].[COB_INSERE]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -229,42 +234,21 @@ GO
 
 
 
-
 CREATE PROCEDURE [dbo].[COB_INSERE]
-
-	@NOSSO_NUMERO INT,
-	@PARCELA INT,
-	@CARTEIRA INT,
-
-	@CONTA_CONTABIL VARCHAR(20),
-	@CNPJ VARCHAR(20),
-	@INSCRICAO VARCHAR(12),
-	@FANTASIA VARCHAR(30),
-	@NOME VARCHAR(100),
-	@LOGRADOURO VARCHAR(5),
-	@ENDERECO VARCHAR(50),
-	@NUMERO VARCHAR(10),
-	@COMPLEMENTO VARCHAR(20),
-	@BAIRRO VARCHAR(30),
-	@MUNICIPIO INT,
-	@CIDADE VARCHAR(20),
-	@CEP CHAR(9),
-	@UF CHAR(2),
-	@DDD VARCHAR(3),
-	@TELEFONE VARCHAR(15),
-	@CONTATO VARCHAR(20),
 
 	@TAREFA_ATUAL INT,
 	@VERSAO INT,
 
-	@NOVA_TAREFA INT,
+	--@NOVA_TAREFA INT,
 
-	@TAREFA_COBRANCA_NOME NVARCHAR(100),
-	@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
+	--@TAREFA_COBRANCA_NOME NVARCHAR(100),
+	--@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
 
 	@TAREFAS TAREFA_TYPE READONLY,
 
-	@PARCELAS COB_LANCAMENTO_TYPE READONLY
+	@COBRANCA COB_TYPE READONLY,
+
+	@PARCELAS COB_PARCELA_TYPE READONLY
 
 AS
 BEGIN
@@ -281,9 +265,6 @@ BEGIN
 
 	DECLARE @TAREFA_NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
 
-	/*IF @@TRANCOUNT > 0
-			ROLLBACK TRANSACTION*/
-        
 	BEGIN TRY
 		BEGIN TRANSACTION
 
@@ -305,7 +286,8 @@ BEGIN
 
 			IF @@ROWCOUNT != 1
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
 
 				SELECT * FROM ERR WHERE erro = 7015;
 
@@ -314,7 +296,8 @@ BEGIN
 
 			IF (NOT @CONCLUIDO IS NULL)
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
 
 				SELECT * FROM ERR WHERE erro = 7010;
 
@@ -323,7 +306,8 @@ BEGIN
 			
 			IF (@ULTIMA_VERSAO <> @VERSAO)
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
 
 				SELECT * FROM ERR WHERE erro = 7450;
 
@@ -341,76 +325,6 @@ BEGIN
 		WHERE id = @TAREFA_ATUAL
 
 /*
-		---------------------------------------------------- grava as parcelas ----------------------------------------------------
-	` +
-
-	msg.payload.documento.cobranca.reduce( (sql, c) => 
-
-		sql + c.parcelas.filter( p => p.selected).reduce( (sql, p) => 
-    
-			sql + 
-	`
-        
-		----------------------------------------------------------------------------------------------------------
-		-- insere nova parcela => nosso_numero:  + ${c.nosso_numero} + ', parcela: ' + ${p.parcela} + ', carteira: ' + ${msg.payload.documento.carteira.id}
-		----------------------------------------------------------------------------------------------------------
-		SET @NOSSO_NUMERO = CAST('${c.nosso_numero}' AS INT)
-		SET @PARCELA = CAST('${p.parcela}' AS INT)
-		SET @CARTEIRA = CAST('${msg.payload.documento.carteira.id}' AS INT)
-    
-		IF EXISTS(SELECT NOSSO_NUMERO FROM COB WHERE nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA AND carteira = @CARTEIRA)
-		BEGIN
-    
-		   ROLLBACK TRANSACTION
-    
-		   INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 1123
-		   SELECT * FROM ERR WHERE erro = 1123
-    
-		   RETURN
-		END
-    
-		SET @NOSSO_NUMERO = CAST('${c.nosso_numero}' AS INT)
-		SET @PARCELA = CAST('${p.parcela}' AS INT)
-		SET @CARTEIRA = CAST('${msg.payload.documento.carteira.id}' AS INT)
-    
-		SET @CONTA_CONTABIL = CAST('${c.cliente.conta_contabil}' AS VARCHAR(20)) 
-		SET @CNPJ = CAST('${c.cliente.cnpj}' AS VARCHAR(20))
-		SET @INSCRICAO = CAST('${c.cliente.inscricao}' AS VARCHAR(14))
-		SET @FANTASIA = CAST('${c.cliente.fantasia}' AS VARCHAR(30))
-		SET @NOME = CAST('${c.cliente.nome}' AS VARCHAR(100))
-		SET @LOGRADOURO = CAST('${c.cliente.logradouro}' AS VARCHAR(5))
-		SET @ENDERECO = CAST('${c.cliente.endereco}' AS VARCHAR(50))
-		SET @NUMERO = CAST('${c.cliente.numero}' AS VARCHAR(10))
-		SET @COMPLEMENTO = CAST('${c.cliente.complemento}' AS VARCHAR(20))
-		SET @BAIRRO = CAST('${c.cliente.bairro}' AS VARCHAR(30))
-		SET @MUNICIPIO = CAST('${c.cliente.municipio}' AS INT)
-		SET @CIDADE = CAST('${c.cliente.cidade}' AS VARCHAR(20))
-		SET @CEP = CAST('${c.cliente.CEP}' AS CHAR(9))
-		SET @UF = CAST('${c.cliente.UF}' AS CHAR(2))
-		SET @DDD = CAST('${c.cliente.ddd}' AS VARCHAR(3))
-		SET @TELEFONE = CAST('${c.cliente.telefone}' AS VARCHAR(15))
-		SET @CONTATO = CAST('${c.cliente.contato}' AS VARCHAR(20))
-    
-		SET @PARCELA = CAST('${p.parcela}' AS INT)
-		SET @FORMA_PAGTO = CAST('${p.forma_pagto}' AS VARCHAR(10))
-		SET @TIPO_VENCTO = CAST('${p.tipo_vencto}' AS VARCHAR(3))
-		SET @VENCTO = CAST('${p.vencto}' AS DATE)
-		SET @PRAZO = CAST('${p.prazo}' AS INT)
-		SET @VALOR = CAST('${p.valor}' AS MONEY)
-		SET @ORIGEM = CAST('${p.origem}' AS VARCHAR(10))
-    
-		INSERT INTO COB (nosso_numero, parcela, carteira, remessa, retorno, situacao, conta_contabil, forma_pagto, tipo_vencto, vencto, prazo, valor, origem, cnpj, inscricao, fantasia, nome, logradouro, endereco, numero, complemento, bairro, municipio, cidade, cep, uf, ddd, telefone, contato)
-		VALUES (@NOSSO_NUMERO, @PARCELA, @CARTEIRA, GETDATE(), NULL, NULL, @CONTA_CONTABIL, @FORMA_PAGTO, @TIPO_VENCTO, @VENCTO, @PRAZO, @VALOR, @ORIGEM, @CNPJ, @INSCRICAO, @FANTASIA, @NOME, @LOGRADOURO, @ENDERECO, @NUMERO, @COMPLEMENTO, @BAIRRO, @MUNICIPIO, @CIDADE, @CEP, @UF, @DDD, @TELEFONE, @CONTATO)
-    
-		UPDATE CRT SET
-		   remessa = remessa + @VALOR
-		WHERE id = @CARTEIRA
-
-	`
-		, '')
-
-	, '') +
-
 	(msg.payload.documento.cobranca.find( (c) => c.parcelas.find( (p) => !p.selected && !p.carteira) ) ?
 
 	`
@@ -543,6 +457,30 @@ BEGIN
 		FROM TRF 
 		WHERE id = @PROX_TAREFA
 */
+
+
+		---------------------------------------------------- grava as parcelas ----------------------------------------------------
+		/*IF EXISTS(SELECT NOSSO_NUMERO FROM COB_PAR WHERE nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA AND carteira = @CARTEIRA)
+		BEGIN
+    
+		   ROLLBACK TRANSACTION
+    
+		   INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 1123
+		   SELECT * FROM ERR WHERE erro = 1123
+    
+		   RETURN
+		END*/
+    
+		INSERT INTO COB (carteira, nosso_numero, conta_contabil, cnpj)
+		SELECT carteira, nosso_numero, conta_contabil, cnpj	FROM @COBRANCA
+    
+		INSERT INTO COB_PAR
+		SELECT * FROM @PARCELAS
+
+		/*UPDATE CRT SET
+		   remessa = remessa --+ (SELECT SUM(valor) FROM @PARCELAS)
+		WHERE id = @CARTEIRA*/
+
 		COMMIT TRANSACTION
 
 	END TRY
@@ -550,36 +488,20 @@ BEGIN
 
 		DECLARE @ERR_ID INT
 		DECLARE @ERROR_NUMBER INT
-		DECLARE @ERROR_SEVERITY INT
-		DECLARE @ERROR_STATE INT
-		DECLARE @ERROR_PROCEDURE INT
-		DECLARE @ERROR_LINE INT
-		DECLARE @ERROR_MESSAGE NVARCHAR(MAX)
+
+		---------------------------- REVERTE AS ALTERACOES ----------------------------
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION
 
 		---------------------------- CAPTURA O ERRO ----------------------------
 		SET @ERROR_NUMBER = ERROR_NUMBER()
-		SET @ERROR_SEVERITY = ERROR_SEVERITY()
-		SET @ERROR_STATE = ERROR_STATE()
-		SET @ERROR_PROCEDURE = ERROR_PROCEDURE()
-		SET @ERROR_LINE = ERROR_LINE()
-		SET @ERROR_MESSAGE = ERROR_MESSAGE()
-
-		---------------------------- REVERTE AS ALTERACOES ----------------------------
-		ROLLBACK TRANSACTION
 
 		---------------------------- REGISTRA O ERRO ----------------------------
 		SET @ERR_ID = NEXT VALUE FOR err_log_seq
 
-		INSERT INTO 
-			err_log 
-		SELECT 
-			@ERR_ID AS id, 
-			@ERROR_NUMBER AS erro, 
-			@ERROR_SEVERITY AS nivel, 
-			@ERROR_STATE AS situacao, 
-			@ERROR_PROCEDURE AS procedimento, 
-			@ERROR_LINE AS linha, 
-			@ERROR_MESSAGE AS mensagem
+		INSERT INTO err_log 
+			(id, erro, nivel, situacao, procedimento, linha, mensagem)
+		VALUES (@ERR_ID, @ERROR_NUMBER, ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE())
 
 		---------------------------- RETORNA O ERRO PARA O CLIENTE ----------------------------
 		SELECT * FROM err_log WHERE id = @ERR_ID
@@ -606,12 +528,20 @@ END
 
 
 
+
+
+
+
 GO
-/****** Object:  StoredProcedure [dbo].[REC_INSERE]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  StoredProcedure [dbo].[REC_INSERE]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
+
+
+
 
 
 
@@ -622,6 +552,11 @@ CREATE PROCEDURE [dbo].[REC_INSERE]
 
 	@TAREFA_ATUAL INT,
 	@VERSAO INT,
+
+	@TAREFA_COBRANCA_NOME NVARCHAR(100),
+	@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
+
+	@TAREFAS TAREFA_TYPE READONLY,
 
 	@NOSSO_NUMERO INT,
 
@@ -644,11 +579,6 @@ CREATE PROCEDURE [dbo].[REC_INSERE]
 	@DDD VARCHAR(3),
 	@TELEFONE VARCHAR(15),
 	@CONTATO VARCHAR(20),
-
-	@TAREFA_COBRANCA_NOME NVARCHAR(100),
-	@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
-
-	@TAREFAS TAREFA_TYPE READONLY,
 
 	@PARCELAS REC_PARCELA_TYPE READONLY
 
@@ -691,7 +621,8 @@ BEGIN
 
 			IF @@ROWCOUNT != 1
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
 
 				SELECT * FROM ERR WHERE erro = 7015;
 
@@ -700,7 +631,8 @@ BEGIN
 
 			IF (NOT @CONCLUIDO IS NULL)
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
 
 				SELECT * FROM ERR WHERE erro = 7010;
 
@@ -709,7 +641,8 @@ BEGIN
 			
 			IF (@ULTIMA_VERSAO <> @VERSAO)
 			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
+				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
+				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
 
 				SELECT * FROM ERR WHERE erro = 7450;
 
@@ -822,10 +755,39 @@ BEGIN
 
 		----------------------------------------- GRAVA RECEBIMENTO --------------------------------------------
 
+		IF NOT EXISTS(SELECT TOP 1 cnpj FROM EMP WHERE cnpj = @CNPJ)
+		BEGIN
+			INSERT INTO EMP
+				(cnpj, inscricao, fantasia, nome, logradouro, endereco, numero, complemento, bairro, municipio, cidade, cep, uf, ddd, telefone, contato)
+			VALUES 
+				(@CNPJ, @INSCRICAO, @FANTASIA, @NOME, @LOGRADOURO, @ENDERECO, @NUMERO, @COMPLEMENTO, @BAIRRO, @MUNICIPIO, @CIDADE, @CEP, @UF, @DDD, @TELEFONE, @CONTATO)
+		END
+		ELSE
+		BEGIN
+			UPDATE EMP SET
+				inscricao = @INSCRICAO, 
+				fantasia = @FANTASIA, 
+				nome = @NOME, 
+				logradouro = @LOGRADOURO, 
+				endereco = @ENDERECO, 
+				numero = @NUMERO, 
+				complemento = @COMPLEMENTO, 
+				bairro = @BAIRRO, 
+				municipio = @MUNICIPIO, 
+				cidade = @CIDADE, 
+				cep = @CEP, 
+				uf = @UF, 
+				ddd = @DDD, 
+				telefone = @TELEFONE, 
+				contato = @CONTATO
+			WHERE
+				cnpj = @CNPJ
+		END
+
 		INSERT INTO REC 
-			(nosso_numero, conta_contabil, cnpj, inscricao, fantasia, nome, logradouro, endereco, numero, complemento, bairro, municipio, cidade, cep, uf, ddd, telefone, contato)
+			(nosso_numero, conta_contabil, cnpj/*, inscricao, fantasia, nome, logradouro, endereco, numero, complemento, bairro, municipio, cidade, cep, uf, ddd, telefone, contato*/)
 		VALUES 
-			(@NOSSO_NUMERO, @CONTA_CONTABIL, @CNPJ, @INSCRICAO, @FANTASIA, @NOME, @LOGRADOURO, @ENDERECO, @NUMERO, @COMPLEMENTO, @BAIRRO, @MUNICIPIO, @CIDADE, @CEP, @UF, @DDD, @TELEFONE, @CONTATO)
+			(@NOSSO_NUMERO, @CONTA_CONTABIL, @CNPJ/*, @INSCRICAO, @FANTASIA, @NOME, @LOGRADOURO, @ENDERECO, @NUMERO, @COMPLEMENTO, @BAIRRO, @MUNICIPIO, @CIDADE, @CEP, @UF, @DDD, @TELEFONE, @CONTATO*/)
 
 		INSERT INTO REC_PED (nosso_numero, numero) VALUES (@NOSSO_NUMERO, @PEDIDO)
 
@@ -834,7 +796,8 @@ BEGIN
 		INSERT INTO REC_PAR 
 			(NOSSO_NUMERO, PARCELA, FORMA_PAGTO, TIPO_VENCTO, VENCTO, PRAZO, VALOR, ORIGEM)
 		SELECT 
-			NOSSO_NUMERO, PARCELA, FORMA_PAGTO, TIPO_VENCTO, VENCTO, PRAZO, VALOR, ORIGEM FROM @PARCELAS
+			NOSSO_NUMERO, PARCELA, FORMA_PAGTO, TIPO_VENCTO, VENCTO, PRAZO, VALOR, ORIGEM 
+		FROM @PARCELAS
 
 		-----------------------------------------------------------------------------------------------------
 
@@ -845,36 +808,20 @@ BEGIN
 
 		DECLARE @ERR_ID INT
 		DECLARE @ERROR_NUMBER INT
-		DECLARE @ERROR_SEVERITY INT
-		DECLARE @ERROR_STATE INT
-		DECLARE @ERROR_PROCEDURE INT
-		DECLARE @ERROR_LINE INT
-		DECLARE @ERROR_MESSAGE NVARCHAR(MAX)
+
+		---------------------------- REVERTE AS ALTERACOES ----------------------------
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION
 
 		---------------------------- CAPTURA O ERRO ----------------------------
 		SET @ERROR_NUMBER = ERROR_NUMBER()
-		SET @ERROR_SEVERITY = ERROR_SEVERITY()
-		SET @ERROR_STATE = ERROR_STATE()
-		SET @ERROR_PROCEDURE = ERROR_PROCEDURE()
-		SET @ERROR_LINE = ERROR_LINE()
-		SET @ERROR_MESSAGE = ERROR_MESSAGE()
-
-		---------------------------- REVERTE AS ALTERACOES ----------------------------
-		ROLLBACK TRANSACTION
 
 		---------------------------- REGISTRA O ERRO ----------------------------
 		SET @ERR_ID = NEXT VALUE FOR err_log_seq
 
-		INSERT INTO 
-			err_log 
-		SELECT 
-			@ERR_ID AS id, 
-			@ERROR_NUMBER AS erro, 
-			@ERROR_SEVERITY AS nivel, 
-			@ERROR_STATE AS situacao, 
-			@ERROR_PROCEDURE AS procedimento, 
-			@ERROR_LINE AS linha, 
-			@ERROR_MESSAGE AS mensagem
+		INSERT INTO err_log 
+			(id, erro, nivel, situacao, procedimento, linha, mensagem)
+		VALUES (@ERR_ID, @ERROR_NUMBER, ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE())
 
 		---------------------------- RETORNA O ERRO PARA O CLIENTE ----------------------------
 		SELECT * FROM err_log WHERE id = @ERR_ID
@@ -898,8 +845,12 @@ END
 
 
 
+
+
+
+
 GO
-/****** Object:  Table [dbo].[BAN]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[BAN]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -914,7 +865,7 @@ CREATE TABLE [dbo].[BAN](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CLI]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[CLI]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -948,7 +899,7 @@ CREATE TABLE [dbo].[CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[COB]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[COB]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -956,19 +907,9 @@ GO
 SET ANSI_PADDING ON
 GO
 CREATE TABLE [dbo].[COB](
-	[nosso_numero] [int] NOT NULL,
-	[parcela] [int] NOT NULL,
 	[carteira] [int] NOT NULL,
-	[remessa] [date] NOT NULL,
-	[retorno] [date] NULL,
-	[situacao] [varchar](10) NULL,
+	[nosso_numero] [int] NOT NULL,
 	[conta_contabil] [varchar](56) NOT NULL,
-	[forma_pagto] [varchar](10) NOT NULL,
-	[tipo_vencto] [varchar](3) NOT NULL,
-	[vencto] [date] NOT NULL,
-	[prazo] [int] NOT NULL,
-	[valor] [money] NOT NULL,
-	[origem] [varchar](10) NOT NULL,
 	[cnpj] [varchar](20) NOT NULL,
 	[inscricao] [varchar](12) NULL,
 	[fantasia] [varchar](30) NULL,
@@ -985,18 +926,44 @@ CREATE TABLE [dbo].[COB](
 	[ddd] [varchar](3) NULL,
 	[telefone] [varchar](15) NULL,
 	[contato] [varchar](20) NULL,
- CONSTRAINT [PK_COB] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_COB_1] PRIMARY KEY CLUSTERED 
 (
-	[nosso_numero] ASC,
-	[parcela] ASC,
-	[carteira] ASC
+	[carteira] ASC,
+	[nosso_numero] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CRT]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[COB_PAR]    Script Date: 24/01/2017 17:30:06 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[COB_PAR](
+	[carteira] [int] NOT NULL,
+	[nosso_numero] [int] NOT NULL,
+	[parcela] [int] NOT NULL,
+	[forma_pagto] [varchar](10) NOT NULL,
+	[tipo_vencto] [varchar](3) NOT NULL,
+	[vencto] [date] NOT NULL,
+	[prazo] [int] NOT NULL,
+	[valor] [money] NOT NULL,
+ CONSTRAINT [PK_COB_PAR_1] PRIMARY KEY CLUSTERED 
+(
+	[carteira] ASC,
+	[nosso_numero] ASC,
+	[parcela] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  Table [dbo].[CRT]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1032,7 +999,7 @@ CREATE TABLE [dbo].[CRT](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[DUP]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1072,7 +1039,7 @@ CREATE TABLE [dbo].[DUP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1084,7 +1051,7 @@ CREATE TABLE [dbo].[DUP_CRT](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[EMP]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[EMP]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1117,7 +1084,7 @@ CREATE TABLE [dbo].[EMP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[ERR]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[ERR]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1132,13 +1099,13 @@ CREATE TABLE [dbo].[ERR](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[ERR_LOG](
-	[id] [int] IDENTITY(1,1) NOT NULL,
+	[id] [int] NOT NULL DEFAULT (NEXT VALUE FOR [err_log_seq]),
 	[datahora] [datetime] NOT NULL CONSTRAINT [DF_ERR_LOG_datahora]  DEFAULT (getdate()),
 	[erro] [int] NOT NULL,
 	[nivel] [int] NULL,
@@ -1153,7 +1120,7 @@ CREATE TABLE [dbo].[ERR_LOG](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[PED]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1175,7 +1142,7 @@ CREATE TABLE [dbo].[PED](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_CLI]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[PED_CLI]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1190,7 +1157,7 @@ CREATE TABLE [dbo].[PED_CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_DUP]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[PED_DUP]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1202,7 +1169,7 @@ CREATE TABLE [dbo].[PED_DUP](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED_REP]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[PED_REP]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1217,7 +1184,7 @@ CREATE TABLE [dbo].[PED_REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REC]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1252,7 +1219,7 @@ CREATE TABLE [dbo].[REC](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC_PAR]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REC_PAR]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1278,7 +1245,7 @@ CREATE TABLE [dbo].[REC_PAR](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC_PED]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REC_PED]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1294,7 +1261,7 @@ CREATE TABLE [dbo].[REC_PED](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[REM]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REM]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1326,7 +1293,7 @@ CREATE TABLE [dbo].[REM](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[REM_PAR]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REM_PAR]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1337,24 +1304,23 @@ CREATE TABLE [dbo].[REM_PAR](
 	[remessa] [int] NOT NULL,
 	[nosso_numero] [int] NOT NULL,
 	[parcela] [int] NOT NULL,
-	[carteira] [int] NOT NULL,
 	[forma_pagto] [varchar](10) NOT NULL,
 	[tipo_vencto] [varchar](3) NOT NULL,
 	[vencto] [date] NOT NULL,
 	[prazo] [int] NOT NULL,
 	[valor] [money] NOT NULL,
- CONSTRAINT [PK_REMD] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_REM_PAR] PRIMARY KEY CLUSTERED 
 (
+	[remessa] ASC,
 	[nosso_numero] ASC,
-	[parcela] ASC,
-	[carteira] ASC
+	[parcela] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REP]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[REP]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1373,7 +1339,7 @@ CREATE TABLE [dbo].[REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[RET]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[RET]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1398,7 +1364,7 @@ CREATE TABLE [dbo].[RET](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[RET_PAR]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[RET_PAR]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1427,7 +1393,7 @@ CREATE TABLE [dbo].[RET_PAR](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[TRF]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[TRF]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1454,7 +1420,7 @@ CREATE TABLE [dbo].[TRF](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[TRFN]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[TRFN]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1472,7 +1438,7 @@ CREATE TABLE [dbo].[TRFN](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[USR]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Table [dbo].[USR]    Script Date: 24/01/2017 17:30:06 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1499,7 +1465,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Index [IX_CLI]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI] ON [dbo].[CLI]
 (
 	[nome] ASC
@@ -1508,21 +1474,13 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI_1]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Index [IX_CLI_1]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI_1] ON [dbo].[CLI]
 (
 	[fantasia] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_REMD]    Script Date: 23/01/2017 11:20:36 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [IX_REMD] ON [dbo].[REM_PAR]
-(
-	[nosso_numero] ASC,
-	[parcela] ASC,
-	[carteira] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-GO
-/****** Object:  Index [IX_RETD]    Script Date: 23/01/2017 11:20:36 ******/
+/****** Object:  Index [IX_RETD]    Script Date: 24/01/2017 17:30:06 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_RETD] ON [dbo].[RET_PAR]
 (
 	[nosso_numero] ASC,
@@ -1639,6 +1597,11 @@ REFERENCES [dbo].[REP] ([codigo])
 GO
 ALTER TABLE [dbo].[PED_REP] CHECK CONSTRAINT [FK_PED_REP_REP]
 GO
+ALTER TABLE [dbo].[REC]  WITH CHECK ADD  CONSTRAINT [FK_REC_EMP] FOREIGN KEY([cnpj])
+REFERENCES [dbo].[EMP] ([cnpj])
+GO
+ALTER TABLE [dbo].[REC] CHECK CONSTRAINT [FK_REC_EMP]
+GO
 ALTER TABLE [dbo].[REC_PAR]  WITH CHECK ADD  CONSTRAINT [FK_RCBD_RCB] FOREIGN KEY([nosso_numero])
 REFERENCES [dbo].[REC] ([nosso_numero])
 GO
@@ -1649,20 +1612,10 @@ REFERENCES [dbo].[REC] ([nosso_numero])
 GO
 ALTER TABLE [dbo].[REC_PED] CHECK CONSTRAINT [FK_RCB_PED_RCB]
 GO
-ALTER TABLE [dbo].[REM_PAR]  WITH CHECK ADD  CONSTRAINT [FK_REMD_COB] FOREIGN KEY([nosso_numero], [parcela], [carteira])
-REFERENCES [dbo].[COB] ([nosso_numero], [parcela], [carteira])
-GO
-ALTER TABLE [dbo].[REM_PAR] CHECK CONSTRAINT [FK_REMD_COB]
-GO
 ALTER TABLE [dbo].[REM_PAR]  WITH CHECK ADD  CONSTRAINT [FK_REMD_REM] FOREIGN KEY([remessa])
 REFERENCES [dbo].[REM] ([remessa])
 GO
 ALTER TABLE [dbo].[REM_PAR] CHECK CONSTRAINT [FK_REMD_REM]
-GO
-ALTER TABLE [dbo].[RET_PAR]  WITH CHECK ADD  CONSTRAINT [FK_RETD_COB] FOREIGN KEY([nosso_numero], [parcela], [carteira])
-REFERENCES [dbo].[COB] ([nosso_numero], [parcela], [carteira])
-GO
-ALTER TABLE [dbo].[RET_PAR] CHECK CONSTRAINT [FK_RETD_COB]
 GO
 ALTER TABLE [dbo].[RET_PAR]  WITH CHECK ADD  CONSTRAINT [FK_RETD_RET] FOREIGN KEY([retorno])
 REFERENCES [dbo].[RET] ([retorno])

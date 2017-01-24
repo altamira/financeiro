@@ -43,9 +43,13 @@ export default class Lancamento extends Component {
     super(props);
 
     this.state = {
+      "id": 0,
+      "nome": "",
+      "titulo": "",
+      "descricao": "",
+      "detalhes": null,
       "documento": {
-        "nosso_numero": 0,
-        "empresa": "",
+        "empresa": "0",
         "numero": 0,
         "emissao": new Date().toISOString(),
         "entrega": new Date().toISOString(),
@@ -66,26 +70,30 @@ export default class Lancamento extends Component {
           "ddd": "",
           "telefone": "",
           "contato": "",
-          "desconto": false
+          "conta_contabil": ""
         },
-        "condicao": "",
+        "condicao": "003",
         "representante": {
           "codigo": "",
           "nome": ""
         },
         "comissao": 0,
-        "desconto": 0,
+        "parcelas": [],
         "totais": {
           "produtos": 0,
           "ipi": 0,
           "total": 0
-        },
-        "parcelas": []
+        }
       },
-
-      // campos de controle, não armazenar
-      dialog: null,
-    }
+      "atribuir": "",
+      "atribuido": null,
+      "form": "",
+      "parametros": null,
+      "prazo": null,
+      "criado": new Date().toISOString(),
+      "concluido": null,
+      "versao": 0
+    },
 
     // comandos
     this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
@@ -414,6 +422,8 @@ export default class Lancamento extends Component {
       DDL: 'Dia(s) da Entrega',
       DDM: 'Dia(s) da Montagem'
     }
+
+    if (!this.state) return null;
 
     return (
 
