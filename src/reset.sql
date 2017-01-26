@@ -21,14 +21,14 @@ INSERT INTO FINANCEIRO.dbo.USR (nome, login, senha, perfil, departamento) VALUES
 
 INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (0, 'Operação foi realizada com sucesso !')
 
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (7010, 'Esta tarefa já foi concluída.')
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (7015, 'A tarefa não foi encontrada.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (57010, 'Esta tarefa já foi concluída.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (57015, 'A tarefa não foi encontrada.')
 
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (1123, 'Já existe um titulo com o mesmo valor do campo Nosso Numero, Parcela e Carteira.')
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (1234, 'O campo ''Nosso Numero'' não pode ser zero.')
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (1235, 'Já existe um lançamento com o mesmo valor do campo ''Nosso Numero''. Para resolver o problema clique no botão ao lado do campo para carregar o próximo número disponível.')
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (7450, 'Você não pode atualizar esta tarefa porque não esta com as últimas alterações. Abra a tarefa novamente pra ver as alterações, caso tenha feito alguma mudança elas serão perdidas.')
-INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (7451, 'A tarefa que você esta tentando alterar esta desatualizada, você esta vendo uma versão anterior, sem as últimas alterações. Abra a tarefa novamente pra ver as alterações, caso tenha feito alguma mudança elas serão perdidas.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (51123, 'Já existe um titulo com o mesmo valor do campo Nosso Numero, Parcela e Carteira.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (51234, 'O campo ''Nosso Numero'' não pode ser zero.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (51235, 'Já existe um lançamento com o mesmo valor do campo ''Nosso Numero''. Para resolver o problema clique no botão ao lado do campo para carregar o próximo número disponível.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (57450, 'Você não pode atualizar esta tarefa porque não esta com as últimas alterações. Abra a tarefa novamente pra ver as alterações, caso tenha feito alguma mudança elas serão perdidas.')
+INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (57451, 'A tarefa que você esta tentando alterar esta desatualizada, você esta vendo uma versão anterior, sem as últimas alterações. Abra a tarefa novamente pra ver as alterações, caso tenha feito alguma mudança elas serão perdidas.')
 
 INSERT INTO FINANCEIRO.dbo.CRT (banco, agencia, conta, carteira, nome, valor_operacao, valor_tarifa, taxa_juros) VALUES ('BRADESCO', '0', '0', 0, 'BRADESCO - GARANTIA', 170, 0, 2.35)
 INSERT INTO FINANCEIRO.dbo.CRT (banco, agencia, conta, carteira, nome, valor_operacao, valor_tarifa, taxa_juros) VALUES ('BRADESCO', '0', '0', 0, 'BRADESCO - DESCONTO', 170, 0, 2.35)

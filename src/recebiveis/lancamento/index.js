@@ -93,7 +93,7 @@ export default class Lancamento extends Component {
       "criado": new Date().toISOString(),
       "concluido": null,
       "versao": 0
-    },
+    }
 
     // comandos
     this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
