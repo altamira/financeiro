@@ -1,12 +1,12 @@
 USE [master]
 GO
-/****** Object:  Database [FINANCEIRO]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Database [FINANCEIRO]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE DATABASE [FINANCEIRO]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'FINANCEIRO', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
  LOG ON 
-( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 102144KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+( NAME = N'FINANCEIRO_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\FINANCEIRO_log.ldf' , SIZE = 123648KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
 GO
 ALTER DATABASE [FINANCEIRO] SET COMPATIBILITY_LEVEL = 110
 GO
@@ -77,7 +77,7 @@ EXEC sys.sp_db_vardecimal_storage_format N'FINANCEIRO', N'ON'
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  User [financeiro]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  User [financeiro]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE USER [financeiro] FOR LOGIN [financeiro] WITH DEFAULT_SCHEMA=[dbo]
 GO
 ALTER ROLE [db_owner] ADD MEMBER [financeiro]
@@ -88,7 +88,7 @@ ALTER ROLE [db_datawriter] ADD MEMBER [financeiro]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Sequence [dbo].[ERR_LOG_SEQ]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE SEQUENCE [dbo].[ERR_LOG_SEQ] 
  AS [int]
  START WITH 1
@@ -99,7 +99,7 @@ CREATE SEQUENCE [dbo].[ERR_LOG_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Sequence [dbo].[REMESSA_SEQ]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE SEQUENCE [dbo].[REMESSA_SEQ] 
  AS [int]
  START WITH 1
@@ -110,7 +110,7 @@ CREATE SEQUENCE [dbo].[REMESSA_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Sequence [dbo].[RETORNO_SEQ]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE SEQUENCE [dbo].[RETORNO_SEQ] 
  AS [int]
  START WITH 1
@@ -121,7 +121,7 @@ CREATE SEQUENCE [dbo].[RETORNO_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Sequence [dbo].[TAREFA_NAV_SEQ]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ] 
  AS [bigint]
  START WITH 1
@@ -132,7 +132,7 @@ CREATE SEQUENCE [dbo].[TAREFA_NAV_SEQ]
 GO
 USE [FINANCEIRO]
 GO
-/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Sequence [dbo].[TAREFA_SEQ]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE SEQUENCE [dbo].[TAREFA_SEQ] 
  AS [int]
  START WITH 1
@@ -141,7 +141,7 @@ CREATE SEQUENCE [dbo].[TAREFA_SEQ]
  MAXVALUE 2147483647
  CACHE 
 GO
-/****** Object:  UserDefinedTableType [dbo].[COB_PARCELA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  UserDefinedTableType [dbo].[COB_PARCELA_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE TYPE [dbo].[COB_PARCELA_TYPE] AS TABLE(
 	[carteira] [int] NOT NULL,
 	[nosso_numero] [int] NOT NULL,
@@ -153,19 +153,19 @@ CREATE TYPE [dbo].[COB_PARCELA_TYPE] AS TABLE(
 	[valor] [money] NOT NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[COB_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  UserDefinedTableType [dbo].[COB_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE TYPE [dbo].[COB_TYPE] AS TABLE(
 	[carteira] [int] NOT NULL,
 	[nosso_numero] [int] NOT NULL,
 	[conta_contabil] [varchar](56) NOT NULL,
 	[cnpj] [varchar](20) NOT NULL,
-	[inscricao] [varchar](12) NULL,
-	[fantasia] [varchar](30) NULL,
+	[inscricao] [varchar](20) NULL,
+	[fantasia] [varchar](50) NULL,
 	[nome] [varchar](100) NULL,
 	[logradouro] [varchar](5) NULL,
 	[endereco] [varchar](50) NULL,
 	[numero] [varchar](10) NULL,
-	[complemento] [varchar](20) NULL,
+	[complemento] [varchar](30) NULL,
 	[bairro] [varchar](30) NULL,
 	[municipio] [int] NULL,
 	[cidade] [varchar](20) NULL,
@@ -176,7 +176,19 @@ CREATE TYPE [dbo].[COB_TYPE] AS TABLE(
 	[contato] [varchar](20) NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[REC_PARCELA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  UserDefinedTableType [dbo].[ERR_LOG_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
+CREATE TYPE [dbo].[ERR_LOG_TYPE] AS TABLE(
+	[id] [int] NOT NULL,
+	[datahora] [datetime] NOT NULL,
+	[erro] [int] NOT NULL,
+	[nivel] [int] NULL,
+	[situacao] [nchar](10) NULL,
+	[procedimento] [nchar](50) NULL,
+	[linha] [nchar](10) NULL,
+	[mensagem] [nvarchar](max) NULL
+)
+GO
+/****** Object:  UserDefinedTableType [dbo].[REC_PARCELA_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE TYPE [dbo].[REC_PARCELA_TYPE] AS TABLE(
 	[nosso_numero] [int] NOT NULL,
 	[parcela] [int] NOT NULL,
@@ -188,7 +200,51 @@ CREATE TYPE [dbo].[REC_PARCELA_TYPE] AS TABLE(
 	[origem] [varchar](10) NOT NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[TAREFA_NOTIFICACAO_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  UserDefinedTableType [dbo].[REM_PARCELA_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
+CREATE TYPE [dbo].[REM_PARCELA_TYPE] AS TABLE(
+	[remessa] [int] NOT NULL,
+	[nosso_numero] [int] NOT NULL,
+	[parcela] [int] NOT NULL,
+	[forma_pagto] [varchar](10) NOT NULL,
+	[tipo_vencto] [varchar](3) NOT NULL,
+	[vencto] [date] NOT NULL,
+	[prazo] [int] NOT NULL,
+	[valor] [money] NOT NULL
+)
+GO
+/****** Object:  UserDefinedTableType [dbo].[RET_PARCELA_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
+CREATE TYPE [dbo].[RET_PARCELA_TYPE] AS TABLE(
+	[retorno] [int] NOT NULL,
+	[nosso_numero] [int] NOT NULL,
+	[parcela] [int] NOT NULL,
+	[forma_pagto] [varchar](10) NOT NULL,
+	[tipo_vencto] [varchar](3) NOT NULL,
+	[vencto] [date] NOT NULL,
+	[prazo] [int] NOT NULL,
+	[valor] [money] NOT NULL,
+	[aceito] [bit] NOT NULL
+)
+GO
+/****** Object:  UserDefinedTableType [dbo].[TAREFA_NAV_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
+CREATE TYPE [dbo].[TAREFA_NAV_TYPE] AS TABLE(
+	[id] [int] NOT NULL,
+	[nome] [nvarchar](100) NOT NULL,
+	[titulo] [nvarchar](50) NULL,
+	[descricao] [nvarchar](50) NULL,
+	[detalhes] [nvarchar](100) NULL,
+	[documento] [nvarchar](max) NULL,
+	[atribuir] [nvarchar](50) NULL,
+	[atribuido] [nvarchar](50) NULL,
+	[form] [nvarchar](100) NOT NULL,
+	[parametros] [nvarchar](max) NULL,
+	[prazo] [datetime2](7) NULL,
+	[criado] [datetime2](7) NULL,
+	[concluido] [datetime2](7) NULL,
+	[versao] [int] NOT NULL,
+	[operacao] [varchar](10) NOT NULL
+)
+GO
+/****** Object:  UserDefinedTableType [dbo].[TAREFA_NOTIFICACAO_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE TYPE [dbo].[TAREFA_NOTIFICACAO_TYPE] AS TABLE(
 	[id] [int] NOT NULL,
 	[nome] [nvarchar](100) NOT NULL,
@@ -204,7 +260,7 @@ CREATE TYPE [dbo].[TAREFA_NOTIFICACAO_TYPE] AS TABLE(
 	[topico] [nvarchar](100) NOT NULL
 )
 GO
-/****** Object:  UserDefinedTableType [dbo].[TAREFA_TYPE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  UserDefinedTableType [dbo].[TAREFA_TYPE]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE TYPE [dbo].[TAREFA_TYPE] AS TABLE(
 	[id] [int] NOT NULL,
 	[nome] [nvarchar](100) NOT NULL,
@@ -222,7 +278,7 @@ CREATE TYPE [dbo].[TAREFA_TYPE] AS TABLE(
 	[versao] [int] NOT NULL
 )
 GO
-/****** Object:  StoredProcedure [dbo].[COB_INSERE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  StoredProcedure [dbo].[COB_INSERE]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -236,15 +292,9 @@ GO
 
 CREATE PROCEDURE [dbo].[COB_INSERE]
 
-	@TAREFA_ATUAL INT,
-	@VERSAO INT,
+	@TAREFAS TAREFA_NAV_TYPE READONLY,
 
-	--@NOVA_TAREFA INT,
-
-	--@TAREFA_COBRANCA_NOME NVARCHAR(100),
-	--@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
-
-	@TAREFAS TAREFA_TYPE READONLY,
+	@CARTEIRA INT,
 
 	@COBRANCA COB_TYPE READONLY,
 
@@ -254,269 +304,108 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	------------------------------------- DECLARACAO DE VARIAVEIS ----------------------------------------------
-	DECLARE @ULTIMA_VERSAO INT
-	DECLARE @CONCLUIDO DATETIME
+	----------------------------- DECLARACAO DE VARIAVEIS -----------------------------
+	DECLARE @ERR INT
+	DECLARE @ERR_LOG ERR_LOG_TYPE
 
-	DECLARE @PROX_TAREFA INT
-	DECLARE @PROX_TAREFA_VERSAO INT
-
-	DECLARE @NOVA_NAV INT
-
-	DECLARE @TAREFA_NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
 
 	BEGIN TRY
 		BEGIN TRANSACTION
 
-		-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+		/*****************************************************************************************
+		*                                   ATUALIZA TAREFAS
+		*****************************************************************************************/
+		DECLARE @TAREFA INT
+		DECLARE @VERSAO INT
 
-		UPDATE TRF SET
-			concluido = GETDATE()
-		WHERE
-			id = @TAREFA_ATUAL AND
-			concluido IS NULL AND
-			versao = @VERSAO
+		SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM @TAREFAS WHERE operacao = 'CONCLUIR'
 
-		IF @@ROWCOUNT != 1
+		INSERT @NOTIFICACAO EXEC TAREFA_CONCLUIR @TAREFA, @VERSAO
+
+		----------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA -----------------------------
+		IF EXISTS (SELECT TOP 1 nome FROM @TAREFAS WHERE operacao = 'REPETIR')
 		BEGIN
+			DECLARE @DESCRICAO NVARCHAR(50)
+			DECLARE @DOCUMENTO NVARCHAR(MAX)
 
-			ROLLBACK TRANSACTION
+			DECLARE @ATUALIZA TAREFA_TYPE
 
-			SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @TAREFA_ATUAL;
+			INSERT INTO @ATUALIZA
+			SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido,	versao
+			FROM TRF WHERE id = @TAREFA
 
-			IF @@ROWCOUNT != 1
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
+			SELECT TOP 1 @DESCRICAO = descricao, @DOCUMENTO = documento FROM @TAREFAS WHERE operacao = 'REPETIR'
 
-				SELECT * FROM ERR WHERE erro = 7015;
+			UPDATE @ATUALIZA SET
+				descricao = @DESCRICAO,
+				documento = @DOCUMENTO
 
-				RETURN 7015;
-			END
-
-			IF (NOT @CONCLUIDO IS NULL)
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
-
-				SELECT * FROM ERR WHERE erro = 7010;
-
-				RETURN 7010;
-			END
-			
-			IF (@ULTIMA_VERSAO <> @VERSAO)
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
-
-				SELECT * FROM ERR WHERE erro = 7450;
-
-				RETURN 7450;
-			END
-
-			SELECT '9999' AS erro, 'Erro interno ao concluir uma tarefa, contate o suporte técnico' AS mensagem;
-
-			RETURN 9999;
+			INSERT @NOTIFICACAO EXEC TAREFA_REPETIR @ATUALIZA
 		END
 
-		INSERT INTO @TAREFA_NOTIFICACAO 
-		SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/concluida/' + LTRIM(RTRIM(atribuir)) AS topico 
-		FROM TRF 
-		WHERE id = @TAREFA_ATUAL
+		DECLARE @PROXIMA TAREFA_TYPE
 
-/*
-	(msg.payload.documento.cobranca.find( (c) => c.parcelas.find( (p) => !p.selected && !p.carteira) ) ?
+		INSERT INTO @PROXIMA 
+		SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido, versao
+		FROM @TAREFAS WHERE operacao = 'PROXIMA'
 
-	`
-		----------------------- TAREFA AINDA PENDENTE, RECRIA A TAREFA -----------------------
-		SELECT TOP 1 @PROX_TAREFA = id, @PROX_TAREFA_VERSAO = versao FROM TRF WHERE nome = '${tarefa_atual.nome}' AND concluido IS NULL
+		INSERT @NOTIFICACAO EXEC TAREFA_INCLUIR @PROXIMA
 
-		IF @PROX_TAREFA IS NULL
-		BEGIN
-
-			SET @PROX_TAREFA = NEXT VALUE FOR tarefa_seq
-
-			INSERT INTO TRF
-				(id,
-				nome,
-				titulo,
-				descricao,
-				detalhes,
-				documento,
-				atribuir,
-				form,
-				parametros,
-				prazo,
-				criado,
-				concluido)
-			VALUES
-				(@PROX_TAREFA,
-				'${tarefa_atual.nome}',
-				'${tarefa_atual.titulo}',
-				'Saldo R$ ${msg.payload.documento.cobranca.reduce( (total, c) => total + c.parcelas.filter( (p) => !p.selected && !p.carteira).reduce( (soma, p) => soma + p.valor, 0.0), 0.0).toFixed(2).replace('.', ',')}',
-				'',
-				'${tarefa_atual.documento}',
-				'${tarefa_atual.atribuir}',
-				'${tarefa_atual.form}',
-				NULL,
-				NULL,
-				GETDATE(),
-				NULL)
-
-			SET @NOVA_NAV = NEXT VALUE FOR tarefa_nav_seq
-
-			INSERT TRFN (transacao, tarefa_origem, tarefa_destino) VALUES (NEXT VALUE FOR tarefa_nav_seq, @TAREFA_ATUAL, @PROX_TAREFA)
-
-			INSERT INTO @TRF SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/nova/' + LTRIM(RTRIM(atribuir)) AS topico FROM TRF WHERE id = @PROX_TAREFA
-
-		END
-		ELSE
-		BEGIN
-
-			UPDATE TRF SET
-				descricao = 'Saldo R$${msg.payload.documento.cobranca.reduce( (total, c) => total + c.parcelas.filter( (p) => !p.selected && !p.carteira).reduce( (soma, p) => soma + p.valor, 0.0), 0.0).toFixed(2).replace('.', ',')}',
-				documento = '${tarefa_atual.documento}'
-			WHERE
-				id = @PROX_TAREFA
-				AND versao = @PROX_TAREFA_VERSAO
-
-			IF @@ROWCOUNT != 1
-			BEGIN
-
-				ROLLBACK TRANSACTION
-
-				SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @TAREFA_ATUAL
-
-				IF (NOT @CONCLUIDO IS NULL)
-				BEGIN
-					INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 7010
-					SELECT * FROM ERR WHERE erro = 7010
-				END
-				ELSE IF (@ULTIMA_VERSAO <> @VERSAO)
-				BEGIN
-					INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 7450
-					SELECT * FROM ERR WHERE erro = 7450
-				END
-
-				RETURN
-			END
-
-			INSERT INTO @TRF SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/atualizada/' + LTRIM(RTRIM(atribuir)) AS topico FROM TRF WHERE id = @PROX_TAREFA
-
-		END
-	`
-
-	:
-
-	`
-	   -- tarefa finalizada e nenhuma tarefa nova criada --
-	`
-
-	) +
-
-	(msg.payload.documento.cobranca.find( (c) => c.parcelas.find( (p) => p.selected && !p.carteira) ) ?
-
-	`
-	   -------------------------- PROXIMA TAREFA - REMESSA -----------------------
-
-		SET @PROX_TAREFA = NEXT VALUE FOR tarefa_seq
-
-		INSERT INTO TRF
-			(id,
-			nome,
-			titulo,
-			descricao,
-			detalhes,
-			documento,
-			atribuir,
-			form,
-			parametros,
-			prazo,
-			criado,
-			concluido)
-		VALUES
-			(@PROX_TAREFA,
-			'${tarefa_remessa.nome}',
-			'${tarefa_remessa.titulo}',
-			'${tarefa_remessa.descricao}',
-			'',
-			'${tarefa_remessa.documento}',
-			'${tarefa_remessa.atribuir}',
-			'${tarefa_remessa.form}',
-			NULL,
-			NULL,
-			GETDATE(),
-			NULL)
-
-		SET @NOVA_NAV = NEXT VALUE FOR tarefa_nav_seq
-
-		INSERT TRFN (transacao, tarefa_origem, tarefa_destino) VALUES (NEXT VALUE FOR tarefa_nav_seq, @TAREFA_ATUAL, @PROX_TAREFA)
-
-		INSERT INTO @TRF 
-		SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/nova/' + LTRIM(RTRIM(atribuir)) AS topico 
-		FROM TRF 
-		WHERE id = @PROX_TAREFA
-*/
-
-
-		---------------------------------------------------- grava as parcelas ----------------------------------------------------
-		/*IF EXISTS(SELECT NOSSO_NUMERO FROM COB_PAR WHERE nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA AND carteira = @CARTEIRA)
+		/************************************************************************************
+		*                         INICIO DA TRANSACAO DE COBRANCA
+		************************************************************************************/
+		INSERT INTO COB (carteira, nosso_numero, conta_contabil, cnpj)
+		SELECT carteira, nosso_numero, conta_contabil, cnpj	FROM @COBRANCA
+    
+		---------------------------------------------------- GRAVA PARCELAS ----------------------------------------------------
+		/*IF EXISTS(SELECT NOSSO_NUMERO FROM COB_PAR WHERE carteira = @CARTEIRA AND nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA)
 		BEGIN
     
 		   ROLLBACK TRANSACTION
     
-		   INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 1123
+		   INSERT INTO ERR_LOG (erro, mensagem) 
+		   SELECT erro, mensagem FROM ERR WHERE erro = 1123
+		   
 		   SELECT * FROM ERR WHERE erro = 1123
     
-		   RETURN
+		   RETURN 1123
 		END*/
-    
-		INSERT INTO COB (carteira, nosso_numero, conta_contabil, cnpj)
-		SELECT carteira, nosso_numero, conta_contabil, cnpj	FROM @COBRANCA
     
 		INSERT INTO COB_PAR
 		SELECT * FROM @PARCELAS
 
-		/*UPDATE CRT SET
-		   remessa = remessa --+ (SELECT SUM(valor) FROM @PARCELAS)
-		WHERE id = @CARTEIRA*/
+		UPDATE CRT SET
+		   remessa = remessa + (SELECT SUM(valor) FROM @PARCELAS)
+		WHERE id = @CARTEIRA
+
+		/************************************ CONFIRMA ALTERACOES ************************************/
 
 		COMMIT TRANSACTION
+
+		------------------- NOTIFICA O SUCESSO DA OPERACAO PARA O CLIENTE -------------------
+		INSERT INTO @ERR_LOG (id, datahora, erro, mensagem) 
+		SELECT 0, GETDATE(), erro, mensagem FROM ERR WHERE erro = 0
 
 	END TRY
 	BEGIN CATCH
 
-		DECLARE @ERR_ID INT
-		DECLARE @ERROR_NUMBER INT
-
-		---------------------------- REVERTE AS ALTERACOES ----------------------------
+		------------------------- REVERTE AS ALTERACOES -------------------------
 		IF @@TRANCOUNT > 0
 			ROLLBACK TRANSACTION
 
-		---------------------------- CAPTURA O ERRO ----------------------------
-		SET @ERROR_NUMBER = ERROR_NUMBER()
-
-		---------------------------- REGISTRA O ERRO ----------------------------
-		SET @ERR_ID = NEXT VALUE FOR err_log_seq
-
-		INSERT INTO err_log 
-			(id, erro, nivel, situacao, procedimento, linha, mensagem)
-		VALUES (@ERR_ID, @ERROR_NUMBER, ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE())
-
-		---------------------------- RETORNA O ERRO PARA O CLIENTE ----------------------------
-		SELECT * FROM err_log WHERE id = @ERR_ID
-
-		RETURN @ERROR_NUMBER
+		---------------------- RETORNA O ERRO PARA O CLIENTE ----------------------
+		INSERT @ERR_LOG EXEC @ERR = NOTIFICA_ERRO
 
 	END CATCH
 
-	---------------------------- RETORNA O RESULTADO DA OPERACAO ----------------------------
-	SELECT * FROM ERR WHERE erro = 0
+	------------------ RETORNA O RESULTADO DA OPERACAO ------------------
+	SELECT * FROM @ERR_LOG
 
-	---------------------------- RETORNA AS NOTIFICACOES ----------------------------
-	SELECT * FROM @TAREFA_NOTIFICACAO
+	---------------------- RETORNA AS NOTIFICACOES ----------------------
+	SELECT * FROM @NOTIFICACAO
 
-	RETURN 0; -- EXECUTADO COM SUCESSO
+	RETURN @ERR; 
 
 END
 
@@ -532,8 +421,49 @@ END
 
 
 
+
+
+
+
+
 GO
-/****** Object:  StoredProcedure [dbo].[REC_INSERE]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  StoredProcedure [dbo].[NOTIFICA_ERRO]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[NOTIFICA_ERRO] 
+AS
+BEGIN
+	DECLARE @ID INT
+	DECLARE @NUMBER INT
+
+	DECLARE @ERR_LOG ERR_LOG_TYPE
+
+	---------------------------- CAPTURA O ERRO ----------------------------
+	SET @NUMBER = ERROR_NUMBER()
+
+	---------------------------- REGISTRA O ERRO ----------------------------
+	SET @ID = NEXT VALUE FOR err_log_seq
+
+	INSERT INTO err_log (id, erro, nivel, situacao, procedimento, linha, mensagem)
+	VALUES (@ID, @NUMBER, ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE())
+
+	---------------------------- RETORNA O ERRO PARA O CLIENTE ----------------------------
+	INSERT @ERR_LOG
+	SELECT * FROM err_log WHERE id = @ID
+
+	SELECT * FROM @ERR_LOG
+
+	RETURN @NUMBER
+
+END
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[REC_INSERE]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -542,21 +472,9 @@ GO
 
 
 
-
-
-
-
-
---DROP PROCEDURE [dbo].[LANCAMENTO_CONTAS_RECEBER]
 CREATE PROCEDURE [dbo].[REC_INSERE]
 
-	@TAREFA_ATUAL INT,
-	@VERSAO INT,
-
-	@TAREFA_COBRANCA_NOME NVARCHAR(100),
-	@TAREFA_COBRANCA_DESCRICAO NVARCHAR(100),
-
-	@TAREFAS TAREFA_TYPE READONLY,
+	@TAREFAS TAREFA_NAV_TYPE READONLY,
 
 	@NOSSO_NUMERO INT,
 
@@ -586,174 +504,77 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	------------------------------------- DECLARACAO DE VARIAVEIS ----------------------------------------------
-	DECLARE @ULTIMA_VERSAO INT
-	DECLARE @CONCLUIDO DATETIME
+	----------------------------- DECLARACAO DE VARIAVEIS -----------------------------
+	DECLARE @ERR INT
+	DECLARE @ERR_LOG ERR_LOG_TYPE
 
-	DECLARE @PROX_TAREFA INT
-	DECLARE @PROX_TAREFA_VERSAO INT
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
 
-	DECLARE @NOVA_NAV INT
-
-	DECLARE @TAREFA_NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
-
-	/*IF @@TRANCOUNT > 0
-			ROLLBACK TRANSACTION*/
-        
 	BEGIN TRY
 		BEGIN TRANSACTION
 
-		-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+		/*****************************************************************************************
+		*                                   ATUALIZA TAREFAS
+		*****************************************************************************************/
+		DECLARE @TAREFA INT
+		DECLARE @VERSAO INT
 
-		UPDATE TRF SET
-			concluido = GETDATE()
-		WHERE
-			id = @TAREFA_ATUAL AND
-			concluido IS NULL AND
-			versao = @VERSAO
+		SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM @TAREFAS WHERE operacao = 'CONCLUIR'
 
-		IF @@ROWCOUNT != 1
+		INSERT @NOTIFICACAO EXEC TAREFA_CONCLUIR @TAREFA, @VERSAO
+
+		----------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA -----------------------------
+		DECLARE @ATUALIZA TAREFA_TYPE
+
+		INSERT INTO @ATUALIZA
+		SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido,	versao
+		FROM TRF WHERE nome = (SELECT TOP 1 nome FROM @TAREFAS WHERE operacao = 'PROXIMA') AND concluido IS NULL
+
+		IF NOT EXISTS (SELECT * FROM @ATUALIZA)
 		BEGIN
+			DECLARE @PROXIMA TAREFA_TYPE
 
-			ROLLBACK TRANSACTION
+			INSERT INTO @PROXIMA 
+			SELECT TOP 1 id, nome, titulo, descricao, detalhes, '[' + documento + ']', atribuir, atribuido, form, parametros, prazo, criado, concluido, versao
+			FROM @TAREFAS WHERE operacao = 'PROXIMA'
 
-			SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @TAREFA_ATUAL;
-
-			IF @@ROWCOUNT != 1
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7015;
-
-				SELECT * FROM ERR WHERE erro = 7015;
-
-				RETURN 7015;
-			END
-
-			IF (NOT @CONCLUIDO IS NULL)
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7010;
-
-				SELECT * FROM ERR WHERE erro = 7010;
-
-				RETURN 7010;
-			END
-			
-			IF (@ULTIMA_VERSAO <> @VERSAO)
-			BEGIN
-				INSERT INTO ERR_LOG (erro, mensagem, procedimento) 
-				SELECT erro, mensagem, ERROR_PROCEDURE() FROM ERR WHERE erro = 7450;
-
-				SELECT * FROM ERR WHERE erro = 7450;
-
-				RETURN 7450;
-			END
-
-			SELECT '9999' AS erro, 'Erro interno ao concluir uma tarefa, contate o suporte técnico' AS mensagem;
-
-			RETURN 9999;
-		END
-
-		INSERT INTO @TAREFA_NOTIFICACAO 
-		SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/concluida/' + LTRIM(RTRIM(atribuir)) AS topico 
-		FROM TRF 
-		WHERE id = @TAREFA_ATUAL
-
-		-------------------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA ----------------------------------------------
-
-		SELECT TOP 1 @PROX_TAREFA = id, @PROX_TAREFA_VERSAO = versao FROM TRF WHERE nome = @TAREFA_COBRANCA_NOME AND concluido IS NULL
-
-		IF @PROX_TAREFA IS NULL
-		BEGIN
-
-			SET @PROX_TAREFA = NEXT VALUE FOR tarefa_seq
-
-			INSERT INTO TRF 
-				(id, nome, titulo, descricao, detalhes,	documento, atribuir, atribuido, form, parametros, prazo, criado, concluido)
-			SELECT 
-				@PROX_TAREFA, nome, titulo, descricao,	detalhes, '[' + documento + ']', atribuir, atribuido, form,	parametros, prazo, criado, concluido
-			FROM 
-				@TAREFAS
-					
-			INSERT INTO @TAREFA_NOTIFICACAO 
-			SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/nova/' + LTRIM(RTRIM(atribuir)) AS topico 
-			FROM TRF 
-			WHERE id = @PROX_TAREFA
-
-			SET @NOVA_NAV = NEXT VALUE FOR tarefa_nav_seq
-
-			INSERT TRFN (transacao, tarefa_origem, tarefa_destino) VALUES (NEXT VALUE FOR tarefa_nav_seq, @TAREFA_ATUAL, @PROX_TAREFA)
-
+			INSERT @NOTIFICACAO EXEC TAREFA_INCLUIR @PROXIMA
 		END
 		ELSE
 		BEGIN
+			DECLARE @DESCRICAO NVARCHAR(50)
+			DECLARE @DOCUMENTO NVARCHAR(MAX)
 
-			UPDATE TRF SET
-				descricao = @TAREFA_COBRANCA_DESCRICAO,
-				documento = STUFF(TRF.documento, LEN(TRF.documento), 1, ', ' + TAREFA.documento + ']')
-			FROM
-				@TAREFAS TAREFA
-			WHERE
-				TRF.id = @PROX_TAREFA
-				AND TRF.versao = @PROX_TAREFA_VERSAO
+			SELECT TOP 1 @DESCRICAO = descricao, @DOCUMENTO = documento FROM @TAREFAS WHERE operacao = 'PROXIMA'
 
-			IF @@ROWCOUNT != 1
-			BEGIN
+			UPDATE @ATUALIZA SET
+				descricao = @DESCRICAO,
+				documento = @DOCUMENTO
 
-				ROLLBACK TRANSACTION
-
-				SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @TAREFA_ATUAL
-
-				IF (NOT @CONCLUIDO IS NULL)
-				BEGIN
-					INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 7010
-					SELECT * FROM ERR WHERE erro = 7010
-				END
-				ELSE IF (@ULTIMA_VERSAO <> @VERSAO)
-				BEGIN
-					INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 7450
-					SELECT * FROM ERR WHERE erro = 7450
-				END
-
-				RETURN
-			END
-
-			INSERT INTO @TAREFA_NOTIFICACAO 
-			SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/atualizada/' + LTRIM(RTRIM(atribuir)) AS topico 
-			FROM TRF 
-			WHERE id = @PROX_TAREFA
-
+			INSERT @NOTIFICACAO EXEC TAREFA_ATUALIZAR @ATUALIZA
 		END
 
-		------------------------------------ VALIDACAO DE DADOS ----------------------------------------------
+		/************************************************************************************
+		*               CONTAS A RECEBER: VALIDACAO DE DADOS DA TRANSACAO 
+		************************************************************************************/
+		DECLARE @ERRO INT
+		DECLARE @MENSAGEM NVARCHAR(100)
 
 		IF @NOSSO_NUMERO = 0
 		BEGIN
+			SELECT @ERRO = erro, @MENSAGEM = mensagem FROM ERR WHERE erro = 51234;
 
-			ROLLBACK TRANSACTION
-
-			INSERT INTO ERR_LOG (erro, mensagem) 
-			SELECT erro, mensagem FROM ERR WHERE erro = 1234;
-
-			SELECT * FROM ERR WHERE erro = 1234;
-
-			RETURN 1234;
+			THROW @ERRO, @MENSAGEM, 1;
 		END
 
 		IF EXISTS(SELECT NOSSO_NUMERO FROM REC WHERE nosso_numero = @NOSSO_NUMERO)
 		BEGIN
+			SELECT @ERRO = erro, @MENSAGEM = mensagem FROM ERR WHERE erro = 51235;
 
-			ROLLBACK TRANSACTION
-
-			INSERT INTO ERR_LOG (erro, mensagem) 
-			SELECT erro, mensagem FROM ERR WHERE erro = 1235;
-
-			SELECT * FROM ERR WHERE erro = 1235;
-
-			RETURN 1235;
+			THROW @ERRO, @MENSAGEM, 1;
 		END
 
-		----------------------------------------- GRAVA RECEBIMENTO --------------------------------------------
+		-------------------------------- GRAVA RECEBIMENTO --------------------------------
 
 		IF NOT EXISTS(SELECT TOP 1 cnpj FROM EMP WHERE cnpj = @CNPJ)
 		BEGIN
@@ -794,49 +615,208 @@ BEGIN
 		----------------------------------------- GRAVA PARCELAS --------------------------------------------
 
 		INSERT INTO REC_PAR 
-			(NOSSO_NUMERO, PARCELA, FORMA_PAGTO, TIPO_VENCTO, VENCTO, PRAZO, VALOR, ORIGEM)
+			(nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor, origem)
 		SELECT 
-			NOSSO_NUMERO, PARCELA, FORMA_PAGTO, TIPO_VENCTO, VENCTO, PRAZO, VALOR, ORIGEM 
+			nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor, origem 
 		FROM @PARCELAS
 
-		-----------------------------------------------------------------------------------------------------
+		/************************************ CONFIRMA ALTERACOES ************************************/
 
 		COMMIT TRANSACTION
+
+		------------------- NOTIFICA O SUCESSO DA OPERACAO PARA O CLIENTE -------------------
+		INSERT INTO @ERR_LOG (id, datahora, erro, mensagem) 
+		SELECT 0, GETDATE(), erro, mensagem FROM ERR WHERE erro = 0
 
 	END TRY
 	BEGIN CATCH
 
-		DECLARE @ERR_ID INT
-		DECLARE @ERROR_NUMBER INT
-
-		---------------------------- REVERTE AS ALTERACOES ----------------------------
+		------------------------- REVERTE AS ALTERACOES -------------------------
 		IF @@TRANCOUNT > 0
 			ROLLBACK TRANSACTION
 
-		---------------------------- CAPTURA O ERRO ----------------------------
-		SET @ERROR_NUMBER = ERROR_NUMBER()
-
-		---------------------------- REGISTRA O ERRO ----------------------------
-		SET @ERR_ID = NEXT VALUE FOR err_log_seq
-
-		INSERT INTO err_log 
-			(id, erro, nivel, situacao, procedimento, linha, mensagem)
-		VALUES (@ERR_ID, @ERROR_NUMBER, ERROR_SEVERITY(), ERROR_STATE(), ERROR_PROCEDURE(), ERROR_LINE(), ERROR_MESSAGE())
-
-		---------------------------- RETORNA O ERRO PARA O CLIENTE ----------------------------
-		SELECT * FROM err_log WHERE id = @ERR_ID
-
-		RETURN @ERROR_NUMBER
+		---------------------- RETORNA O ERRO PARA O CLIENTE ----------------------
+		INSERT @ERR_LOG EXEC @ERR = NOTIFICA_ERRO
 
 	END CATCH
 
-	---------------------------- RETORNA O RESULTADO DA OPERACAO ----------------------------
-	SELECT * FROM ERR WHERE erro = 0
+	------------------ RETORNA O RESULTADO DA OPERACAO ------------------
+	SELECT * FROM @ERR_LOG
 
-	---------------------------- RETORNA AS NOTIFICACOES ----------------------------
-	SELECT * FROM @TAREFA_NOTIFICACAO
+	---------------------- RETORNA AS NOTIFICACOES ----------------------
+	SELECT * FROM @NOTIFICACAO
 
-	RETURN 0; -- EXECUTADO COM SUCESSO
+	RETURN @ERR; 
+
+END
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[REM_INSERE]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+
+
+
+
+CREATE PROCEDURE [dbo].[REM_INSERE]
+
+	@TAREFAS TAREFA_NAV_TYPE READONLY,
+
+	@CARTEIRA INT,
+
+	@VALOR_TITULOS MONEY,
+	@VALOR_LIQUIDO MONEY,
+	@VALOR_OPERACAO MONEY,
+	@VALOR_TARIFA MONEY,
+	@VALOR_IOF MONEY,
+	@VALOR_JUROS MONEY,
+	@TAXA_JUROS MONEY,
+
+	@PARCELAS REM_PARCELA_TYPE READONLY
+
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	----------------------------- DECLARACAO DE VARIAVEIS -----------------------------
+	DECLARE @ERR INT
+	DECLARE @ERR_LOG ERR_LOG_TYPE
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+
+		/*****************************************************************************************
+		*                                   ATUALIZA TAREFAS
+		*****************************************************************************************/
+		DECLARE @TAREFA INT
+		DECLARE @VERSAO INT
+
+		SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM @TAREFAS WHERE operacao = 'CONCLUIR'
+
+		INSERT @NOTIFICACAO EXEC TAREFA_CONCLUIR @TAREFA, @VERSAO
+
+		----------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA -----------------------------
+		/*DECLARE @ATUALIZA TAREFA_TYPE
+
+		INSERT INTO @ATUALIZA
+		SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido,	versao
+		FROM TRF WHERE nome = (SELECT TOP 1 nome FROM @TAREFAS WHERE operacao = 'PROXIMA') AND concluido IS NULL
+
+		IF NOT EXISTS (SELECT * FROM @ATUALIZA)
+		BEGIN*/
+			DECLARE @PROXIMA TAREFA_TYPE
+
+			INSERT INTO @PROXIMA 
+			SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido, versao
+			FROM @TAREFAS WHERE operacao = 'PROXIMA'
+
+			INSERT @NOTIFICACAO EXEC TAREFA_INCLUIR @PROXIMA
+		/*END
+		ELSE
+		BEGIN
+			DECLARE @DESCRICAO NVARCHAR(50)
+			DECLARE @DOCUMENTO NVARCHAR(MAX)
+
+			SELECT TOP 1 @DESCRICAO = descricao, @DOCUMENTO = documento FROM @TAREFAS WHERE operacao = 'PROXIMA'
+
+			UPDATE @ATUALIZA SET
+				descricao = @DESCRICAO,
+				documento = @DOCUMENTO
+
+			INSERT @NOTIFICACAO EXEC TAREFA_ATUALIZAR @ATUALIZA
+		END*/
+
+		/************************************************************************************
+		*                         INICIO DA TRANSACAO DE COBRANCA
+		************************************************************************************/
+		DECLARE @REMESSA INT
+
+		SET @REMESSA = NEXT VALUE FOR remessa_seq
+
+		---------------------------------------------------- cabecalho da remessa ----------------------------------------------------
+
+		INSERT INTO REM (
+			remessa,
+			carteira,
+			valor_titulos,
+			valor_liquido,
+			valor_operacao,
+			valor_tarifa,
+			valor_iof,
+			valor_juros,
+			taxa_juros)
+		VALUES (
+			@REMESSA,
+			@CARTEIRA,
+			@VALOR_TITULOS,
+			@VALOR_LIQUIDO,
+			@VALOR_OPERACAO,
+			@VALOR_TARIFA,
+			@VALOR_IOF,
+			@VALOR_JUROS,
+			@TAXA_JUROS)
+
+		UPDATE CRT SET
+			utilizado = utilizado + @VALOR_TITULOS,
+			remessa = remessa - @VALOR_TITULOS,
+			retorno = retorno + @VALOR_TITULOS
+		WHERE id = @CARTEIRA
+
+		----------------------------------------- GRAVA PARCELAS --------------------------------------------
+		/*IF EXISTS(SELECT NOSSO_NUMERO FROM REMD WHERE nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA AND carteira = @CARTEIRA)
+		BEGIN
+
+			ROLLBACK TRANSACTION
+
+			INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 1123
+			SELECT * FROM ERR WHERE erro = 1123
+
+			RETURN
+		END*/
+
+		INSERT INTO REM_PAR 
+			(remessa, nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor)
+		SELECT 
+			@REMESSA, nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor
+		FROM @PARCELAS
+
+		/************************************ CONFIRMA ALTERACOES ************************************/
+
+		COMMIT TRANSACTION
+
+		------------------- NOTIFICA O SUCESSO DA OPERACAO PARA O CLIENTE -------------------
+		INSERT INTO @ERR_LOG (id, datahora, erro, mensagem) 
+		SELECT 0, GETDATE(), erro, mensagem FROM ERR WHERE erro = 0
+
+	END TRY
+	BEGIN CATCH
+
+		------------------------- REVERTE AS ALTERACOES -------------------------
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION
+
+		---------------------- RETORNA O ERRO PARA O CLIENTE ----------------------
+		INSERT @ERR_LOG EXEC @ERR = NOTIFICA_ERRO
+
+	END CATCH
+
+	------------------ RETORNA O RESULTADO DA OPERACAO ------------------
+	SELECT * FROM @ERR_LOG
+
+	---------------------- RETORNA AS NOTIFICACOES ----------------------
+	SELECT * FROM @NOTIFICACAO
+
+	RETURN @ERR; 
 
 END
 
@@ -849,8 +829,484 @@ END
 
 
 
+
+
+
+
+
+
+
+
+
 GO
-/****** Object:  Table [dbo].[BAN]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  StoredProcedure [dbo].[RET_INSERE]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+
+
+
+
+CREATE PROCEDURE [dbo].[RET_INSERE]
+
+	@TAREFAS TAREFA_NAV_TYPE READONLY,
+
+	@CARTEIRA INT,
+
+	@VALOR_TITULOS MONEY,
+	@VALOR_LIQUIDO MONEY,
+	@VALOR_OPERACAO MONEY,
+	@VALOR_TARIFA MONEY,
+	@VALOR_IOF MONEY,
+	@VALOR_JUROS MONEY,
+	@TAXA_JUROS MONEY,
+
+	@PARCELAS RET_PARCELA_TYPE READONLY
+
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	----------------------------- DECLARACAO DE VARIAVEIS -----------------------------
+	DECLARE @ERR INT
+	DECLARE @ERR_LOG ERR_LOG_TYPE
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+
+		/*****************************************************************************************
+		*                                   ATUALIZA TAREFAS
+		*****************************************************************************************/
+		DECLARE @TAREFA INT
+		DECLARE @VERSAO INT
+
+		SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM @TAREFAS WHERE operacao = 'CONCLUIR'
+
+		INSERT @NOTIFICACAO EXEC TAREFA_CONCLUIR @TAREFA, @VERSAO
+
+		----------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA -----------------------------
+		/*DECLARE @ATUALIZA TAREFA_TYPE
+
+		INSERT INTO @ATUALIZA
+		SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido,	versao
+		FROM TRF WHERE nome = (SELECT TOP 1 nome FROM @TAREFAS WHERE operacao = 'PROXIMA') AND concluido IS NULL
+
+		IF NOT EXISTS (SELECT * FROM @ATUALIZA)
+		BEGIN*/
+			DECLARE @PROXIMA TAREFA_TYPE
+
+			INSERT INTO @PROXIMA 
+			SELECT TOP 1 id, nome, titulo, descricao, detalhes, documento, atribuir, atribuido, form, parametros, prazo, criado, concluido, versao
+			FROM @TAREFAS WHERE operacao = 'PROXIMA'
+
+			INSERT @NOTIFICACAO EXEC TAREFA_INCLUIR @PROXIMA
+		/*END
+		ELSE
+		BEGIN
+			DECLARE @DESCRICAO NVARCHAR(50)
+			DECLARE @DOCUMENTO NVARCHAR(MAX)
+
+			SELECT TOP 1 @DESCRICAO = descricao, @DOCUMENTO = documento FROM @TAREFAS WHERE operacao = 'PROXIMA'
+
+			UPDATE @ATUALIZA SET
+				descricao = @DESCRICAO,
+				documento = @DOCUMENTO
+
+			INSERT @NOTIFICACAO EXEC TAREFA_ATUALIZAR @ATUALIZA
+		END*/
+
+		/************************************************************************************
+		*                         INICIO DA TRANSACAO DE COBRANCA
+		************************************************************************************/
+		DECLARE @RETORNO INT
+
+		SET @RETORNO = NEXT VALUE FOR retorno_seq
+
+		---------------------------------------------------- cabecalho da remessa ----------------------------------------------------
+
+		INSERT INTO RET (
+			retorno,
+			carteira,
+			valor_titulos,
+			valor_liquido,
+			valor_operacao,
+			valor_tarifa,
+			valor_iof,
+			valor_juros,
+			taxa_juros)
+		VALUES (
+			@RETORNO,
+			@CARTEIRA,
+			@VALOR_TITULOS,
+			@VALOR_LIQUIDO,
+			@VALOR_OPERACAO,
+			@VALOR_TARIFA,
+			@VALOR_IOF,
+			@VALOR_JUROS,
+			@TAXA_JUROS)
+
+		UPDATE CRT SET
+			utilizado = utilizado + @VALOR_TITULOS,
+			remessa = remessa - @VALOR_TITULOS,
+			retorno = retorno + @VALOR_TITULOS
+		WHERE id = @CARTEIRA
+
+		----------------------------------------- GRAVA PARCELAS --------------------------------------------
+		/*IF EXISTS(SELECT NOSSO_NUMERO FROM REMD WHERE nosso_numero = @NOSSO_NUMERO AND parcela = @PARCELA AND carteira = @CARTEIRA)
+		BEGIN
+
+			ROLLBACK TRANSACTION
+
+			INSERT INTO ERR_LOG (erro, mensagem) SELECT erro, mensagem FROM ERR WHERE erro = 1123
+			SELECT * FROM ERR WHERE erro = 1123
+
+			RETURN
+		END*/
+
+		INSERT INTO RET_PAR 
+			(retorno, nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor)
+		SELECT 
+			@RETORNO, nosso_numero, parcela, forma_pagto, tipo_vencto, vencto, prazo, valor
+		FROM @PARCELAS
+
+		/************************************ CONFIRMA ALTERACOES ************************************/
+
+		COMMIT TRANSACTION
+
+		------------------- NOTIFICA O SUCESSO DA OPERACAO PARA O CLIENTE -------------------
+		INSERT INTO @ERR_LOG (id, datahora, erro, mensagem) 
+		SELECT 0, GETDATE(), erro, mensagem FROM ERR WHERE erro = 0
+
+	END TRY
+	BEGIN CATCH
+
+		------------------------- REVERTE AS ALTERACOES -------------------------
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION
+
+		---------------------- RETORNA O ERRO PARA O CLIENTE ----------------------
+		INSERT @ERR_LOG EXEC @ERR = NOTIFICA_ERRO
+
+	END CATCH
+
+	------------------ RETORNA O RESULTADO DA OPERACAO ------------------
+	SELECT * FROM @ERR_LOG
+
+	---------------------- RETORNA AS NOTIFICACOES ----------------------
+	SELECT * FROM @NOTIFICACAO
+
+	RETURN @ERR; 
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[TAREFA_ATUALIZAR]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+CREATE PROCEDURE [dbo].[TAREFA_ATUALIZAR](@TAREFA TAREFA_TYPE READONLY) AS
+BEGIN 
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+	DECLARE @ID INT
+	DECLARE @VERSAO INT
+	DECLARE @DESCRICAO NVARCHAR(100)
+	DECLARE @DOCUMENTO NVARCHAR(MAX)
+
+	SELECT TOP 1 @ID = id, @VERSAO = versao, @DESCRICAO = LTRIM(RTRIM(descricao)), @DOCUMENTO = LTRIM(RTRIM(documento)) FROM @TAREFA;
+
+	UPDATE TRF SET
+		descricao = @DESCRICAO,
+		documento = STUFF(LTRIM(RTRIM(TRF.documento)), LEN(LTRIM(RTRIM(TRF.documento))), 1, ', ' + @DOCUMENTO + ']'),
+		atualizado = GETDATE()
+	WHERE
+		id = @ID AND
+		concluido IS NULL AND
+		versao = @VERSAO
+
+	IF @@ROWCOUNT != 1
+	BEGIN
+
+		DECLARE @ULTIMA_VERSAO INT
+		DECLARE @CONCLUIDO DATETIME
+
+		SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @ID;
+
+		IF @@ROWCOUNT != 1 THROW 57015, 'Tarefa não existe !', 1;
+
+		IF (NOT @CONCLUIDO IS NULL) THROW 57010, 'Tarefa já foi concluída !', 1;
+			
+		IF (@ULTIMA_VERSAO <> @VERSAO) THROW 57450, 'Tarefa esta com versão diferente !', 1;
+
+		THROW 59999, 'Erro interno ao concluir uma tarefa, contate o suporte técnico', 1;
+	END
+
+	INSERT INTO @NOTIFICACAO 
+	SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/atualizada/' + LTRIM(RTRIM(atribuir)) AS topico 
+	FROM TRF 
+	WHERE id = @ID
+
+	SELECT * FROM @NOTIFICACAO
+
+END
+
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[TAREFA_CONCLUIR]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[TAREFA_CONCLUIR](@TAREFA INT, @VERSAO INT) AS
+BEGIN 
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+
+	UPDATE TRF SET
+		concluido = GETDATE()
+	WHERE
+		id = @TAREFA AND
+		concluido IS NULL AND
+		versao = @VERSAO
+
+	IF @@ROWCOUNT != 1
+	BEGIN
+
+		DECLARE @ULTIMA_VERSAO INT
+		DECLARE @CONCLUIDO DATETIME
+
+		SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @TAREFA;
+
+		IF @@ROWCOUNT != 1 THROW 57015, 'Tarefa não existe !', 1;
+
+		IF (NOT @CONCLUIDO IS NULL) THROW 57010, 'Tarefa já foi concluída !', 1;
+			
+		IF (@ULTIMA_VERSAO <> @VERSAO) THROW 57450, 'Tarefa esta com versão diferente !', 1;
+
+		THROW 59999, 'Erro interno ao concluir uma tarefa, contate o suporte técnico', 1;
+	END
+
+	INSERT INTO @NOTIFICACAO 
+	SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/concluida/' + LTRIM(RTRIM(atribuir)) AS topico 
+	FROM TRF 
+	WHERE id = @TAREFA
+
+	SELECT * FROM @NOTIFICACAO
+
+END
+
+GO
+/****** Object:  StoredProcedure [dbo].[TAREFA_INCLUIR]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+CREATE PROCEDURE [dbo].[TAREFA_INCLUIR](@TAREFA TAREFA_TYPE READONLY) AS
+BEGIN 
+
+	DECLARE @ID INT
+	DECLARE @VERSAO INT
+
+	DECLARE @NAV INT
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	-------------------------------------- INCLUIR NOVA TAREFA ----------------------------------------------
+
+	SET @ID = NEXT VALUE FOR tarefa_seq
+
+	INSERT INTO TRF 
+		(id, nome, titulo, descricao, detalhes,	documento, atribuir, atribuido, form, parametros, prazo, criado, concluido)
+	SELECT 
+		@ID, nome, titulo, descricao,	detalhes, documento, atribuir, atribuido, form,	parametros, prazo, criado, concluido
+	FROM 
+		@TAREFA
+					
+	INSERT INTO @NOTIFICACAO 
+	SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/nova/' + LTRIM(RTRIM(atribuir)) AS topico 
+	FROM TRF 
+	WHERE id = @ID
+
+	--SET @NAV = NEXT VALUE FOR tarefa_nav_seq
+
+	--INSERT TRFN (transacao, tarefa_origem, tarefa_destino) VALUES (NEXT VALUE FOR tarefa_nav_seq, @ID, @NAV)
+
+	SELECT * FROM @NOTIFICACAO
+
+END
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[TAREFA_REPETIR]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+
+
+
+
+CREATE PROCEDURE [dbo].[TAREFA_REPETIR](@TAREFA TAREFA_TYPE READONLY) AS
+BEGIN 
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+	DECLARE @ID INT
+	DECLARE @VERSAO INT
+	DECLARE @DESCRICAO NVARCHAR(100)
+	DECLARE @DOCUMENTO NVARCHAR(MAX)
+
+	SELECT TOP 1 @ID = id, @VERSAO = versao, @DESCRICAO = LTRIM(RTRIM(descricao)), @DOCUMENTO = LTRIM(RTRIM(documento)) FROM @TAREFA;
+
+	DECLARE @NOVO_ID INT
+
+	SET @NOVO_ID = NEXT VALUE FOR tarefa_seq
+
+	INSERT INTO TRF 
+		(id, nome, titulo, descricao, detalhes,	documento, atribuir, atribuido, form, parametros, prazo, criado, concluido)
+	SELECT 
+		@NOVO_ID, nome, titulo, descricao,	detalhes, STUFF(LTRIM(RTRIM(TRF.documento)), LEN(LTRIM(RTRIM(TRF.documento))), 1, ', ' + @DOCUMENTO + ']'), atribuir, atribuido, form,	parametros, prazo, criado, concluido
+	FROM 
+		TRF
+	WHERE
+		id = @ID AND
+		--concluido IS NULL AND
+		versao = @VERSAO
+
+	/*UPDATE TRF SET
+		descricao = @DESCRICAO,
+		documento = STUFF(LTRIM(RTRIM(TRF.documento)), LEN(LTRIM(RTRIM(TRF.documento))), 1, ', ' + @DOCUMENTO + ']'),
+		atualizado = GETDATE()
+	WHERE
+		id = @ID AND
+		--concluido IS NULL AND
+		versao = @VERSAO*/
+
+	IF @@ROWCOUNT != 1
+	BEGIN
+
+		DECLARE @ULTIMA_VERSAO INT
+		DECLARE @CONCLUIDO DATETIME
+
+		SELECT TOP 1 @ULTIMA_VERSAO = versao, @CONCLUIDO = concluido FROM TRF WHERE id = @ID;
+
+		IF @@ROWCOUNT != 1 THROW 57015, 'Tarefa não existe !', 1;
+
+		IF (NOT @CONCLUIDO IS NULL) THROW 57010, 'Tarefa já foi concluída !', 1;
+			
+		IF (@ULTIMA_VERSAO <> @VERSAO) THROW 57450, 'Tarefa esta com versão diferente !', 1;
+
+		THROW 59999, 'Erro interno ao concluir uma tarefa, contate o suporte técnico', 1;
+	END
+
+	INSERT INTO @NOTIFICACAO 
+	SELECT id, nome, titulo, descricao, atribuir, form, parametros, prazo, criado, concluido, versao, '/tarefas/nova/' + LTRIM(RTRIM(atribuir)) AS topico 
+	FROM TRF 
+	WHERE id = @NOVO_ID
+
+	SELECT * FROM @NOTIFICACAO
+
+END
+
+
+
+
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[TAREFAS_NAV]    Script Date: 26/01/2017 18:23:49 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[TAREFAS_NAV] (@TAREFAS TAREFA_NAV_TYPE READONLY) 
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @ULTIMA_VERSAO INT
+	DECLARE @CONCLUIDO DATETIME
+
+	DECLARE @PROX_TAREFA INT
+	DECLARE @PROX_TAREFA_VERSAO INT
+
+	DECLARE @NOVA_NAV INT
+
+	DECLARE @NOTIFICACAO TAREFA_NOTIFICACAO_TYPE
+
+	-------------------------------------- CONCLUIR A TAREFA ATUAL ----------------------------------------------
+	DECLARE @TAREFA INT
+	DECLARE @VERSAO INT
+
+	SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM @TAREFAS WHERE operacao = 'CONCLUIR'
+	INSERT @NOTIFICACAO EXEC TAREFA_CONCLUIR @TAREFA, @VERSAO
+
+	-------------------------------------- CRIAR OU ATUALIZAR A PROXIMA TAREFA ----------------------------------------------
+
+	SELECT TOP 1 @TAREFA = id, @VERSAO = versao FROM TRF WHERE nome = (SELECT nome FROM TRF WHERE id = @TAREFA) AND concluido IS NULL
+
+	IF @TAREFA IS NULL
+	BEGIN
+
+		INSERT @NOTIFICACAO EXEC TAREFA_INCLUIR @TAREFA, @VERSAO
+
+	END
+	ELSE
+	BEGIN
+
+		INSERT @NOTIFICACAO EXEC TAREFA_ATUALIZAR @TAREFA, @VERSAO
+
+	END
+
+END
+
+GO
+/****** Object:  Table [dbo].[BAN]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -865,7 +1321,7 @@ CREATE TABLE [dbo].[BAN](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CLI]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[CLI]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -899,7 +1355,7 @@ CREATE TABLE [dbo].[CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[COB]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[COB]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -911,13 +1367,13 @@ CREATE TABLE [dbo].[COB](
 	[nosso_numero] [int] NOT NULL,
 	[conta_contabil] [varchar](56) NOT NULL,
 	[cnpj] [varchar](20) NOT NULL,
-	[inscricao] [varchar](12) NULL,
-	[fantasia] [varchar](30) NULL,
+	[inscricao] [varchar](20) NULL,
+	[fantasia] [varchar](50) NULL,
 	[nome] [varchar](100) NULL,
 	[logradouro] [varchar](5) NULL,
 	[endereco] [varchar](50) NULL,
 	[numero] [varchar](10) NULL,
-	[complemento] [varchar](20) NULL,
+	[complemento] [varchar](30) NULL,
 	[bairro] [varchar](30) NULL,
 	[municipio] [int] NULL,
 	[cidade] [varchar](20) NULL,
@@ -936,7 +1392,7 @@ CREATE TABLE [dbo].[COB](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[COB_PAR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[COB_PAR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -963,7 +1419,7 @@ CREATE TABLE [dbo].[COB_PAR](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[CRT]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[CRT]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -999,7 +1455,7 @@ CREATE TABLE [dbo].[CRT](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[DUP]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1039,7 +1495,7 @@ CREATE TABLE [dbo].[DUP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[DUP_CRT]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1051,7 +1507,7 @@ CREATE TABLE [dbo].[DUP_CRT](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[EMP]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[EMP]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1060,13 +1516,13 @@ SET ANSI_PADDING ON
 GO
 CREATE TABLE [dbo].[EMP](
 	[cnpj] [varchar](20) NOT NULL,
-	[inscricao] [varchar](12) NULL,
-	[fantasia] [varchar](30) NULL,
+	[inscricao] [varchar](20) NULL,
+	[fantasia] [varchar](50) NULL,
 	[nome] [varchar](100) NULL,
 	[logradouro] [varchar](5) NULL,
 	[endereco] [varchar](50) NULL,
 	[numero] [varchar](10) NULL,
-	[complemento] [varchar](20) NULL,
+	[complemento] [varchar](30) NULL,
 	[bairro] [varchar](30) NULL,
 	[municipio] [int] NULL,
 	[cidade] [varchar](20) NULL,
@@ -1084,7 +1540,7 @@ CREATE TABLE [dbo].[EMP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[ERR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[ERR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1099,14 +1555,14 @@ CREATE TABLE [dbo].[ERR](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[ERR_LOG]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[ERR_LOG](
-	[id] [int] NOT NULL DEFAULT (NEXT VALUE FOR [err_log_seq]),
-	[datahora] [datetime] NOT NULL CONSTRAINT [DF_ERR_LOG_datahora]  DEFAULT (getdate()),
+	[id] [int] NOT NULL,
+	[datahora] [datetime] NOT NULL,
 	[erro] [int] NOT NULL,
 	[nivel] [int] NULL,
 	[situacao] [nchar](10) NULL,
@@ -1120,7 +1576,7 @@ CREATE TABLE [dbo].[ERR_LOG](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[PED]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1142,7 +1598,7 @@ CREATE TABLE [dbo].[PED](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_CLI]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[PED_CLI]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1157,7 +1613,7 @@ CREATE TABLE [dbo].[PED_CLI](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[PED_DUP]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[PED_DUP]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1169,7 +1625,7 @@ CREATE TABLE [dbo].[PED_DUP](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PED_REP]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[PED_REP]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1184,7 +1640,7 @@ CREATE TABLE [dbo].[PED_REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REC]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1195,8 +1651,8 @@ CREATE TABLE [dbo].[REC](
 	[nosso_numero] [int] NOT NULL,
 	[conta_contabil] [varchar](56) NOT NULL,
 	[cnpj] [varchar](20) NOT NULL,
-	[inscricao] [varchar](12) NULL,
-	[fantasia] [varchar](30) NULL,
+	[inscricao] [varchar](20) NULL,
+	[fantasia] [varchar](50) NULL,
 	[nome] [varchar](100) NULL,
 	[logradouro] [varchar](5) NULL,
 	[endereco] [varchar](50) NULL,
@@ -1219,7 +1675,7 @@ CREATE TABLE [dbo].[REC](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC_PAR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REC_PAR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1245,7 +1701,7 @@ CREATE TABLE [dbo].[REC_PAR](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REC_PED]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REC_PED]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1261,31 +1717,31 @@ CREATE TABLE [dbo].[REC_PED](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[REM]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REM]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[REM](
 	[remessa] [int] NOT NULL,
-	[carteira] [int] NOT NULL,
-	[data] [date] NOT NULL,
-	[valor_titulos] [money] NOT NULL,
-	[total_dias] [int] NOT NULL,
-	[valor_base] [money] NOT NULL,
-	[valor_liquido] [money] NOT NULL,
-	[valor_operacao] [money] NOT NULL,
-	[valor_tarifa] [money] NOT NULL,
-	[valor_iof] [money] NOT NULL,
-	[valor_juros] [money] NOT NULL,
-	[taxa_juros] [decimal](18, 3) NOT NULL,
-	[numero_parcelas] [int] NOT NULL,
-	[iof_adicional] [decimal](18, 3) NOT NULL,
-	[iof_diario] [decimal](18, 3) NOT NULL,
-	[valor_iof_diario] [money] NOT NULL,
-	[valor_iof_adicional] [money] NOT NULL,
-	[cet] [decimal](18, 3) NOT NULL,
-	[valor_cet] [money] NOT NULL,
+	[carteira] [int] NOT NULL CONSTRAINT [DF_REM_carteira]  DEFAULT ((0)),
+	[data] [date] NOT NULL CONSTRAINT [DF_REM_data]  DEFAULT (getdate()),
+	[valor_titulos] [money] NOT NULL CONSTRAINT [DF_REM_valor_bruto]  DEFAULT ((0)),
+	[total_dias] [int] NOT NULL CONSTRAINT [DF_REM_total_dias]  DEFAULT ((0)),
+	[valor_base] [money] NOT NULL CONSTRAINT [DF_REM_valor_base]  DEFAULT ((0)),
+	[valor_liquido] [money] NOT NULL CONSTRAINT [DF_REM_valor_liquido]  DEFAULT ((0)),
+	[valor_operacao] [money] NOT NULL CONSTRAINT [DF_REM_valor_operacao]  DEFAULT ((0)),
+	[valor_tarifa] [money] NOT NULL CONSTRAINT [DF_REM_valor_tarifa]  DEFAULT ((0)),
+	[valor_iof] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof]  DEFAULT ((0.00)),
+	[valor_juros] [money] NOT NULL CONSTRAINT [DF_REM_valor_juros]  DEFAULT ((0.00)),
+	[taxa_juros] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_taxa_juros_1]  DEFAULT ((0.00)),
+	[numero_parcelas] [int] NOT NULL CONSTRAINT [DF_REM_numero_parcelas]  DEFAULT ((0)),
+	[iof_adicional] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_iof_adicional]  DEFAULT ((0)),
+	[iof_diario] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_iof_diario]  DEFAULT ((0)),
+	[valor_iof_diario] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof_diario]  DEFAULT ((0)),
+	[valor_iof_adicional] [money] NOT NULL CONSTRAINT [DF_REM_valor_iof_adicional]  DEFAULT ((0)),
+	[cet] [decimal](18, 3) NOT NULL CONSTRAINT [DF_REM_cet]  DEFAULT ((0)),
+	[valor_cet] [money] NOT NULL CONSTRAINT [DF_REM_valor_cet]  DEFAULT ((0)),
  CONSTRAINT [PK_REM] PRIMARY KEY CLUSTERED 
 (
 	[remessa] ASC
@@ -1293,7 +1749,7 @@ CREATE TABLE [dbo].[REM](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[REM_PAR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REM_PAR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1320,7 +1776,7 @@ CREATE TABLE [dbo].[REM_PAR](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[REP]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[REP]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1339,24 +1795,24 @@ CREATE TABLE [dbo].[REP](
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[RET]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[RET]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[RET](
 	[retorno] [int] NOT NULL,
-	[carteira] [int] NOT NULL,
-	[data] [date] NOT NULL,
-	[valor_titulos] [money] NOT NULL,
-	[valor_liquido] [money] NOT NULL,
-	[valor_operacao] [money] NOT NULL,
-	[valor_tarifa] [money] NOT NULL,
-	[valor_iof] [money] NOT NULL,
-	[valor_juros] [money] NOT NULL,
-	[taxa_juros] [decimal](18, 3) NOT NULL,
-	[cet] [decimal](18, 3) NOT NULL,
-	[aceito] [bit] NOT NULL,
+	[carteira] [int] NOT NULL CONSTRAINT [DF_RET_carteira]  DEFAULT ((0)),
+	[data] [date] NOT NULL CONSTRAINT [DF_RET_data]  DEFAULT (getdate()),
+	[valor_titulos] [money] NOT NULL CONSTRAINT [DF_RET_valor_titulos]  DEFAULT ((0)),
+	[valor_liquido] [money] NOT NULL CONSTRAINT [DF_RET_valor_liquido]  DEFAULT ((0)),
+	[valor_operacao] [money] NOT NULL CONSTRAINT [DF_RET_valor_operacao_1]  DEFAULT ((0)),
+	[valor_tarifa] [money] NOT NULL CONSTRAINT [DF_RET_valor_tarifa]  DEFAULT ((0)),
+	[valor_iof] [money] NOT NULL CONSTRAINT [DF_RET_valor_iof]  DEFAULT ((0.00)),
+	[valor_juros] [money] NOT NULL CONSTRAINT [DF_RET_valor_juros]  DEFAULT ((0.00)),
+	[taxa_juros] [decimal](18, 3) NOT NULL CONSTRAINT [DF_RET_taxa_juros_1]  DEFAULT ((0.00)),
+	[cet] [decimal](18, 3) NOT NULL CONSTRAINT [DF_RET_cet]  DEFAULT ((0)),
+	[aceito] [bit] NOT NULL CONSTRAINT [DF_RET_aceito]  DEFAULT ((0)),
  CONSTRAINT [PK_RET] PRIMARY KEY CLUSTERED 
 (
 	[retorno] ASC
@@ -1364,7 +1820,7 @@ CREATE TABLE [dbo].[RET](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[RET_PAR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[RET_PAR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1375,31 +1831,30 @@ CREATE TABLE [dbo].[RET_PAR](
 	[retorno] [int] NOT NULL,
 	[nosso_numero] [int] NOT NULL,
 	[parcela] [int] NOT NULL,
-	[carteira] [int] NOT NULL,
 	[forma_pagto] [varchar](10) NOT NULL,
 	[tipo_vencto] [varchar](3) NOT NULL,
 	[vencto] [date] NOT NULL,
 	[prazo] [int] NOT NULL,
 	[valor] [money] NOT NULL,
 	[aceito] [bit] NOT NULL,
- CONSTRAINT [PK_RETD] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_RET_PAR] PRIMARY KEY CLUSTERED 
 (
+	[retorno] ASC,
 	[nosso_numero] ASC,
-	[parcela] ASC,
-	[carteira] ASC
+	[parcela] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
 GO
 SET ANSI_PADDING OFF
 GO
-/****** Object:  Table [dbo].[TRF]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[TRF]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[TRF](
-	[id] [int] NOT NULL,
+	[id] [int] NOT NULL CONSTRAINT [DF__TRF__id__1293BD5E]  DEFAULT (NEXT VALUE FOR [tarefa_seq]),
 	[nome] [nvarchar](100) NOT NULL,
 	[titulo] [nvarchar](50) NULL,
 	[descricao] [nvarchar](50) NULL,
@@ -1411,6 +1866,7 @@ CREATE TABLE [dbo].[TRF](
 	[parametros] [nvarchar](max) NULL,
 	[prazo] [datetime] NULL,
 	[criado] [datetime] NOT NULL CONSTRAINT [DF_TAREFA_DATA_CRIACAO]  DEFAULT (getdate()),
+	[atualizado] [datetime] NULL,
 	[concluido] [datetime] NULL,
 	[versao] [timestamp] NOT NULL,
  CONSTRAINT [PK_TAREFA] PRIMARY KEY CLUSTERED 
@@ -1420,7 +1876,7 @@ CREATE TABLE [dbo].[TRF](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[TRFN]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[TRFN]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1438,7 +1894,7 @@ CREATE TABLE [dbo].[TRFN](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[USR]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Table [dbo].[USR]    Script Date: 26/01/2017 18:23:49 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1465,7 +1921,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Index [IX_CLI]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI] ON [dbo].[CLI]
 (
 	[nome] ASC
@@ -1474,81 +1930,19 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [IX_CLI_1]    Script Date: 24/01/2017 17:30:06 ******/
+/****** Object:  Index [IX_CLI_1]    Script Date: 26/01/2017 18:23:49 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [IX_CLI_1] ON [dbo].[CLI]
 (
 	[fantasia] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [IX_RETD]    Script Date: 24/01/2017 17:30:06 ******/
-CREATE UNIQUE NONCLUSTERED INDEX [IX_RETD] ON [dbo].[RET_PAR]
-(
-	[nosso_numero] ASC,
-	[parcela] ASC,
-	[carteira] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-GO
 ALTER TABLE [dbo].[CLI] ADD  CONSTRAINT [DF_CLI_DESCONTO]  DEFAULT ((1)) FOR [desconto]
 GO
+ALTER TABLE [dbo].[ERR_LOG] ADD  DEFAULT (NEXT VALUE FOR [err_log_seq]) FOR [id]
+GO
+ALTER TABLE [dbo].[ERR_LOG] ADD  CONSTRAINT [DF_ERR_LOG_datahora]  DEFAULT (getdate()) FOR [datahora]
+GO
 ALTER TABLE [dbo].[PED] ADD  CONSTRAINT [DF_PED_NUMERO]  DEFAULT ((0)) FOR [numero]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_carteira]  DEFAULT ((0)) FOR [carteira]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_data]  DEFAULT (getdate()) FOR [data]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_bruto]  DEFAULT ((0)) FOR [valor_titulos]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_total_dias]  DEFAULT ((0)) FOR [total_dias]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_base]  DEFAULT ((0)) FOR [valor_base]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_liquido]  DEFAULT ((0)) FOR [valor_liquido]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_operacao]  DEFAULT ((0)) FOR [valor_operacao]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_tarifa]  DEFAULT ((0)) FOR [valor_tarifa]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof]  DEFAULT ((0.00)) FOR [valor_iof]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_juros]  DEFAULT ((0.00)) FOR [valor_juros]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_taxa_juros_1]  DEFAULT ((0.00)) FOR [taxa_juros]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_numero_parcelas]  DEFAULT ((0)) FOR [numero_parcelas]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_iof_adicional]  DEFAULT ((0)) FOR [iof_adicional]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_iof_diario]  DEFAULT ((0)) FOR [iof_diario]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof_diario]  DEFAULT ((0)) FOR [valor_iof_diario]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_iof_adicional]  DEFAULT ((0)) FOR [valor_iof_adicional]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_cet]  DEFAULT ((0)) FOR [cet]
-GO
-ALTER TABLE [dbo].[REM] ADD  CONSTRAINT [DF_REM_valor_cet]  DEFAULT ((0)) FOR [valor_cet]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_carteira]  DEFAULT ((0)) FOR [carteira]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_data]  DEFAULT (getdate()) FOR [data]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_titulos]  DEFAULT ((0)) FOR [valor_titulos]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_liquido]  DEFAULT ((0)) FOR [valor_liquido]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_operacao_1]  DEFAULT ((0)) FOR [valor_operacao]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_tarifa]  DEFAULT ((0)) FOR [valor_tarifa]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_iof]  DEFAULT ((0.00)) FOR [valor_iof]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_valor_juros]  DEFAULT ((0.00)) FOR [valor_juros]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_taxa_juros_1]  DEFAULT ((0.00)) FOR [taxa_juros]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_cet]  DEFAULT ((0)) FOR [cet]
-GO
-ALTER TABLE [dbo].[RET] ADD  CONSTRAINT [DF_RET_aceito]  DEFAULT ((0)) FOR [aceito]
 GO
 ALTER TABLE [dbo].[RET_PAR] ADD  CONSTRAINT [DF_RETD_aceito]  DEFAULT ((0)) FOR [aceito]
 GO
