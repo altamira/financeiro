@@ -49,7 +49,7 @@ export default class Remessa extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log('componentWillMount:\n' + JSON.stringify(response.data, null, 2))
         this.setState({
@@ -68,7 +68,7 @@ export default class Remessa extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -100,7 +100,7 @@ export default class Remessa extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/remessa/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/financeiro/recebiveis/remessa/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 
@@ -127,6 +127,7 @@ export default class Remessa extends Component {
       remessa: this.state.remessa.map( (r, i) => {
         
         if (remessa.remessa_index === i) {
+          r.cliente = remessa.cliente;
           r.parcelas[remessa.parcela_index].selected = true;
         } 
 

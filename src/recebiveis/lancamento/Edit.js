@@ -18,6 +18,8 @@ export default class Edit extends Component {
   constructor(props) {
     super(props);
 
+    this.state = this.props.parcela;
+
     this.handleChangeOrigem = this.handleChangeOrigem.bind(this);
     this.handleChangeFormaPagto = this.handleChangeFormaPagto.bind(this);
     this.handleChangeTipoVencto = this.handleChangeTipoVencto.bind(this);
@@ -29,9 +31,6 @@ export default class Edit extends Component {
     this.handleSave = this.handleSave.bind(this);
   }
 
-  componentWillMount() {
-      this.setState(this.props.parcela);
-  }
   handleChangeOrigem(element) {
     this.setState({origem: element.target.value});
   }

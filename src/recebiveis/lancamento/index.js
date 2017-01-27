@@ -96,7 +96,6 @@ export default class Lancamento extends Component {
     }
 
     // comandos
-    this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
     this.handlePrint = this.handlePrint.bind(this);
 
@@ -121,17 +120,57 @@ export default class Lancamento extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data);
+
+        let emissao = new Date(response.data.documento.emissao);
+        let entrega = new Date(response.data.documento.entrega);
+
+        if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
+          emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
+        }
+
+        if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
+          entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
+        }
+
+        this.setState({
+          ...response.data,
+          documento: {
+            ...response.data.documento,
+            emissao: emissao.toISOString(),
+            entrega: entrega.toISOString(),
+            parcelas: response.data.documento.parcelas.map( (parcela) => {
+              let vencto = new Date(parcela.vencto);
+
+              if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
+                vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
+              }
+
+              let weekend = [1,0,0,0,0,0,1];
+
+              if (weekend[vencto.getUTCDay()]) {
+                vencto.setTime(vencto.getTime() + ((vencto.getUTCDay() ? 2 : 1) * 24 * 60 * 60 * 1000))
+                parcela.ajuste_dia_util = true
+              }
+
+              console.log('Vencto: ' + vencto.toISOString());
+
+              parcela.vencto = vencto.toISOString();
+
+              return parcela;
+
+            })
+          }
+        });
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })    
 
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
@@ -144,17 +183,50 @@ export default class Lancamento extends Component {
   componentWillReceiveProps(props) {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
-        this.setState(response.data);
+
+        let emissao = new Date(response.data.documento.emissao);
+        let entrega = new Date(response.data.documento.entrega);
+
+        if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
+          emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
+        }
+
+        if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
+          entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
+        }
+
+        this.setState({
+          ...response.data,
+          documento: {
+            ...response.data.documento,
+            emissao: emissao.toISOString(),
+            entrega: entrega.toISOString(),
+            parcelas: response.data.documento.parcelas.map( (parcela) => {
+              let vencto = new Date(parcela.vencto);
+
+              if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
+                vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
+
+                console.log(vencto.toISOString());
+
+                parcela.vencto = vencto.toISOString();
+              }
+
+              return parcela;
+
+            })
+          }
+        });
       })
       .catch( error => {
         this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
       })      
 
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
@@ -163,24 +235,54 @@ export default class Lancamento extends Component {
       })
 
   }
-  
-  handleSaveAndClose() {
-    axios
-      .post('http://localhost:1880/api/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
-      .then( (response) => {
-        console.log(response.data);
-        browserHistory.push('/');
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
-  }
 
   handleComplete(data) {
-    console.log(JSON.stringify(omit(this.state, ['dialog']), null, 2));
+    let state = omit(this.state, ['dialog']);
+
+    let emissao = new Date(state.documento.emissao);
+    let entrega = new Date(state.documento.entrega);
+
+    if (emissao.getUTCHours() || emissao.getUTCMinutes() || emissao.getUTCSeconds() || emissao.getUTCMilliseconds()) {
+      emissao.setTime(emissao.getTime() - ((emissao.getHours() * 60 * 60 * 1000) + (emissao.getMinutes() * 60 * 1000) + (emissao.getSeconds() * 1000) + emissao.getMilliseconds() + (emissao.getTimezoneOffset() * 60 * 1000)) )
+    }
+
+    if (entrega.getUTCHours() || entrega.getUTCMinutes() || entrega.getUTCSeconds() || entrega.getUTCMilliseconds()) {
+      entrega.setTime(entrega.getTime() - ((entrega.getHours() * 60 * 60 * 1000) + (entrega.getMinutes() * 60 * 1000) + (entrega.getSeconds() * 1000) + entrega.getMilliseconds() + (entrega.getTimezoneOffset() * 60 * 1000)) )
+    }
+
+    state.documento = {
+      ...state.documento,
+      parcelas: state.documento.parcelas.map( (parcela) => {
+        let vencto = new Date(parcela.vencto);
+
+        if (vencto.getUTCHours() || vencto.getUTCMinutes() || vencto.getUTCSeconds() || vencto.getUTCMilliseconds()) {
+          vencto.setTime(vencto.getTime() - ((vencto.getHours() * 60 * 60 * 1000) + (vencto.getMinutes() * 60 * 1000) + (vencto.getSeconds() * 1000) + vencto.getMilliseconds() + (vencto.getTimezoneOffset() * 60 * 1000)) )
+
+          console.log(vencto.toISOString());
+
+          parcela.vencto = vencto;
+        }
+
+        return {
+          "pedido": parcela.pedido,
+          "vencto": parcela.vencto,
+          "origem": parcela.origem,
+          "forma_pagto": parcela.forma_pagto,
+          "tipo_vencto": parcela.tipo_vencto,
+          "parcela": parcela.parcela,
+          "prazo": parcela.prazo,
+          "porcentagem": parcela.porcentagem,
+          "valor": parcela.valor
+        };
+
+      })
+    }
+
+    console.log(JSON.stringify(state, null, 2));
+
     // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, omit(this.state, ['dialog']))
+      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, state)
       .then( (response) => {
         console.log(response.data);
         browserHistory.push('/');
@@ -297,7 +399,7 @@ export default class Lancamento extends Component {
 
   handleNossoNumero() {
     axios
-      .get('http://localhost:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
+      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
       .then( (response) => {
         this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
       })
@@ -363,7 +465,7 @@ export default class Lancamento extends Component {
       doc.text(160, margin_top + 26, 'Vencimento');
 
       let vencto = new Date(parcela.vencto);
-      vencto.setTime(vencto.getTime() + vencto.getTimezoneOffset() * 60 * 1000);
+      vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000));
       doc.text(160, margin_top + 35, vencto.toLocaleDateString());
 
       doc.setFontSize(14);
@@ -622,13 +724,13 @@ export default class Lancamento extends Component {
                         <tbody>
                           {this.state.documento.parcelas.map( (parcela, index) => {
                             let vencto = new Date(parcela.vencto);
-                            vencto.setTime(vencto.getTime() + vencto.getTimezoneOffset() * 60 * 1000);
+                            //vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000));
 
                             return (
                               <tr key={'tr-' + index} id={'tr-' + index} >
                                 <td style={{textAlign: 'center'}}>{origem[parcela.origem]}</td>
                                 <td style={{textAlign: 'center'}}>{forma_pagto[parcela.forma_pagto]}</td>
-                                <td style={{textAlign: 'center'}}>{vencto.toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center', color: parcela.ajuste_dia_util ? 'blue' : 'black'}}>{vencto.toLocaleDateString()}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.documento.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
                                 <td style={{textAlign: 'right'}}>{format('R$ ###.###.##0,00', parcela.valor)}</td>

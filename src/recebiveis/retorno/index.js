@@ -130,7 +130,7 @@ export default class Retorno extends Component {
   componentWillMount() {
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + this.props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -148,7 +148,7 @@ export default class Retorno extends Component {
   componentWillReceiveProps(props) { 
     // carrega os parametros da tarefa
     axios
-      .get('http://localhost:1880/api/tarefa/' + props.params.id)
+      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState({
@@ -212,7 +212,7 @@ export default class Retorno extends Component {
     }, null, 2));
         // carrega os parametros da tarefa
     axios
-      .post('http://localhost:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
+      .post('http://financeiro:1880/api/financeiro/recebiveis/retorno/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: this.state.carteira, 

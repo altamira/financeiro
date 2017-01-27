@@ -22,7 +22,10 @@ export default class Titulo extends Component {
 	constructor(props) {
 		super(props);
 
+		this.state = this.props;
+
 		this.handleChange = this.handleChange.bind(this);
+		this.handleChangeCliente = this.handleChangeCliente.bind(this);
 	}
 	
 	componentWillMount() {
@@ -30,11 +33,15 @@ export default class Titulo extends Component {
 	}
 
 	handleSaveAndClose() {
-		this.props.onSave && this.props.onSave(this.props);
+		this.props.onSave && this.props.onSave(this.state);
 	}
 
-	handleChange(event) {
+	handleChange(element) {
+		
+	}
 
+	handleChangeCliente(element) {
+		this.setState({cliente: {...this.state.cliente, [element.target.name]: element.target.value}})
 	}
 
 	render() {
@@ -54,7 +61,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Pedido</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" value={this.props.pedido} onChange={this.handleChange} />
+							      	<FormControl type="text" value={this.props.pedido} onChange={this.handleChange} readOnly />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -62,7 +69,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Parcela</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" value={this.props.parcela} onChange={this.handleChange} />
+						      		<FormControl type="text" value={this.props.parcela} onChange={this.handleChange} readOnly />
 								</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -70,7 +77,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Data Remessa</ControlLabel>
 						      	<InputGroup>
-							      	<FormControl type="text" value={new Date().toLocaleDateString()} onChange={this.handleChange} />
+							      	<FormControl type="text" value={new Date().toLocaleDateString()} onChange={this.handleChange} readOnly />
 						      	</InputGroup>
 						    </FormGroup>						    
 						</Col>
@@ -81,7 +88,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Nosso Número</ControlLabel>
 						      	<InputGroup>
-						      		<FormControl type="text" value={this.props.nosso_numero + '/' + this.props.parcela} onChange={this.handleChange} />
+						      		<FormControl type="text" value={this.props.nosso_numero + '/' + this.props.parcela} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={this.props.nosso_numero.toString()} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Copiar</Tooltip>}>
@@ -96,7 +103,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Vencimento</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={new Date(this.props.vencto).toLocaleDateString()} onChange={this.handleChange} />
+								    <FormControl type="text" value={new Date(this.props.vencto).toLocaleDateString()} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={new Date(this.props.vencto).toLocaleDateString()} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_vencto'}>Copiar</Tooltip>}>
@@ -111,7 +118,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Valor</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={format('########0,00', this.props.valor)} onChange={this.handleChange} />
+								    <FormControl type="text" value={format('########0,00', this.props.valor)} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={format('########0,00', this.props.valor)} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_valor'}>Copiar</Tooltip>}>
@@ -129,7 +136,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>CNPJ/CPF</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.cnpj} onChange={this.handleChange} />
+								    <FormControl type="text" value={this.props.cliente.cnpj} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={this.props.cliente.cnpj} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_cnpj'}>Copiar</Tooltip>}>
@@ -144,7 +151,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Inscricao</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.inscricao} onChange={this.handleChange} />
+								    <FormControl type="text" value={this.props.cliente.inscricao} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={this.props.cliente.inscricao} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_inscricao'}>Copiar</Tooltip>}>
@@ -162,7 +169,7 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Razão Social</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.nome} onChange={this.handleChange} />
+								    <FormControl type="text" value={this.props.cliente.nome} onChange={this.handleChange} readOnly />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
 						      			<CopyToClipboard text={this.props.cliente.nome} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nome'}>Copiar</Tooltip>}>
@@ -176,13 +183,19 @@ export default class Titulo extends Component {
 					</Row>
 
 					<Row>
-						<Col xs={12} md={12}>
+						<Col xs={12} md={2}>
+							<FormGroup>
+						      	<ControlLabel>Logradouro</ControlLabel>
+							    <FormControl type="text" name="logradouro" value={this.state.cliente.logradouro} onChange={this.handleChangeCliente} />
+						    </FormGroup>						    
+						</Col>
+						<Col xs={12} md={10}>
 							<FormGroup>
 						      	<ControlLabel>Endereço</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onChange={this.handleChange} />
+								    <FormControl type="text" name="endereco" value={this.state.cliente.endereco} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.logradouro + ' ' + this.props.cliente.endereco} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.logradouro + ' ' + this.props.cliente.endereco} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_endereco'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -198,9 +211,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Numero</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.numero} onChange={this.handleChange} />
+								    <FormControl type="text" name="numero" value={this.state.cliente.numero} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.numero} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.numero} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_numero'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -213,9 +226,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Complemento</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.complemento} onChange={this.handleChange} />
+								    <FormControl type="text" name="complemento" value={this.state.cliente.complemento} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.complemento} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.complemento} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_complemento'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -228,9 +241,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>CEP</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.CEP} onChange={this.handleChange} />
+								    <FormControl type="text" name="CEP" value={this.state.cliente.CEP} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.CEP} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.CEP} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_CEP'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -246,9 +259,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Bairro</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.bairro} onChange={this.handleChange} />
+								    <FormControl type="text" name="bairro" value={this.state.cliente.bairro} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.bairro} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.bairro} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_bairro'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -261,9 +274,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Cidade</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.cidade} onChange={this.handleChange} />
+								    <FormControl type="text" name="cidade" value={this.state.cliente.cidade} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.cidade} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.cidade} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_cidade'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -279,9 +292,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Telefone</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.telefone} onChange={this.handleChange} />
+								    <FormControl type="text" name="telefone" value={this.state.cliente.telefone} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.telefone} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.telefone} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_contato'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
@@ -294,9 +307,9 @@ export default class Titulo extends Component {
 							<FormGroup>
 						      	<ControlLabel>Contato</ControlLabel>
 						      	<InputGroup>
-								    <FormControl type="text" value={this.props.cliente.contato} onChange={this.handleChange} />
+								    <FormControl type="text" name="contato" value={this.state.cliente.contato} onChange={this.handleChangeCliente} />
 						      		<InputGroup.Addon style={{cursor: 'pointer'}} >
-						      			<CopyToClipboard text={this.props.cliente.contato} onCopy={this.handleCopy}>
+						      			<CopyToClipboard text={this.state.cliente.contato} onCopy={this.handleCopy}>
 							      			<OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_contato'}>Copiar</Tooltip>}>
 								          		<Glyphicon glyph="transfer" />
 								          	</OverlayTrigger>
