@@ -18,8 +18,6 @@ import {
 import { Tabs, Tab } from 'react-bootstrap';
 import { Image } from 'react-bootstrap';
 
-import Error from './../../Error';
-
 import DatePicker from 'react-bootstrap-date-picker';
 
 //import Add from './Add';
@@ -28,7 +26,6 @@ import Delete from './Delete';
 //import Calc from './Calc';
 
 import { omit, cloneDeep } from 'lodash';
-import axios from 'axios';
 
 import process from './process.svg';
 
@@ -37,6 +34,26 @@ import format from 'number-format.js';
 import jsPDF from 'jspdf';
 
 import PrintPreview from './print';
+
+import api from './../../api/'
+
+Date.prototype.fromUTC = function() {
+  let date = this.toISOString();
+  if (!this.getUTCHours() && !this.getUTCMinutes() && !this.getUTCSeconds() && !this.getUTCMilliseconds()) {
+    this.setTime(this.getTime() + (this.getTimezoneOffset() * 60 * 1000))
+  } 
+  console.log(`fromUTC: before: ${date}, after: ${this.toISOString()}`)
+  return this;
+}
+
+Date.prototype.toUTC = function() {
+  let date = this.toISOString();
+  if (this.getUTCHours() || this.getUTCMinutes() || this.getUTCSeconds() || this.getUTCMilliseconds()) {
+    this.setTime(this.getTime() - ((this.getHours() * 60 * 60 * 1000) + (this.getMinutes() * 60 * 1000) + (this.getSeconds() * 1000) + this.getMilliseconds() + (this.getTimezoneOffset() * 60 * 1000)) )
+  }
+  console.log(`toUTC: before: ${date}, after: ${this.toISOString()}`)
+  return this;
+}
 
 export default class Lancamento extends Component {
   constructor(props) {
@@ -49,8 +66,10 @@ export default class Lancamento extends Component {
       "descricao": "",
       "detalhes": null,
       "documento": {
-        "empresa": "0",
-        "numero": 0,
+        "tipo": "recebimento",
+        "nosso_numero": "",
+        "empresa": "",
+        "pedido": 0,
         "emissao": new Date().toISOString(),
         "entrega": new Date().toISOString(),
         "cliente": {
@@ -72,7 +91,7 @@ export default class Lancamento extends Component {
           "contato": "",
           "conta_contabil": ""
         },
-        "condicao": "003",
+        "condicao": "",
         "representante": {
           "codigo": "",
           "nome": ""
@@ -104,168 +123,108 @@ export default class Lancamento extends Component {
     this.onValidate = this.onValidate.bind(this);
 
     // manipulação da lista de parcelas
-    this.handleFormAdd = this.handleFormAdd.bind(this);
-    this.handleFormEdit = this.handleFormEdit.bind(this);
-    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
-    this.handleCopy = this.handleCopy.bind(this);
-
+    this.handleNew = this.handleNew.bind(this);
     this.handleAdd = this.handleAdd.bind(this);
+    this.handleEdit = this.handleEdit.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleCopy = this.handleCopy.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
 
+    this.setTarefa = this.setTarefa.bind(this);
     this.handleNossoNumero = this.handleNossoNumero.bind(this);
 
   }
 
   componentWillMount() {
-    // carrega os parametros da tarefa
-    axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-
-        let emissao = new Date(response.data.documento.emissao);
-        let entrega = new Date(response.data.documento.entrega);
-
-        if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
-          emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
-        }
-
-        if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
-          entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
-        }
-
-        this.setState({
-          ...response.data,
-          documento: {
-            ...response.data.documento,
-            emissao: emissao.toISOString(),
-            entrega: entrega.toISOString(),
-            parcelas: response.data.documento.parcelas.map( (parcela) => {
-              let vencto = new Date(parcela.vencto);
-
-              if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
-                vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
-              }
-
-              let weekend = [1,0,0,0,0,0,1];
-
-              if (weekend[vencto.getUTCDay()]) {
-                vencto.setTime(vencto.getTime() + ((vencto.getUTCDay() ? 2 : 1) * 24 * 60 * 60 * 1000))
-                parcela.ajuste_dia_util = true
-              }
-
-              console.log('Vencto: ' + vencto.toISOString());
-
-              parcela.vencto = vencto.toISOString();
-
-              return parcela;
-
-            })
-          }
-        });
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })    
-
-    axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
-      .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
-
+    api.tarefa.get(this.props.params.id, this.setTarefa);
   }
 
   componentWillReceiveProps(props) {
-    // carrega os parametros da tarefa
-    axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-
-        let emissao = new Date(response.data.documento.emissao);
-        let entrega = new Date(response.data.documento.entrega);
-
-        if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
-          emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
-        }
-
-        if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
-          entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
-        }
-
-        this.setState({
-          ...response.data,
-          documento: {
-            ...response.data.documento,
-            emissao: emissao.toISOString(),
-            entrega: entrega.toISOString(),
-            parcelas: response.data.documento.parcelas.map( (parcela) => {
-              let vencto = new Date(parcela.vencto);
-
-              if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
-                vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
-
-                console.log(vencto.toISOString());
-
-                parcela.vencto = vencto.toISOString();
-              }
-
-              return parcela;
-
-            })
-          }
-        });
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })      
-
-    axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
-      .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
-
+    api.tarefa.get(props.params.id, this.setTarefa);
   }
 
-  handleComplete(data) {
+  setTarefa(tarefa) {
+    console.log(JSON.stringify(tarefa, null, 2))
+
+    let emissao = new Date(tarefa.documento.emissao).fromUTC();
+    let entrega = new Date(tarefa.documento.entrega).fromUTC();
+
+    /*if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
+      emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
+    }
+
+    if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
+      entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
+    }*/
+
+    this.setState({
+      ...tarefa,
+      documento: {
+        ...tarefa.documento,
+        emissao: emissao.toISOString(),
+        entrega: entrega.toISOString(),
+        parcelas: tarefa.documento.parcelas.map( (parcela) => {
+          let vencto = new Date(parcela.vencto).fromUTC();
+
+          /*if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
+            vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
+          }*/
+
+          let weekend = [1,0,0,0,0,0,1];
+
+          if (weekend[vencto.getUTCDay()]) {
+            vencto.setTime(vencto.getTime() + ((vencto.getUTCDay() ? 2 : 1) * 24 * 60 * 60 * 1000))
+            parcela.ajuste_dia_util = true
+          }
+
+          console.log('Vencto: ' + vencto.toISOString());
+
+          parcela.vencto = vencto.toISOString();
+
+          return parcela;
+
+        })
+      }
+    }, api.lancamento.nosso_numero.bind(null, this.handleNossoNumero.bind(this)));
+  }
+
+  handleNossoNumero(nosso_numero) {
+    this.setState({documento: {...this.state.documento, nosso_numero: (nosso_numero + 1).toString()}})
+  }
+
+  handleComplete() {
     let state = omit(this.state, ['dialog']);
 
-    let emissao = new Date(state.documento.emissao);
-    let entrega = new Date(state.documento.entrega);
+    let emissao = new Date(state.documento.emissao).toUTC();
+    let entrega = new Date(state.documento.entrega).toUTC();
 
-    if (emissao.getUTCHours() || emissao.getUTCMinutes() || emissao.getUTCSeconds() || emissao.getUTCMilliseconds()) {
+    /*if (emissao.getUTCHours() || emissao.getUTCMinutes() || emissao.getUTCSeconds() || emissao.getUTCMilliseconds()) {
       emissao.setTime(emissao.getTime() - ((emissao.getHours() * 60 * 60 * 1000) + (emissao.getMinutes() * 60 * 1000) + (emissao.getSeconds() * 1000) + emissao.getMilliseconds() + (emissao.getTimezoneOffset() * 60 * 1000)) )
     }
 
     if (entrega.getUTCHours() || entrega.getUTCMinutes() || entrega.getUTCSeconds() || entrega.getUTCMilliseconds()) {
       entrega.setTime(entrega.getTime() - ((entrega.getHours() * 60 * 60 * 1000) + (entrega.getMinutes() * 60 * 1000) + (entrega.getSeconds() * 1000) + entrega.getMilliseconds() + (entrega.getTimezoneOffset() * 60 * 1000)) )
-    }
+    }*/
 
     state.documento = {
       ...state.documento,
+      emissao: emissao.toISOString(),
+      entrega: entrega.toISOString(),
       parcelas: state.documento.parcelas.map( (parcela) => {
-        let vencto = new Date(parcela.vencto);
+        let vencto = new Date(parcela.vencto).toUTC();
 
-        if (vencto.getUTCHours() || vencto.getUTCMinutes() || vencto.getUTCSeconds() || vencto.getUTCMilliseconds()) {
+        /*if (vencto.getUTCHours() || vencto.getUTCMinutes() || vencto.getUTCSeconds() || vencto.getUTCMilliseconds()) {
           vencto.setTime(vencto.getTime() - ((vencto.getHours() * 60 * 60 * 1000) + (vencto.getMinutes() * 60 * 1000) + (vencto.getSeconds() * 1000) + vencto.getMilliseconds() + (vencto.getTimezoneOffset() * 60 * 1000)) )
 
           console.log(vencto.toISOString());
 
           parcela.vencto = vencto;
-        }
+        }*/
 
         return {
           "pedido": parcela.pedido,
-          "vencto": parcela.vencto,
+          "vencto": vencto,
           "origem": parcela.origem,
           "forma_pagto": parcela.forma_pagto,
           "tipo_vencto": parcela.tipo_vencto,
@@ -280,20 +239,16 @@ export default class Lancamento extends Component {
 
     console.log(JSON.stringify(state, null, 2));
 
-    // carrega os parametros da tarefa
-    axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/lancamento/tarefa/' + this.props.params.id, state)
-      .then( (response) => {
-        console.log(response.data);
-        browserHistory.push('/');
-      })
-      .catch( error => {
-        this.setState({documento: {...this.state.documento, nosso_numero: error.erro = 1235 ? '' : this.state.documento.nosso_numero}, dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    api.lancamento.concluir(this.props.params.id, state, this.handleDone.bind(this))
+
+  }
+
+  handleDone() {
+    browserHistory.push('/');
   }
 
   // manipuladores da lista de parcelas
-  handleFormAdd() {
+  handleNew() {
     this.setState({dialog: <Edit 
       parcela={{
           origem: 'VENDA',
@@ -322,7 +277,7 @@ export default class Lancamento extends Component {
       }, dialog: null});
   }
 
-  handleFormEdit(parcela, index) {
+  handleEdit(parcela, index) {
     this.setState({dialog: <Edit 
       parcela={{...parcela, 
           prazo: parcela.prazo.toString(),
@@ -346,10 +301,6 @@ export default class Lancamento extends Component {
     this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: undefined})
   }
 
-  handleDeleteConfirm(parcela, index) {
-    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
-  }
-
   handleDelete(parcela, index) {
     this.setState(
     {
@@ -366,6 +317,10 @@ export default class Lancamento extends Component {
       }, 
       dialog: undefined
     });
+  }
+
+  handleDeleteConfirm(parcela, index) {
+    this.setState({dialog: <Delete parcela={parcela} index={index} onSave={this.handleDelete.bind(this)} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleCopy(parcela, index) {
@@ -391,21 +346,6 @@ export default class Lancamento extends Component {
   // formulario
   handleChange(element) {
     this.setState({documento: {...this.state.documento, [element.target.name]: element.target.value}});
-  }
-
-  handleChangeDate(value, formattedValue) {
-    //this.setState({documento: {...this.state.documento, [value.target.name]: value.target.value}});
-  }
-
-  handleNossoNumero() {
-    axios
-      .get('http://financeiro:1880/api/financeiro/recebiveis/lancamento/nosso_numero1')
-      .then( (response) => {
-        this.setState({documento: {...this.state.documento, nosso_numero: (response.data.nosso_numero + 1).toString()}})
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
   }
 
   onValidate(propriedade) {
@@ -610,7 +550,7 @@ export default class Lancamento extends Component {
                           :
                             <InputGroup.Addon className='btn-danger' style={{cursor: 'pointer'}} >
                               <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_nosso_numero'}>Atualizar Nosso Número</Tooltip>}>
-                                  <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={this.handleNossoNumero} />
+                                  <Glyphicon glyph="transfer" style={{color: '#fff'}} onClick={api.lancamento.nosso_numero.bind(null, this.handleNossoNumero.bind(this))} />
                               </OverlayTrigger>
                             </InputGroup.Addon>
                           }
@@ -633,7 +573,7 @@ export default class Lancamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker name="emissao" value={this.state.documento.emissao} onChange={this.handleChangeDate} disabled={true} showClearButton={false} readOnly />
+                        <DatePicker name="emissao" value={this.state.documento.emissao} disabled={true} showClearButton={false} readOnly />
                       </FormGroup>
                     </Col>
                     <Col xs={12} md={1}>Entrega</Col>
@@ -642,7 +582,7 @@ export default class Lancamento extends Component {
                         {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
                         {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
                         {/*<FormControl.Feedback />*/}
-                        <DatePicker name="entrega" value={this.state.documento.entrega} onChange={this.handleChangeDate} disabled={true} showClearButton={false} />
+                        <DatePicker name="entrega" value={this.state.documento.entrega} disabled={true} showClearButton={false} />
                       </FormGroup>
                     </Col>
                   </Row>
@@ -709,7 +649,7 @@ export default class Lancamento extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th colSpan={7} style={{width: 100, textAlign: 'right'}} ><Button style={{width: 110}} bsStyle="success" bsSize="small" onClick={this.handleFormAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th colSpan={7} style={{width: 100, textAlign: 'right'}} ><Button style={{width: 110}} bsStyle="success" bsSize="small" onClick={this.handleAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                           <tr>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Origem</th>
@@ -741,7 +681,7 @@ export default class Lancamento extends Component {
                                     </Button>
                                   </OverlayTrigger>
                                   <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_alterar' + index} >Alterar</Tooltip>}>
-                                    <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleFormEdit.bind(null, parcela, index)}>
+                                    <Button bsStyle="primary" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={this.handleEdit.bind(null, parcela, index)}>
                                       <Glyphicon glyph="edit" />
                                     </Button>
                                   </OverlayTrigger>

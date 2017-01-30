@@ -70,7 +70,7 @@ export default class Cobranca extends Component {
 
   componentWillMount() {
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -85,7 +85,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.params.id)
+      .get('localhost:1880/api/tarefa/' + this.props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))      
         this.setState(
@@ -101,7 +101,7 @@ export default class Cobranca extends Component {
 
     // carrega documento
     /*axios
-      .get('http://financeiro:1880/api/financeiro/cobranca')
+      .get('localhost:1880/api/financeiro/cobranca')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2));
         this.setState({documento: response.data, carteira: null});
@@ -114,7 +114,7 @@ export default class Cobranca extends Component {
 
   componentWillReceiveProps(props) {
     axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
+      .get('localhost:1880/api/financeiro/carteira/')
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -129,7 +129,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .get('http://financeiro:1880/api/tarefa/' + props.params.id)
+      .get('localhost:1880/api/tarefa/' + props.params.id)
       .then( (response) => {
         console.log(JSON.stringify(response.data, null, 2))
         this.setState(
@@ -148,7 +148,7 @@ export default class Cobranca extends Component {
     let { carteira, cobranca, bordero } = this.state;
 
     axios
-      .post('http://financeiro:1880/api/tarefa/' + this.props.params.id, {
+      .post('localhost:1880/api/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 
@@ -179,7 +179,7 @@ export default class Cobranca extends Component {
 
     // carrega os parametros da tarefa
     axios
-      .post('http://financeiro:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
+      .post('localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 

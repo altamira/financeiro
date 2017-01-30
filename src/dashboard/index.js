@@ -7,7 +7,8 @@ import {
   Table,
 } from 'react-bootstrap';
 
-import axios from 'axios';
+import api from './../api';
+import format from 'number-format.js';
 
 export default class Dashboard extends Component {
   constructor(props) {
@@ -17,45 +18,32 @@ export default class Dashboard extends Component {
 
       carteiras: [],
 
-      remessa: [],
+      remessas: [],
 
-      retorno: []
+      retornos: []
     }
 
+    this.setCarteiras = this.setCarteiras.bind(this);
+    this.setRemessas = this.setRemessas.bind(this);
+    this.setRetornos = this.setRetornos.bind(this);
   }
 
   componentWillMount() {
-    axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            carteiras: response.data.map( c => 
-            {
-              c.remessa_total = c.remessa;
-              return c;
-            })
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })
+    api.carteira.list(this.setCarteiras);
+    api.remessa.list(this.setRemessas);
+    api.retorno.list(this.setRetornos);     
+  }
 
-    axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            remessa: response.data
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })       
+  setCarteiras(carteiras) {
+    this.setState({carteiras: carteiras});
+  }
+
+  setRemessas(remessas) {
+    this.setState({remessas: remessas});
+  }
+
+  setRetornos(retornos) {
+    this.setState({retornos: retornos});
   }
 
   render() {
@@ -84,13 +72,13 @@ export default class Dashboard extends Component {
                   return (
                     <tr key={'tr-carteiras-' + index} >
                       <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.limite.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.utilizado.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.saldo.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.defasagem.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.descoberto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.remessa_total || 0).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(carteira.retorno).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.limite)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.utilizado)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.saldo)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.defasagem)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.descoberto)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.remessa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.retorno)}</b></td>
                     </tr>                              
                   )
                 }
@@ -103,38 +91,35 @@ export default class Dashboard extends Component {
 
         <Row>
           <Col xs={12} md={12}>
-            <h2>Remessas de Cobrança em Aberto (Borderô)</h2>
+            <h2 style={{color: 'gray'}} >Remessas de Cobrança em Aberto (Borderô)</h2>
             <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
               <thead>
                 <tr>
-                  <th>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Data da Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Data da Crédito</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor IOF (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Taxa de Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
                 </tr>
               </thead>
               <tbody>
 
-                {this.state.remessa.map( (remessa, index) => {
+                {this.state.remessas.map( (remessa, index) => {
                   return (
                     <tr key={'tr-remessa-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{remessa.data}</b></td>
-                      <td style={{textAlign: 'left'}}><b>{remessa.carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{remessa.data_credito}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(remessa.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{new Date(remessa.data).toLocaleDateString()}</b></td>
+                      <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_titulos)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_operacao)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_tarifa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_juros)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_iof)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('##0,00', remessa.taxa_juros)}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_liquido)}</b></td>
                     </tr>                              
                   )
                 }
@@ -147,38 +132,35 @@ export default class Dashboard extends Component {
         
         <Row>
           <Col xs={12} md={12}>
-            <h2>Últimos Retornos de Cobrança (Borderô)</h2>
+            <h2 style={{color: 'gray'}} >Últimos Retornos de Cobrança (Borderô)</h2>
             <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
               <thead>
                 <tr>
-                  <th>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Data da Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Data da Crédito</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor IOF (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Taxa de Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
+                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
                 </tr>
               </thead>
               <tbody>
 
-                {this.state.retorno.map( (retorno, index) => {
+                {this.state.retornos.map( (retorno, index) => {
                   return (
                     <tr key={'tr-retorno-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{retorno.data}</b></td>
-                      <td style={{textAlign: 'left'}}><b>{retorno.carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{retorno.data_credito}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_bruto.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_operacao.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_tarifa.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_juros.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_iof.toFixed(2)).toLocaleString()}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.taxa_juros.toFixed(2)).toLocaleString()}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{Number(retorno.valor_liquido.toFixed(2)).toLocaleString()}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{new Date(retorno.data).toLocaleDateString()}</b></td>
+                      <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_titulos)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_operacao)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_tarifa)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_juros)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_iof)}</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('##0,00', retorno.taxa_juros)}%</b></td>
+                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_liquido)}</b></td>
                     </tr>                              
                   )
                 }
@@ -189,7 +171,6 @@ export default class Dashboard extends Component {
           </Col>
 
         </Row>
-
       </div>
 
     );

@@ -4,17 +4,17 @@ import { Link } from 'react-router';
 //import logo from './logo.svg';
 import './App.css';
 
-import { Nav, Navbar, NavItem, NavDropdown, MenuItem, Row, Col, Table } from 'react-bootstrap';
+import { Nav, Navbar, NavItem, NavDropdown, MenuItem, Col } from 'react-bootstrap';
 import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
 import { assign } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
-import axios from 'axios';
 
-import format from 'number-format.js';
+import api from './api';
 
 import Login from './login';
 import Error from './Error';
+import Dashboard from './dashboard'
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
@@ -30,12 +30,6 @@ class App extends Component {
 
     this.state = {
 
-      carteiras: [],
-
-      remessa: [],
-
-      retorno: [],
-
       tarefas: [],
 
       topicos: {},
@@ -46,94 +40,49 @@ class App extends Component {
 
     this.goHome = this.goHome.bind(this);
 
+    this.subscribe = this.subscribe.bind(this);
+    this.unsubscribe = this.unsubscribe.bind(this);
+
     this.handleErro = this.handleErro.bind(this);
     this.handleDebug = this.handleDebug.bind(this);
+
+    this.setTarefas = this.setTarefas.bind(this);
     this.handleTarefaConcluida = this.handleTarefaConcluida.bind(this);
     this.handleTarefaNova = this.handleTarefaNova.bind(this);
     this.handleTarefaAtualizada = this.handleTarefaAtualizada.bind(this);
 
   }
 
-  componentWillReceiveProps(props) {
-    /*axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            carteiras: response.data.map( c => 
-            {
-              c.remessa_total = c.remessa;
-              return c;
-            })
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })
-
-    axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            remessa: response.data
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as remessas.\nErro: ' + error.message);
-      })
-
-    axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            retorno: response.data
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as retornos.\nErro: ' + error.message);
-      })*/
+  componentWillMount() {
+    api.config.setErrorHandler(this.handleErro);
   }
 
-  handleLogin(usuario) {
-    this.setState({usuario: usuario}, this.componentWillMount);
+  componentWillUnmount() {
+    this.unsubscribe()
   }
 
-  handleLogout() {
-    this.setState({usuario: undefined}, this.unsubscribe.bind(this));
+  handleDebug(msg) {
+    this.setState({dialog: <Error {...{erro: 'debug', mensagem: msg}} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  unsubscribe() {
-    this.state.topicos && Object.keys(this.state.topicos).forEach( (topic) => 
-      {
-        console.log('Excluido do topico: ' + topic)
-        this.client.unsubscribe(
-          topic, 
-          function(err) { 
-            err && console.log('Erro ao retirar a inscrição ao topico: ' + topic)
-          }
-        )
-      }
-    )
-    this.client.end();
-    this.props.router.push('/')
+  handleErro(err) {
+    let props = {...err, message: err.message, stack: err.stack}
+    this.setState({dialog: <Error {...props} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   goHome() {
     this.props.router.push('/')
   }  
 
-  componentWillMount() {
+  handleLogin(usuario) {
+    this.setState({usuario: usuario}, this.subscribe);
+  }
 
-    if (!this.state.usuario) return;
-    
+  handleLogout() {
+    this.setState({usuario: undefined}, this.unsubscribe);
+  }
+
+  subscribe() {
     var opts = {
       host: '192.168.0.1', //'test.mosquitto.org'
       port: 61614,
@@ -194,61 +143,11 @@ class App extends Component {
       alert('Erro na conexao com o servidor de mensagens: ' + err);
     })
 
-    axios
-      .get('http://financeiro:1880/api/tarefas?perfil=' + (this.state.usuario && this.state.usuario.perfil) || '')
-      .then( (response) => {
-        if (response.data instanceof Array) {
-          this.setState({tarefas: response.data});
-        }
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    api.tarefa.list((this.state.usuario && this.state.usuario.perfil) || '', this.setTarefas);
 
-    axios
-      .get('http://financeiro:1880/api/financeiro/carteira/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            carteiras: response.data
-          }
-        );
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+  }  
 
-    axios
-      .get('http://financeiro:1880/api/financeiro/remessa/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            remessa: response.data
-          }
-        );
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
-
-    axios
-      .get('http://financeiro:1880/api/financeiro/retorno/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            retorno: response.data
-          }
-        );
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
-  }
-
-  componentWillUnmount() {
+  unsubscribe() {
     this.state.topicos && Object.keys(this.state.topicos).forEach( (topic) =>
       {
         console.log('Excluido do topico: ' + topic)
@@ -260,19 +159,15 @@ class App extends Component {
         )
       }
     )
-    this.client.end();
+    this.client.end();  
+
+    this.goHome();  
   }
 
-  handleCloseDialog() {
-    this.setState({dialog: null})
-  }
-
-  handleErro(msg) {
-    alert('Erro: ' + msg);
-  }
-
-  handleDebug(msg) {
-    this.setState({dialog: <Error {...{erro: 'debug', mensagem: msg}} onClose={this.handleCloseDialog.bind(this)} />})
+  setTarefas(tarefas) {
+    if (tarefas instanceof Array) {
+      this.setState({tarefas: tarefas});
+    }
   }
 
   handleTarefaConcluida(tarefa) {
@@ -310,7 +205,11 @@ class App extends Component {
     }
     this.setState({tarefas: tarefas});
   }
-  
+
+  handleCloseDialog() {
+    this.setState({dialog: null})
+  }
+
   render() {
 
     const tarefas = {};
@@ -319,190 +218,70 @@ class App extends Component {
       tarefas[tarefa.nome].push(tarefa)
     })
 
-    const dashboard = (
-      <div>
-        <Row>
-          <Col xs={12} md={12}>
-            <h2 style={{color: 'gray'}} >Resumo Cobrança</h2>
-            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
-              <thead>
-                <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Limite</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Utilizado</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Defasagem</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Enviar</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Remessa</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Retorno</th>
-                </tr>
-              </thead>
-              <tbody>
-                {this.state.carteiras.map( (carteira, index) => {
-                  return (
-                    <tr key={'tr-carteiras-' + index} >
-                      <td style={{textAlign: 'left'}}><b>{carteira.nome}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.limite)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.utilizado)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.saldo)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.defasagem)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.descoberto)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.remessa)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', carteira.retorno)}</b></td>
-                    </tr>                              
-                  )
-                }
-                  
+    const main = (
+     
+      <div className="App">
+        <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
+          <Navbar.Header>
+            <Navbar.Brand>
+              <Link to='/'>Resumo Financeiro</Link>
+            </Navbar.Brand>
+            <Navbar.Toggle />
+          </Navbar.Header>
+          <Navbar.Collapse>
+            <Nav>
+              <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
+                <MenuItem eventKey={3.1} >Banco</MenuItem>
+                <MenuItem eventKey={3.2} >Conta Corrente</MenuItem>
+                <MenuItem eventKey={3.3} >Clientes</MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey={3.3} >Usuarios</MenuItem>
+              </NavDropdown>
+              <NavItem eventKey={2} >Configurações</NavItem>
+            </Nav>
+            <Nav pullRight>
+              <NavItem eventKey={4} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario && this.state.usuario.nome} (Sair)</span></NavItem>
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
+
+        <Col md={3} >
+          <Accordion>
+            <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tarefas.length}</Badge></span>} eventKey="1">
+              <ListGroup>
+                {this.state.tarefas && this.state.tarefas.map( (tarefa, i) =>
+                  <ListGroupItem key={'tarefa-'+ i} header={tarefa.nome}>
+                    <TaskItem {...tarefa} />
+                  </ListGroupItem>
                 )}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
+              </ListGroup>                
+            </Panel>
+            <Panel style={{cursor: 'pointer'}} header="Iniciar Procedimento" eventKey="2">
+              <ListGroup>
+                <ListGroupItem header="Emissão de Duplicatas"><Link to='/duplicata/emissao'>Emitir Duplicata (Avulsa)</Link></ListGroupItem>
+                {/*<ListGroupItem header="Heading 3" bsStyle="danger">Danger styling</ListGroupItem>*/}
+              </ListGroup>
+            </Panel>
+          </Accordion> 
+        </Col>
 
-        <Row>
-          <Col xs={12} md={12}>
-            <h2 style={{color: 'gray'}} >Remessas de Cobrança em Aberto (Borderô)</h2>
-            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
-              <thead>
-                <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
-                </tr>
-              </thead>
-              <tbody>
+        <Col md={9} >
+          {!this.props.children && this.state.usuario && (this.state.usuario.perfil === 'financeiro' || this.state.usuario.perfil === 'cobranca') ? <Dashboard /> : this.props.children}
+        </Col>
 
-                {this.state.remessa.map( (remessa, index) => {
-                  return (
-                    <tr key={'tr-remessa-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{new Date(remessa.data).toLocaleDateString()}</b></td>
-                      <td style={{textAlign: 'left'}}><b>{(remessa.carteira && remessa.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_titulos)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_operacao)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_tarifa)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_juros)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_iof)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('##0,00', remessa.taxa_juros)}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', remessa.valor_liquido)}</b></td>
-                    </tr>                              
-                  )
-                }
-                  
-                )}
-              </tbody>
-            </Table>
-          </Col>
-        </Row>
-        
-        <Row>
-          <Col xs={12} md={12}>
-            <h2 style={{color: 'gray'}} >Últimos Retornos de Cobrança (Borderô)</h2>
-            <Table striped bordered condensed hover style={{borderCollapse: 'collapse'}}>
-              <thead>
-                <tr>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Data</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Carteira</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor dos Títulos (Bruto)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa Operação (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Tarifa dos Títulos (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor IOF (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Taxa de Juros (-)</th>
-                  <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor do Crédito (Liquido)</th>
-                </tr>
-              </thead>
-              <tbody>
-
-                {this.state.retorno.map( (retorno, index) => {
-                  return (
-                    <tr key={'tr-retorno-' + index} >
-                      <td style={{textAlign: 'right'}}><b>{new Date(retorno.data).toLocaleDateString()}</b></td>
-                      <td style={{textAlign: 'left'}}><b>{(retorno.carteira && retorno.carteira.nome) || ''}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_titulos)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_operacao)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_tarifa)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_juros)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_iof)}</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('##0,00', retorno.taxa_juros)}%</b></td>
-                      <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', retorno.valor_liquido)}</b></td>
-                    </tr>                              
-                  )
-                }
-                  
-                )}
-              </tbody>
-            </Table>
-          </Col>
-
-        </Row>
-      </div>
+      </div> 
     );
+    
+    const login = (<Login onLogin={this.handleLogin} />);
+    
+    return(
+      <div>
+        {this.state.usuario ? main : login}
 
-    if (this.state.usuario) {
-      return (
-       
-        <div className="App">
-          <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
-            <Navbar.Header>
-              <Navbar.Brand>
-                <Link to='/'>Resumo Financeiro</Link>
-              </Navbar.Brand>
-              <Navbar.Toggle />
-            </Navbar.Header>
-            <Navbar.Collapse>
-              <Nav>
-                <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
-                  <MenuItem eventKey={3.1} >Banco</MenuItem>
-                  <MenuItem eventKey={3.2} >Conta Corrente</MenuItem>
-                  <MenuItem eventKey={3.3} >Clientes</MenuItem>
-                  <MenuItem divider />
-                  <MenuItem eventKey={3.3} >Usuarios</MenuItem>
-                </NavDropdown>
-                <NavItem eventKey={2} >Configurações</NavItem>
-              </Nav>
-              <Nav pullRight>
-                <NavItem eventKey={4} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario.nome} (Sair)</span></NavItem>
-              </Nav>
-            </Navbar.Collapse>
-          </Navbar>
+        {this.state.dialog}
+      </div>
 
-          <Col md={3} >
-            <Accordion>
-              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tarefas.length}</Badge></span>} eventKey="1">
-                <ListGroup>
-                  {this.state.tarefas.map( (tarefa, i) =>
-                    <ListGroupItem key={'tarefa-'+ i} header={tarefa.nome}>
-                      <TaskItem {...tarefa} />
-                    </ListGroupItem>
-                  )}
-                </ListGroup>                
-              </Panel>
-              <Panel style={{cursor: 'pointer'}} header="Iniciar Procedimento" eventKey="2">
-                <ListGroup>
-                  <ListGroupItem header="Emissão de Duplicatas"><Link to='/duplicata/emissao'>Emitir Duplicata (Avulsa)</Link></ListGroupItem>
-                  {/*<ListGroupItem header="Heading 3" bsStyle="danger">Danger styling</ListGroupItem>*/}
-                </ListGroup>
-              </Panel>
-            </Accordion> 
-          </Col>
-
-          <Col md={9} >
-            {!this.props.children && (this.state.usuario.perfil === 'financeiro' || this.state.usuario.perfil === 'cobranca') ? dashboard: this.props.children}
-          </Col>
-
-          {this.state.dialog}
-
-        </div> 
-      );
-    } else {
-      return (<Login onLogin={this.handleLogin} />)
-    }
+    )
 
   }
 }

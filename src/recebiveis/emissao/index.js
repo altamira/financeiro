@@ -47,7 +47,7 @@ export default class Emissao extends Component {
 
   componentWillMount() {
     axios
-      .get('http://financeiro:1880/api/tarefa/' + this.props.id)
+      .get('localhost:1880/api/tarefa/' + this.props.id)
       .then( (response) => {
         if (response.data instanceof Array) {
           this.setState(JSON.parse(response.data.params));

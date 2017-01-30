@@ -9,9 +9,9 @@ import {
   Button
 } from 'react-bootstrap';
 
-import { omit } from 'lodash';
 import md5 from 'md5';
-import axios from 'axios';
+
+import api from './../api';
 
 import Error from './../Error';
 
@@ -20,7 +20,7 @@ export default class Login extends Component {
     super(props);
 
     this.state = { 
-      login: '',
+      usuario: '',
       senha: ''
     }
 
@@ -31,7 +31,7 @@ export default class Login extends Component {
   }
 
   handleChange(element) {
-    this.setState({[element.target.id]: element.target.value})
+    this.setState({[element.target.name]: element.target.value})
   }
 
   handleCloseDialog() {
@@ -39,18 +39,16 @@ export default class Login extends Component {
   }
 
   handleLogin() {
-    axios
-      .post('http://financeiro:1880/api/usuario/login', {...omit(this.state, 'dialog'), senha: md5(this.state.senha)})
-      .then( (response) => {
-        if (response.data.nome) {
-          this.props.onLogin && this.props.onLogin(response.data);
-        } else {
-          alert('Usuário e senha não encontrado, verifique a senha e tente novamente.')
-        }
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    api.usuario.login(this.state.usuario, md5(this.state.senha), this.handleAuthenticate.bind(this))
+  }
+
+  handleAuthenticate(user) {
+    if (user.nome) {
+      this.props.onLogin && this.props.onLogin(user);
+    } else {
+      let err = {mensagem: 'Usuário e senha não encontrado. Verifique se digitou a senha corretamente.'}
+      this.setState({dialog: <Error {...err} onClose={this.handleCloseDialog.bind(this)} />})
+    }
   }
 
   render() {
@@ -68,7 +66,7 @@ export default class Login extends Component {
               <Col md={8}>
                 <FormGroup validationState="success">
                   {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  <FormControl type="text" id="login" value={this.state.login} onChange={this.handleChange} />
+                  <FormControl type="text" name="usuario" value={this.state.usuario} onChange={this.handleChange} />
                   <FormControl.Feedback />
                 </FormGroup>
               </Col>
@@ -78,7 +76,7 @@ export default class Login extends Component {
               <Col md={8}>
                 <FormGroup validationState="success">
                   {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  <FormControl type="password" id="senha" value={this.state.senha} onChange={this.handleChange} />
+                  <FormControl type="password" name="senha" value={this.state.senha} onChange={this.handleChange} />
                   <FormControl.Feedback />
                 </FormGroup>
               </Col>
