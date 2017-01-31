@@ -1,3 +1,9 @@
+import { omit, cloneDeep } from 'lodash';
+
+import jsPDF from 'jspdf';
+import format from 'number-format.js';
+
+import api from './../../api/'
 
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
@@ -13,47 +19,19 @@ import {
   FormControl,
   Table,
   Tooltip,
-  InputGroup
+  InputGroup,
+  Tabs, 
+  Tab,
+  Image
 } from 'react-bootstrap';
-import { Tabs, Tab } from 'react-bootstrap';
-import { Image } from 'react-bootstrap';
 
 import DatePicker from 'react-bootstrap-date-picker';
 
-//import Add from './Add';
 import Edit from './Edit';
 import Delete from './Delete';
-//import Calc from './Calc';
-
-import { omit, cloneDeep } from 'lodash';
+import PrintPreview from './PrintPreview';
 
 import process from './process.svg';
-
-import format from 'number-format.js';
-
-import jsPDF from 'jspdf';
-
-import PrintPreview from './print';
-
-import api from './../../api/'
-
-Date.prototype.fromUTC = function() {
-  let date = this.toISOString();
-  if (!this.getUTCHours() && !this.getUTCMinutes() && !this.getUTCSeconds() && !this.getUTCMilliseconds()) {
-    this.setTime(this.getTime() + (this.getTimezoneOffset() * 60 * 1000))
-  } 
-  console.log(`fromUTC: before: ${date}, after: ${this.toISOString()}`)
-  return this;
-}
-
-Date.prototype.toUTC = function() {
-  let date = this.toISOString();
-  if (this.getUTCHours() || this.getUTCMinutes() || this.getUTCSeconds() || this.getUTCMilliseconds()) {
-    this.setTime(this.getTime() - ((this.getHours() * 60 * 60 * 1000) + (this.getMinutes() * 60 * 1000) + (this.getSeconds() * 1000) + this.getMilliseconds() + (this.getTimezoneOffset() * 60 * 1000)) )
-  }
-  console.log(`toUTC: before: ${date}, after: ${this.toISOString()}`)
-  return this;
-}
 
 export default class Lancamento extends Component {
   constructor(props) {
@@ -147,30 +125,15 @@ export default class Lancamento extends Component {
   setTarefa(tarefa) {
     console.log(JSON.stringify(tarefa, null, 2))
 
-    let emissao = new Date(tarefa.documento.emissao).fromUTC();
-    let entrega = new Date(tarefa.documento.entrega).fromUTC();
-
-    /*if (!emissao.getUTCHours() && !emissao.getUTCMinutes() && !emissao.getUTCSeconds() && !emissao.getUTCMilliseconds()) {
-      emissao.setTime(emissao.getTime() + (emissao.getTimezoneOffset() * 60 * 1000))
-    }
-
-    if (!entrega.getUTCHours() && !entrega.getUTCMinutes() && !entrega.getUTCSeconds() && !entrega.getUTCMilliseconds()) {
-      entrega.setTime(entrega.getTime() + (entrega.getTimezoneOffset() * 60 * 1000))
-    }*/
-
     this.setState({
       ...tarefa,
       documento: {
         ...tarefa.documento,
-        emissao: emissao.toISOString(),
-        entrega: entrega.toISOString(),
+        nosso_numero: "",
+        emissao: new Date(tarefa.documento.emissao).fromUTC().toISOString(),
+        entrega: new Date(tarefa.documento.entrega).fromUTC().toISOString(),
         parcelas: tarefa.documento.parcelas.map( (parcela) => {
           let vencto = new Date(parcela.vencto).fromUTC();
-
-          /*if (!vencto.getUTCHours() && !vencto.getUTCMinutes() && !vencto.getUTCSeconds() && !vencto.getUTCMilliseconds()) {
-            vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000))
-          }*/
-
           let weekend = [1,0,0,0,0,0,1];
 
           if (weekend[vencto.getUTCDay()]) {
@@ -196,35 +159,14 @@ export default class Lancamento extends Component {
   handleComplete() {
     let state = omit(this.state, ['dialog']);
 
-    let emissao = new Date(state.documento.emissao).toUTC();
-    let entrega = new Date(state.documento.entrega).toUTC();
-
-    /*if (emissao.getUTCHours() || emissao.getUTCMinutes() || emissao.getUTCSeconds() || emissao.getUTCMilliseconds()) {
-      emissao.setTime(emissao.getTime() - ((emissao.getHours() * 60 * 60 * 1000) + (emissao.getMinutes() * 60 * 1000) + (emissao.getSeconds() * 1000) + emissao.getMilliseconds() + (emissao.getTimezoneOffset() * 60 * 1000)) )
-    }
-
-    if (entrega.getUTCHours() || entrega.getUTCMinutes() || entrega.getUTCSeconds() || entrega.getUTCMilliseconds()) {
-      entrega.setTime(entrega.getTime() - ((entrega.getHours() * 60 * 60 * 1000) + (entrega.getMinutes() * 60 * 1000) + (entrega.getSeconds() * 1000) + entrega.getMilliseconds() + (entrega.getTimezoneOffset() * 60 * 1000)) )
-    }*/
-
     state.documento = {
       ...state.documento,
-      emissao: emissao.toISOString(),
-      entrega: entrega.toISOString(),
-      parcelas: state.documento.parcelas.map( (parcela) => {
-        let vencto = new Date(parcela.vencto).toUTC();
-
-        /*if (vencto.getUTCHours() || vencto.getUTCMinutes() || vencto.getUTCSeconds() || vencto.getUTCMilliseconds()) {
-          vencto.setTime(vencto.getTime() - ((vencto.getHours() * 60 * 60 * 1000) + (vencto.getMinutes() * 60 * 1000) + (vencto.getSeconds() * 1000) + vencto.getMilliseconds() + (vencto.getTimezoneOffset() * 60 * 1000)) )
-
-          console.log(vencto.toISOString());
-
-          parcela.vencto = vencto;
-        }*/
-
+      nosso_numero: parseInt(this.state.documento.nosso_numero, 10),
+      emissao: new Date(state.documento.emissao).toUTC().toISOString(),
+      entrega: new Date(state.documento.entrega).toUTC().toISOString(),
+      parcelas: state.documento.parcelas.map( parcela => { 
         return {
-          "pedido": parcela.pedido,
-          "vencto": vencto,
+          "vencto": new Date(parcela.vencto).toUTC(),
           "origem": parcela.origem,
           "forma_pagto": parcela.forma_pagto,
           "tipo_vencto": parcela.tipo_vencto,
@@ -232,25 +174,25 @@ export default class Lancamento extends Component {
           "prazo": parcela.prazo,
           "porcentagem": parcela.porcentagem,
           "valor": parcela.valor
-        };
-
+        }
       })
     }
 
     console.log(JSON.stringify(state, null, 2));
 
-    api.lancamento.concluir(this.props.params.id, state, this.handleDone.bind(this))
+    api.lancamento.concluir(state, this.handleClose.bind(this))
 
   }
 
-  handleDone() {
+  handleClose() {
     browserHistory.push('/');
   }
 
   // manipuladores da lista de parcelas
   handleNew() {
     this.setState({dialog: <Edit 
-      parcela={{
+      parcela={
+        {
           origem: 'VENDA',
           forma_pagto: 'COBRANCA',
           tipo_vencto: 'DDL',
@@ -261,7 +203,8 @@ export default class Lancamento extends Component {
           parcela: this.state.documento.parcelas.length + 1,
           prazo: "0",
           valor: "0,00"
-        }}      
+        }
+      }      
       onSave={this.handleAdd.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
@@ -271,7 +214,8 @@ export default class Lancamento extends Component {
       documento: {
         ...this.state.documento, 
         parcelas: this.state.documento.parcelas.concat([{
-          ...parcela, valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
+          ...parcela, 
+          valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
           prazo: parseInt(parcela.prazo, 10)
         }])
       }, dialog: null});
@@ -398,14 +342,14 @@ export default class Lancamento extends Component {
 
       doc.text(8, margin_top + 35, this.nosso_numero.toString());
       doc.text(40, margin_top + 35, this.nosso_numero.toString() + '-' + parcela.parcela.toString());
-      doc.text(90, margin_top + 35, this.numero.toString());
+      doc.text(90, margin_top + 35, this.pedido.toString());
       doc.text(120, margin_top + 35, format('R$ ###.###.##0,00', parcela.valor));
 
       doc.setFontSize(16);
       doc.text(160, margin_top + 26, 'Vencimento');
 
       let vencto = new Date(parcela.vencto);
-      vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000));
+      //vencto.setTime(vencto.getTime() + (vencto.getTimezoneOffset() * 60 * 1000));
       doc.text(160, margin_top + 35, vencto.toLocaleDateString());
 
       doc.setFontSize(14);
@@ -464,8 +408,6 @@ export default class Lancamento extends Component {
       DDL: 'Dia(s) da Entrega',
       DDM: 'Dia(s) da Montagem'
     }
-
-    if (!this.state) return null;
 
     return (
 
@@ -563,7 +505,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
-                        <FormControl type="text" name="numero" value={this.state.documento.numero} onChange={this.handleChange} readOnly />
+                        <FormControl type="text" name="numero" value={this.state.documento.pedido} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>
@@ -649,7 +591,7 @@ export default class Lancamento extends Component {
                       <Table striped bordered condensed hover>
                         <thead>
                           <tr>
-                            <th colSpan={7} style={{width: 100, textAlign: 'right'}} ><Button style={{width: 110}} bsStyle="success" bsSize="small" onClick={this.handleAdd}><Glyphicon glyph="plus" /> Incluir</Button></th>
+                            <th colSpan={7} style={{width: 100, textAlign: 'right'}} ><Button style={{width: 110}} bsStyle="success" bsSize="small" onClick={this.handleNew}><Glyphicon glyph="plus" /> Incluir</Button></th>
                           </tr>
                           <tr>
                             <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Origem</th>

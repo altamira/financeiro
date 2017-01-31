@@ -8,7 +8,12 @@ function getRetornos(callback) {
 	http.fetch('financeiro/retorno/', callback);
 }
 
+function gravarTarefa(tarefa, callback) {
+	http.post('financeiro/recebiveis/retorno', tarefa, callback);
+}
+
 export default {
 	get: getRetorno,
-	list: getRetornos
+	list: getRetornos,
+	concluir: gravarTarefa
 }

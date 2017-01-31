@@ -1,9 +1,11 @@
 import usuario from './usuario'
 import tarefa from './tarefa'
 import carteira from './carteira'
+import lancamento from './lancamento'
+import cobranca from './cobranca'
 import remessa from './remessa'
 import retorno from './retorno'
-import lancamento from './lancamento'
+
 import config from './config'
 
 export default {
@@ -11,7 +13,8 @@ export default {
 	usuario: usuario,
 	tarefa: tarefa,
 	carteira: carteira,
+	lancamento: lancamento,
+	cobranca: cobranca,
 	remessa: remessa,
 	retorno: retorno,
-	lancamento: lancamento
 }

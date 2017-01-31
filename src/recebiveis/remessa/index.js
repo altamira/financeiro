@@ -1,3 +1,7 @@
+import { omit } from 'lodash';
+import format from 'number-format.js';
+
+import api from './../../api/'
 
 import React, { Component } from 'react';
 
@@ -10,21 +14,15 @@ import {
   Row, 
   Table,
   Tooltip,
+  Tabs, 
+  Tab,
+  Image
 } from 'react-bootstrap';
-
-import { Tabs, Tab } from 'react-bootstrap';
-import { Image } from 'react-bootstrap';
-
-import { omit } from 'lodash';
-import axios from 'axios';
-import format from 'number-format.js';
-
-import Error from './../../Error';
-
-import process from './process.svg';
 
 import Form from './Titulo';
 import Bordero from '../cobranca/Bordero.jsx';
+
+import process from './process.svg';
 
 export default class Remessa extends Component {
   constructor(props) {
@@ -44,77 +42,54 @@ export default class Remessa extends Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
 
+    this.setTarefa = this.setTarefa.bind(this);
+    this.setCarteiras = this.setCarteiras.bind(this);
+
   }
 
   componentWillMount() {
-    // carrega os parametros da tarefa
-    axios
-      .get('localhost:1880/api/tarefa/' + this.props.params.id)
-      .then( (response) => {
-        console.log('componentWillMount:\n' + JSON.stringify(response.data, null, 2))
-        this.setState({
-          tarefa: omit(response.data, 'documento'), 
-          data: response.data.documento.data,
-          carteira: response.data.documento.carteira,
-          remessa: response.data.documento.remessa,
-          bordero: response.data.documento.bordero
-        });
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    api.tarefa.get(this.props.params.id, this.setTarefa); 
+    //api.carteira.list(this.setCarteiras);        
   }
 
   componentWillReceiveProps(props) {
-    // carrega os parametros da tarefa
-    axios
-      .get('localhost:1880/api/tarefa/' + props.params.id)
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState({
-          tarefa: omit(response.data, 'documento'), 
-          data: response.data.documento.data,
-          carteira: response.data.documento.carteira,
-          remessa: response.data.documento.remessa,
-          bordero: response.data.documento.bordero
-        });
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })    
+    api.tarefa.get(props.params.id, this.setTarefa);
   }
 
-  handleClose() {
-    this.props.router.push('/');
+  setTarefa(tarefa) {
+    console.log(JSON.stringify(tarefa, null, 2))
+
+    this.setState({
+      tarefa: omit(tarefa, 'documento'), 
+      data: tarefa.documento.data,
+      carteira: tarefa.documento.carteira,
+      remessa: tarefa.documento.remessa,
+      bordero: tarefa.documento.bordero
+    })
+
   }
 
-  handleComplete(data) {
-    console.log(JSON.stringify({
+  setCarteiras(carteiras) {
+    this.setState({carteiras: carteiras});
+  }
+
+  handleComplete() {
+    let state = {
       ...this.state.tarefa, 
       documento: { 
         carteira: this.state.carteira, 
         remessa: this.state.remessa,
         bordero: this.state.bordero,
       }
-    }, null, 2));
+    }
 
-    // carrega os parametros da tarefa
-    axios
-      .post('localhost:1880/api/financeiro/recebiveis/remessa/tarefa/' + this.props.params.id, {
-        ...this.state.tarefa, 
-        documento: { 
-          carteira: this.state.carteira, 
-          remessa: this.state.remessa,
-          bordero: this.state.bordero,
-        }
-      })
-      .then( (response) => {
-        console.log(response.data);
-        this.props.router.push('/');
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    console.log(JSON.stringify(state, null, 2));
+
+    api.remessa.concluir(state, this.handleClose.bind(this))
+  }
+
+  handleClose() {
+    this.props.router.push('/');
   }
 
   handleSelect(remessa) {

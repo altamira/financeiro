@@ -8,7 +8,12 @@ function getRemessas(callback) {
 	http.fetch('financeiro/remessa/', callback);
 }
 
+function gravarTarefa(tarefa, callback) {
+	http.post('financeiro/recebiveis/remessa', tarefa, callback);
+}
+
 export default {
 	get: getRemessa,
-	list: getRemessas
+	list: getRemessas,
+	concluir: gravarTarefa
 }

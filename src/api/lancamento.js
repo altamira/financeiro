@@ -8,8 +8,8 @@ function handleNossoNumero(callback, result) {
 	callback(result.nosso_numero);
 }
 
-function gravarTarefa(id, tarefa, callback) {
-	http.post('financeiro/recebiveis/lancamento/tarefa/' + id, tarefa, callback);
+function gravarTarefa(tarefa, callback) {
+	http.post('financeiro/recebiveis/lancamento', tarefa, callback);
 }
 
 export default {

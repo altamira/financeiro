@@ -1,22 +1,50 @@
-import React, { Component } from 'react';
-import { Link } from 'react-router';
-
-//import logo from './logo.svg';
 import './App.css';
-
-import { Nav, Navbar, NavItem, NavDropdown, MenuItem, Col } from 'react-bootstrap';
-import { Accordion, Panel, ListGroup, ListGroupItem, Badge } from 'react-bootstrap';
 
 import { assign } from 'lodash';
 import mqtt from 'mqtt/lib/connect';
 
 import api from './api';
 
+import React, { Component } from 'react';
+import { Link } from 'react-router';
+
+import { 
+  Nav, 
+  Navbar, 
+  NavItem, 
+  NavDropdown, 
+  MenuItem, 
+  Col, 
+  Accordion, 
+  Panel, 
+  ListGroup, 
+  ListGroupItem, 
+  Badge 
+} from 'react-bootstrap';
+
 import Login from './login';
-import Error from './Error';
 import Dashboard from './dashboard'
+import Error from './Error';
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
+
+Date.prototype.fromUTC = function() {
+  let date = this.toISOString();
+  if (!this.getUTCHours() && !this.getUTCMinutes() && !this.getUTCSeconds() && !this.getUTCMilliseconds()) {
+    this.setTime(this.getTime() + (this.getTimezoneOffset() * 60 * 1000))
+  } 
+  console.log(`from UTC: ${date}, to locale: ${this.toISOString()}`)
+  return this;
+}
+
+Date.prototype.toUTC = function() {
+  let date = this.toISOString();
+  if (this.getUTCHours() || this.getUTCMinutes() || this.getUTCSeconds() || this.getUTCMilliseconds()) {
+    this.setTime(this.getTime() - ((this.getHours() * 60 * 60 * 1000) + (this.getMinutes() * 60 * 1000) + (this.getSeconds() * 1000) + this.getMilliseconds() + (this.getTimezoneOffset() * 60 * 1000)) )
+  }
+  console.log(`from locale: ${date}, to UTC: ${this.toISOString()}`)
+  return this;
+}
 
 const TaskItem = props =>
   <Link to={{ pathname: props.form + props.id, query: props.parametros }}>

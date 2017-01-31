@@ -1,3 +1,7 @@
+import moment from 'moment';
+import format from 'number-format.js';
+
+import api from './../../api/'
 
 import React, { Component } from 'react';
 
@@ -10,18 +14,13 @@ import {
   Row, 
   Table,
   Tooltip,
+  Tabs, 
+  Tab,
+  Image
 } from 'react-bootstrap';
-import { Tabs, Tab } from 'react-bootstrap';
-import { Image } from 'react-bootstrap';
-
-import Error from './../../Error';
 
 import Confirm from './Confirm';
 import Bordero from './Bordero.jsx';
-
-import axios from 'axios';
-import moment from 'moment';
-import format from 'number-format.js';
 
 import bordero from './bordero';
 
@@ -53,7 +52,8 @@ export default class Cobranca extends Component {
     }
 
     // comandos
-    this.handleSaveAndClose = this.handleSaveAndClose.bind(this);
+    this.handleSave = this.handleSave.bind(this);
+    this.handleClose = this.handleClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
 
     // edição do formulario
@@ -64,136 +64,71 @@ export default class Cobranca extends Component {
     this.handleSelect = this.handleSelect.bind(this);
     this.handleUnselect = this.handleUnselect.bind(this);
 
+    this.setTarefa = this.setTarefa.bind(this);
+
+    this.setCarteiras = this.setCarteiras.bind(this);
     this.handleSelectCarteira = this.handleSelectCarteira.bind(this);
 
   }
 
   componentWillMount() {
-    axios
-      .get('localhost:1880/api/financeiro/carteira/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            carteiras: response.data
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })         
-
-    // carrega os parametros da tarefa
-    axios
-      .get('localhost:1880/api/tarefa/' + this.props.params.id)
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))      
-        this.setState(
-          {
-            tarefa: response.data, 
-            cobranca: response.data.documento
-          }
-        );
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })  
-
-    // carrega documento
-    /*axios
-      .get('localhost:1880/api/financeiro/cobranca')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2));
-        this.setState({documento: response.data, carteira: null});
-      })
-      .catch( error => {
-        alert('Erro ao obter a documento.\nErro: ' + error.message);
-      })  */
-
+    api.tarefa.get(this.props.params.id, this.setTarefa); 
+    api.carteira.list(this.setCarteiras);        
   }
 
   componentWillReceiveProps(props) {
-    axios
-      .get('localhost:1880/api/financeiro/carteira/')
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            carteiras: response.data
-          }
-        );
-      })
-      .catch( error => {
-        alert('Erro ao obter as carteiras.\nErro: ' + error.message);
-      })         
-
-    // carrega os parametros da tarefa
-    axios
-      .get('localhost:1880/api/tarefa/' + props.params.id)
-      .then( (response) => {
-        console.log(JSON.stringify(response.data, null, 2))
-        this.setState(
-          {
-            tarefa: response.data, 
-            cobranca: response.data.documento
-          }
-        );
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })  
+    api.tarefa.get(props.params.id, this.setTarefa);
   }
   
-  handleSaveAndClose() {
+  setTarefa(tarefa) {
+    console.log(JSON.stringify(tarefa, null, 2))
+
+    this.setState({
+      tarefa: tarefa, 
+      cobranca: tarefa.documento
+    }) 
+
+  }
+
+  setCarteiras(carteiras) {
+    this.setState({carteiras: carteiras});
+  }
+
+  handleSave() {
     let { carteira, cobranca, bordero } = this.state;
 
-    axios
-      .post('localhost:1880/api/tarefa/' + this.props.params.id, {
+    api.tarefa.save(
+      {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 
           cobranca: cobranca,
           bordero: bordero.calculo(carteira, cobranca)
         }
-      })
-      .then( (response) => {
-        console.log(response.data);
-        this.props.router.push('/');
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+      }, 
+      this.handleClose.bind(this)
+    )
   }
 
-  handleComplete(data) {
+  handleComplete() {
     let { carteira, cobranca, bordero } = this.state;
 
-    console.log(JSON.stringify({
+    let state = {
       ...this.state.tarefa, 
       documento: { 
         carteira: carteira, 
         cobranca: cobranca,
         bordero: bordero.calculo(carteira, cobranca)
       }
-    }, null, 2));
+    }
+    console.log(JSON.stringify(state, null, 2));
 
-    // carrega os parametros da tarefa
-    axios
-      .post('localhost:1880/api/financeiro/recebiveis/cobranca/tarefa/' + this.props.params.id, {
-        ...this.state.tarefa, 
-        documento: { 
-          carteira: carteira, 
-          cobranca: cobranca,
-          bordero: bordero
-        }
-      })
-      .then( (response) => {
-        console.log(response.data);
-        this.props.router.push('/');
-      })
-      .catch( error => {
-        this.setState({dialog: <Error {...error} onClose={this.handleCloseDialog.bind(this)} />})
-      })
+    api.cobranca.concluir(state, this.handleClose.bind(this))
+
+  }
+
+  handleClose() {
+    this.props.router.push('/');
   }
 
   handleSelectCarteira(carteira, index) {
