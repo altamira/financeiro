@@ -1,12 +1,10 @@
 import { omit, cloneDeep } from 'lodash';
 
-import jsPDF from 'jspdf';
 import format from 'number-format.js';
 
 import api from './../../api/'
 
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 
 import {
   OverlayTrigger, 
@@ -148,7 +146,8 @@ export default class Lancamento extends Component {
           return parcela;
 
         })
-      }
+      },
+      canPrint: undefined
     }, api.lancamento.nosso_numero.bind(null, this.handleNossoNumero.bind(this)));
   }
 
@@ -185,7 +184,8 @@ export default class Lancamento extends Component {
   }
 
   handleClose() {
-    browserHistory.push('/');
+    this.setState({canPrint: true});
+    //browserHistory.push('/');
   }
 
   // manipuladores da lista de parcelas
@@ -199,7 +199,7 @@ export default class Lancamento extends Component {
           emissao: this.state.documento.emissao, 
           entrega: this.state.documento.entrega, 
           data_base: this.state.documento.entrega,
-          vencto: this.state.documento.entrega,
+          vencto: this.state.documento.vencto,
           parcela: this.state.documento.parcelas.length + 1,
           prazo: "0",
           valor: "0,00"
@@ -298,9 +298,8 @@ export default class Lancamento extends Component {
   }
 
   handlePrint() {
-    console.log('imprimir...');
 
-    var doc = new jsPDF({
+    /*var doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
@@ -384,8 +383,9 @@ export default class Lancamento extends Component {
       doc.text(60, margin_top + 122, parcela.prazo.toString() + ' ' + parcela.tipo_vencto + ' - ' + parcela.forma_pagto + ' ' + parcela.origem);
 
     }.bind(this.state.documento))
+    */
 
-    this.setState({dialog: <PrintPreview src={doc.output('bloburi')} onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({dialog: <PrintPreview nosso_numero={this.state.documento.nosso_numero} onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   render() {
@@ -413,7 +413,7 @@ export default class Lancamento extends Component {
 
       <div>
 
-        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.documento.numero)} bsStyle="primary" >
+        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.documento.pedido)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
 
@@ -427,7 +427,8 @@ export default class Lancamento extends Component {
                     onClick={this.handleComplete}
                     disabled={!(
                       this.onValidate('nosso_numero') &&
-                      this.state.documento.parcelas.length)}
+                      this.state.documento.parcelas.length && 
+                      !this.state.canPrint)}
                     style={{width: 120}}
                     bsStyle="success"
                   >
@@ -445,6 +446,7 @@ export default class Lancamento extends Component {
                 overlay={(<Tooltip id="tooltip">Confirmar lançamentos</Tooltip>)}
               >
                   <Button
+                    disabled={!this.state.canPrint}
                     onClick={this.handlePrint}
                     style={{width: 120}}
                     bsStyle="success"
@@ -612,7 +614,13 @@ export default class Lancamento extends Component {
                               <tr key={'tr-' + index} id={'tr-' + index} >
                                 <td style={{textAlign: 'center'}}>{origem[parcela.origem]}</td>
                                 <td style={{textAlign: 'center'}}>{forma_pagto[parcela.forma_pagto]}</td>
-                                <td style={{textAlign: 'center', color: parcela.ajuste_dia_util ? 'blue' : 'black'}}>{vencto.toLocaleDateString()}</td>
+                                <td style={{textAlign: 'center', color: parcela.ajuste_dia_util ? 'blue' : 'black'}}>
+                                  {parcela.ajuste_dia_util ? 
+                                    <OverlayTrigger placement="top" overlay={<Tooltip id={'tooltip_vencto' + index} >Ajustado para dia útil</Tooltip>}>
+                                      <span>{vencto.toLocaleDateString()}</span>
+                                    </OverlayTrigger> 
+                                  : vencto.toLocaleDateString()}
+                                </td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela}/{this.state.documento.parcelas.length}</td>
                                 <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.prazo + ' ' + tipo_vencto[parcela.tipo_vencto]}</td>
                                 <td style={{textAlign: 'right'}}>{format('R$ ###.###.##0,00', parcela.valor)}</td>

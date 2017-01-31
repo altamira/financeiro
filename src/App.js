@@ -50,6 +50,7 @@ const TaskItem = props =>
   <Link to={{ pathname: props.form + props.id, query: props.parametros }}>
     <span style={{display: 'block'}}>{props.titulo}</span>
     <span>{props.descricao}</span>
+    <span style={{display: 'block', fontSize: '12px'}}>{props.detalhes}</span>
   </Link>
 
 class App extends Component {
@@ -204,7 +205,7 @@ class App extends Component {
     if (index >= 0) {
       tarefas.splice(index, 1);
       console.log('Tarefa concluida, retirar da lista de tarefas: ' + JSON.stringify(tarefa, null, 2))
-      this.setState({tarefas: tarefas}, this.goHome);
+      this.setState({tarefas: tarefas}/*, this.goHome*/);
     }
   }
 

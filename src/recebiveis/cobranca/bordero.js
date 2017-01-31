@@ -22,7 +22,7 @@ export default {
     calculo: function (carteira, cobranca) {
         
         let bordero = this;
-
+/*
         this.data = new Date().toISOString(); //"2016-12-05T00:00:00.000Z",
 
         this.valor_titulos = cobranca.reduce( (total, c) => 
@@ -101,6 +101,6 @@ export default {
             "valor_cet": this.valor_cet,
             "cet": this.cet,
         };
-
+*/
     }
 }

@@ -41,7 +41,31 @@ export default class Cobranca extends Component {
       carteiras: [],
 
       // titulos a enviar para cobranca bancária
-      cobranca: [],
+      cobranca: {
+        "tipo": "cobranca",
+        "nosso_numero": 0,
+        "pedido": 0,
+        "cliente": {
+          "cnpj": "",
+          "inscricao": "",
+          "fantasia": "",
+          "nome": "",
+          "logradouro": "",
+          "endereco": "",
+          "numero": "",
+          "complemento": "",
+          "bairro": "",
+          "municipio": 0,
+          "cidade": "",
+          "CEP": "",
+          "UF": "",
+          "ddd": "",
+          "telefone": "",
+          "contato": "",
+          "conta_contabil": ""
+        },
+        "parcelas": []
+      },
 
       // calculo bordero
       bordero: bordero,
@@ -137,33 +161,29 @@ export default class Cobranca extends Component {
 
   handleSelect(nosso_numero, parcela) {
     this.setState({
-      cobranca: this.state.cobranca.map( c => {
-        if (c.nosso_numero === nosso_numero) {
-          c.parcelas = c.parcelas.map( p => {
-            if (p.parcela === parcela) {
-              p.selected = true;
-            }
-            return p;
-          });
-        }
-        return c;
-      })
+      cobranca: {
+        ...this.state.cobranca,
+        parcelas: this.state.cobranca.parcelas.map( p => {
+          if (p.parcela === parcela) {
+            p.selected = true;
+          }
+          return p;
+        })
+      }
     });
   }
 
   handleUnselect(nosso_numero, parcela) {
     this.setState({
-      cobranca: this.state.cobranca.map( c => {
-        if (c.nosso_numero === nosso_numero) {
-          c.parcelas = c.parcelas.map( p => {
-            if (p.parcela === parcela) {
-              delete p.selected;
-            }
-            return p;
-          });
-        }
-        return c;
-      })
+      cobranca: {
+        ...this.state.cobranca,
+        parcelas: this.state.cobranca.parcelas.map( p => {
+          if (p.parcela === parcela) {
+            delete p.selected;
+          }
+          return p;
+        })
+      }
     });
   }
 
@@ -201,7 +221,7 @@ export default class Cobranca extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!(cobranca.find( c => c.parcelas.find( parcela => !parcela.carteira && parcela.selected)) && carteira !== null)}
+                    disabled={!(cobranca.parcelas.find( parcela => !parcela.carteira && parcela.selected) && carteira !== null)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -296,7 +316,7 @@ export default class Cobranca extends Component {
                           </tr>
                         </thead>
 
-                          {cobranca.map( (c, index) => <Pagador key={'recebivel-' + c.nosso_numero} {...c} {...bordero} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          <Pagador key={'recebivel-' + cobranca.nosso_numero} {...cobranca} {...bordero} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} />
                         
                       </Table>
                     </Col>
@@ -305,7 +325,7 @@ export default class Cobranca extends Component {
                   <Row>
                     <Col xs={0} md={6}></Col>
                     <Col xs={12} md={6}>
-                      {cobranca.find( c => c.parcelas.find( parcela => parcela.selected)) && carteira !== null ? 
+                      {cobranca.parcelas.find( parcela => parcela.selected) && carteira !== null ? 
                         <Bordero carteira={carteira} bordero={bordero} /> : null
                       }
                     </Col>
