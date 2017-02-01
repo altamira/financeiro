@@ -6,6 +6,8 @@ import api from './../../api/'
 
 import React, { Component } from 'react';
 
+import { browserHistory } from 'react-router';
+
 import {
   OverlayTrigger, 
   Button, 
@@ -42,43 +44,41 @@ export default class Lancamento extends Component {
       "descricao": "",
       "detalhes": null,
       "documento": {
-        "tipo": "recebimento",
         "nosso_numero": "",
-        "empresa": "",
-        "pedido": 0,
-        "emissao": new Date().toISOString(),
-        "entrega": new Date().toISOString(),
+        "numero": 74822,
+        "emissao": "2017-01-06T00:00:00.000Z",
+        "entrega": "2017-02-25T00:00:00.000Z",
+        "condicao": "13 ",
         "cliente": {
-          "cnpj": "",
-          "inscricao": "",
-          "fantasia": "",
-          "nome": "",
-          "logradouro": "",
-          "endereco": "",
-          "numero": "",
+          "cnpj": "00.039.855/7670-04",
+          "inscricao": "ISENTO",
+          "fantasia": "LUIS ARMANDO",
+          "nome": "LUIS ARMANDO CERDA KATTAN",
+          "logradouro": "R",
+          "endereco": "GLAUCO VELASQUEZ",
+          "numero": "577",
           "complemento": "",
-          "bairro": "",
-          "municipio": 0,
-          "cidade": "",
-          "CEP": "",
-          "UF": "",
-          "ddd": "",
-          "telefone": "",
+          "bairro": "SITIO DO MORRO",
+          "municipio": 3550308,
+          "cidade": "SAO PAULO",
+          "CEP": "02553-000",
+          "UF": "SP",
+          "ddd": "11",
+          "telefone": "983622206",
           "contato": "",
-          "conta_contabil": ""
+          "conta_contabil": "1.01.02.001.05191"
         },
-        "condicao": "",
         "representante": {
-          "codigo": "",
-          "nome": ""
+          "codigo": "001",
+          "nome": "ADMINISTRAÇÃO",
+          "comissao": 4
         },
-        "comissao": 0,
-        "parcelas": [],
         "totais": {
-          "produtos": 0,
-          "ipi": 0,
-          "total": 0
-        }
+          "produtos": 975.78,
+          "ipi": 48.79,
+          "total": 1024.57
+        },
+        "parcelas": []
       },
       "atribuir": "",
       "atribuido": null,
@@ -108,6 +108,8 @@ export default class Lancamento extends Component {
     this.handleDeleteConfirm = this.handleDeleteConfirm.bind(this);
 
     this.setTarefa = this.setTarefa.bind(this);
+    this.setPedido = this.setPedido.bind(this);
+
     this.handleNossoNumero = this.handleNossoNumero.bind(this);
 
   }
@@ -123,14 +125,19 @@ export default class Lancamento extends Component {
   setTarefa(tarefa) {
     console.log(JSON.stringify(tarefa, null, 2))
 
+    this.setState(omit(tarefa, 'documento'), api.gpimac.pedido.get.bind(null, tarefa.documento.numero, this.setPedido));
+  }
+
+  setPedido(pedido) {
+    console.log(JSON.stringify(pedido, null, 2))
+
     this.setState({
-      ...tarefa,
       documento: {
-        ...tarefa.documento,
         nosso_numero: "",
-        emissao: new Date(tarefa.documento.emissao).fromUTC().toISOString(),
-        entrega: new Date(tarefa.documento.entrega).fromUTC().toISOString(),
-        parcelas: tarefa.documento.parcelas.map( (parcela) => {
+        ...pedido,
+        emissao: new Date(pedido.emissao).fromUTC().toISOString(),
+        entrega: new Date(pedido.entrega).fromUTC().toISOString(),
+        parcelas: pedido.parcelas.map( (parcela) => {
           let vencto = new Date(parcela.vencto).fromUTC();
           let weekend = [1,0,0,0,0,0,1];
 
@@ -172,6 +179,8 @@ export default class Lancamento extends Component {
           "parcela": parcela.parcela,
           "prazo": parcela.prazo,
           "porcentagem": parcela.porcentagem,
+          "valor_produtos": parcela.valor_produtos,
+          "valor_ipi": parcela.valor_ipi,
           "valor": parcela.valor
         }
       })
@@ -199,10 +208,12 @@ export default class Lancamento extends Component {
           emissao: this.state.documento.emissao, 
           entrega: this.state.documento.entrega, 
           data_base: this.state.documento.entrega,
-          vencto: this.state.documento.vencto,
+          vencto: this.state.documento.entrega,
           parcela: this.state.documento.parcelas.length + 1,
           prazo: "0",
-          valor: "0,00"
+          valor: "0,00",
+          valor_produtos: 0.0,
+          valor_ipi: 0.0
         }
       }      
       onSave={this.handleAdd.bind(this)} 
@@ -215,8 +226,10 @@ export default class Lancamento extends Component {
         ...this.state.documento, 
         parcelas: this.state.documento.parcelas.concat([{
           ...parcela, 
+          prazo: parseInt(parcela.prazo, 10),
+          valor_produtos: parcela.valor_produtos,
+          valor_ipi: parcela.valor_ipi,
           valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
-          prazo: parseInt(parcela.prazo, 10)
         }])
       }, dialog: null});
   }
@@ -228,6 +241,8 @@ export default class Lancamento extends Component {
           emissao: parcela.emissao, 
           entrega: parcela.entrega, 
           data_base: parcela.tipo_vencto === 'DDP' ? this.state.documento.emissao : this.state.documento.entrega,
+          valor_produtos: parcela.valor_produtos,
+          valor_ipi: parcela.valor_ipi,
           valor: parcela.valor.toFixed(2).replace('.', '-').replace(',', '').replace('-', ',')
         }} 
       index={index}
@@ -239,8 +254,10 @@ export default class Lancamento extends Component {
     let parcelas = this.state.documento.parcelas;
     parcelas.splice(index, 1, {
       ...parcela, 
+      prazo: parseInt(parcela.prazo, 10),
       valor: parseFloat(parcela.valor.replace('.', '').replace(',', '.')), 
-      prazo: parseInt(parcela.prazo, 10)
+      valor_produtos: parcela.valor_produtos,
+      valor_ipi: parcela.valor_ipi      
     });
     this.setState({documento: {...this.state.documento, parcelas: parcelas}, dialog: undefined})
   }
@@ -413,7 +430,7 @@ export default class Lancamento extends Component {
 
       <div>
 
-        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.documento.pedido)} bsStyle="primary" >
+        <Panel header={'Gerar lançamentos para Contas a Receber - Pedido ' + (this.state.documento.numero)} bsStyle="primary" >
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
 
@@ -443,7 +460,7 @@ export default class Lancamento extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Confirmar lançamentos</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Imprimir Título</Tooltip>)}
               >
                   <Button
                     disabled={!this.state.canPrint}
@@ -451,7 +468,7 @@ export default class Lancamento extends Component {
                     style={{width: 120}}
                     bsStyle="success"
                   >
-                    <Glyphicon glyph="ok" />
+                    <Glyphicon glyph="print" />
                     <div><span>Imprimir</span></div>
                   </Button>
               </OverlayTrigger>
@@ -462,14 +479,14 @@ export default class Lancamento extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Fechar</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleClose}
+                    onClick={browserHistory.push.bind(null, '/')}
                     style={{width: 120}}
                   >
-                    <Glyphicon glyph="time" />
-                    <div><span>Terminar depois</span></div>
+                    <Glyphicon glyph="remove" />
+                    <div><span>Fechar</span></div>
                   </Button>
 
               </OverlayTrigger>
@@ -507,7 +524,7 @@ export default class Lancamento extends Component {
                     <Col xs={12} md={2}>Pedido</Col>
                     <Col xs={12} md={3}>
                       <FormGroup validationState="success">
-                        <FormControl type="text" name="numero" value={this.state.documento.pedido} onChange={this.handleChange} readOnly />
+                        <FormControl type="text" name="numero" value={this.state.documento.numero} onChange={this.handleChange} readOnly />
                         <FormControl.Feedback />
                       </FormGroup>
                     </Col>

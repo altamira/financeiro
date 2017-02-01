@@ -5,6 +5,8 @@ import api from './../../api/'
 
 import React, { Component } from 'react';
 
+import { browserHistory } from 'react-router';
+
 import {
   OverlayTrigger, 
   Button, 
@@ -297,14 +299,14 @@ export default class Retorno extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Fechar</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleClose}
+                    onClick={browserHistory.push.bind(null, '/')}
                     style={{width: 120}}
                   >
-                    <Glyphicon glyph="time" />
-                    <div><span>Terminar depois</span></div>
+                    <Glyphicon glyph="remove" />
+                    <div><span>Fechar</span></div>
                   </Button>
 
               </OverlayTrigger>

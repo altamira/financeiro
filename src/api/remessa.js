@@ -5,7 +5,7 @@ function getRemessa(id, callback) {
 }
 
 function getRemessas(callback) {
-	http.fetch('financeiro/remessa/', callback);
+	http.fetch('financeiro/remessas/', callback);
 }
 
 function gravarTarefa(tarefa, callback) {

@@ -8,13 +8,19 @@ import retorno from './retorno'
 
 import config from './config'
 
+import gpimac from './gpimac/'
+
 export default {
+	
 	config: config,
 	usuario: usuario,
 	tarefa: tarefa,
+
 	carteira: carteira,
 	lancamento: lancamento,
 	cobranca: cobranca,
 	remessa: remessa,
 	retorno: retorno,
+
+	gpimac: gpimac
 }

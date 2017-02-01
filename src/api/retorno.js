@@ -5,7 +5,7 @@ function getRetorno(id, callback) {
 }
 
 function getRetornos(callback) {
-	http.fetch('financeiro/retorno/', callback);
+	http.fetch('financeiro/retornos/', callback);
 }
 
 function gravarTarefa(tarefa, callback) {

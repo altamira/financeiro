@@ -5,6 +5,8 @@ import api from './../../api/'
 
 import React, { Component } from 'react';
 
+import { browserHistory } from 'react-router';
+
 import {
   OverlayTrigger, 
   Button, 
@@ -23,6 +25,7 @@ import Confirm from './Confirm';
 import Bordero from './Bordero.jsx';
 
 import bordero from './bordero';
+import PrintPreview from './../lancamento/PrintPreview';
 
 import process from './process.svg';
 
@@ -80,6 +83,8 @@ export default class Cobranca extends Component {
     this.handleClose = this.handleClose.bind(this);
     this.handleComplete = this.handleComplete.bind(this);
 
+    this.handlePrint = this.handlePrint.bind(this);
+
     // edição do formulario
     this.handleChange = this.handleChange.bind(this);
 
@@ -109,7 +114,14 @@ export default class Cobranca extends Component {
 
     this.setState({
       tarefa: tarefa, 
-      cobranca: tarefa.documento
+      cobranca: {
+        ...tarefa.documento,
+        parcelas: tarefa.documento.parcelas.map( parcela => {
+          parcela.vencto = new Date(parcela.vencto).fromUTC().toISOString()
+
+          return parcela;
+        })
+      }
     }) 
 
   }
@@ -126,7 +138,14 @@ export default class Cobranca extends Component {
         ...this.state.tarefa, 
         documento: { 
           carteira: carteira, 
-          cobranca: cobranca,
+          cobranca: {
+            ...cobranca,
+            parcelas: cobranca.parcelas.map( parcela => {
+              parcela.vencto = new Date(parcela.vencto).toUTC().toISOString()
+
+              return parcela;
+            })
+          },
           bordero: bordero.calculo(carteira, cobranca)
         }
       }, 
@@ -200,6 +219,10 @@ export default class Cobranca extends Component {
     this.setState({[value.target.id]: value.target.value});
   }
 
+  handlePrint() {
+    this.setState({dialog: <PrintPreview nosso_numero={this.state.cobranca.nosso_numero} onClose={this.handleCloseDialog.bind(this)} />})
+  }
+
   render() {
 
     let { carteira, cobranca, bordero } = this.state;
@@ -233,20 +256,36 @@ export default class Cobranca extends Component {
 
             </Col>
 
-            <Col xs={4} md={4} />
+            <Col xs={4} md={4} >
+
+              <OverlayTrigger 
+                placement="top" 
+                overlay={(<Tooltip id="tooltip">Imprimir Título</Tooltip>)}
+              >
+                  <Button
+                    onClick={this.handlePrint}
+                    style={{width: 120}}
+                    bsStyle="success"
+                  >
+                    <Glyphicon glyph="print" />
+                    <div><span>Imprimir</span></div>
+                  </Button>
+              </OverlayTrigger>
+
+            </Col>
 
             <Col xs={4} md={4} style={{textAlign: 'right'}} >
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Salvar alterações e terminar depois.</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Fechar</Tooltip>)}
               >
                   <Button
-                    onClick={this.handleClose}
+                    onClick={browserHistory.push.bind(null, '/')}
                     style={{width: 120}}
                   >
-                    <Glyphicon glyph="time" />
-                    <div><span>Terminar depois</span></div>
+                    <Glyphicon glyph="remove" />
+                    <div><span>Fechar</span></div>
                   </Button>
 
               </OverlayTrigger>

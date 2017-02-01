@@ -5,7 +5,7 @@ function getCarteira(id, callback) {
 }
 
 function listCarteiras(callback) {
-	http.fetch('financeiro/carteira/', callback);
+	http.fetch('financeiro/carteiras/', callback);
 }
 
 export default {
