@@ -10,6 +10,8 @@ import config from './config'
 
 import gpimac from './gpimac/'
 
+import contacorrente from './contacorrente/'
+
 export default {
 	
 	config: config,
@@ -22,5 +24,7 @@ export default {
 	remessa: remessa,
 	retorno: retorno,
 
-	gpimac: gpimac
+	gpimac: gpimac,
+
+	cc: contacorrente
 }

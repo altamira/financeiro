@@ -21,6 +21,8 @@ import {
   Image
 } from 'react-bootstrap';
 
+import bordero from './bordero'
+
 import Titulo from './Titulo';
 import Bordero from './Bordero.jsx';
 
@@ -49,10 +51,12 @@ export default class Remessa extends Component {
       },
 
       "remessa": {
+
         "tipo": "remessa",
         "data": "2017-01-31T18:38:08.590Z",
         "nosso_numero": 0,
         "pedido": 0,
+
         "cliente": {
           "cnpj": "",
           "inscricao": "",
@@ -72,6 +76,7 @@ export default class Remessa extends Component {
           "contato": "",
           "conta_contabil": ""
         },
+
         "carteira": {
           "id": 0,
           "banco": "",
@@ -93,7 +98,10 @@ export default class Remessa extends Component {
           "remessa": 0,
           "retorno": 0
         },
-        "parcelas": []
+
+        "parcelas": [],
+
+        bordero: {}
       }
 
     }
@@ -129,10 +137,19 @@ export default class Remessa extends Component {
   }
 
   handleComplete() {
+    let tarefa = this.state.tarefa;
+    let remessa = this.state.remessa;
+
+    let { carteira } = remessa;
+
     let state = {
-      ...this.state.tarefa,
-      documento: this.state.remessa
+      ...tarefa,
+      documento: {
+        ...remessa,
+        bordero: bordero.calculo(carteira, remessa)
+      }
     }
+
     console.log(JSON.stringify(state, null, 2));
 
     api.remessa.concluir(state, this.handleClose.bind(this))

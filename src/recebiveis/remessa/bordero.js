@@ -19,41 +19,31 @@ export default {
     "valor_cet": 0,
     "cet": 0,
 
-    calculo: function (carteira, cobranca) {
+    calculo: function (carteira, remessa) {
         
         let bordero = this;
-/*
+
         this.data = new Date().toISOString(); //"2016-12-05T00:00:00.000Z",
 
-        this.valor_titulos = cobranca.reduce( (total, c) => 
-            total + (c.parcelas.reduce( (soma, parcela) => 
-              soma + (parcela.selected ? parcela.valor: 0), 0.0) || 0)
-            , 0.0) || 0
+        this.valor_titulos = remessa.parcelas.reduce( (soma, parcela) => 
+              soma + (parcela.selected ? parcela.valor : 0), 0.0) || 0
 
-        this.total_dias = cobranca.reduce( (total, c) =>
-            total + (c.parcelas.reduce( (dias, parcela) => 
-              dias + (parcela.selected ? moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0) || 0)
-            , 0) || 0       
+        this.total_dias = remessa.parcelas.reduce( (dias, parcela) => 
+              dias + (parcela.selected ? moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0) || 0       
 
         this.taxa_juros = carteira ? carteira.taxa_juros : 0
 
         this.valor_juros = (carteira &&
-            cobranca.reduce( (total, c) =>
-              total + (c.parcelas.reduce( (soma, parcela) => 
-                soma + (parcela.selected ? (parcela.valor * (carteira.taxa_juros / 100)) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true) : 0), 0.0) || 0)
-              , 0.0)) || 0.0
+            remessa.parcelas.reduce( (soma, parcela) => 
+                soma + (parcela.selected ? (parcela.valor * (carteira.taxa_juros / 100)) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true) : 0), 0.0)) || 0.0
 
         this.valor_base = (carteira &&
-            cobranca.reduce( (total, c) => 
-              total + (c.parcelas.reduce( (soma, parcela) => 
-                soma + (parcela.selected ? parcela.valor - ((parcela.valor * (carteira.taxa_juros / 100)) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true)) : 0), 0.0) || 0)
-              , 0.0)) || 0.0
+            remessa.parcelas.reduce( (soma, parcela) => 
+                soma + (parcela.selected ? parcela.valor - ((parcela.valor * (carteira.taxa_juros / 100)) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true)) : 0), 0.0)) || 0.0
 
         this.numero_parcelas = (carteira &&
-            cobranca.reduce( (total, c) =>
-            total + (c.parcelas.reduce( (parcelas, parcela) => 
-              parcelas + (parcela.selected ? 1: 0), 0) || 0)
-            , 0)) || 0
+            remessa.parcelas.reduce( (parcelas, parcela) => 
+              parcelas + (parcela.selected ? 1: 0), 0)) || 0
 
         this.iof_adicional = 0.38 / 100 // %
 
@@ -62,10 +52,8 @@ export default {
         this.valor_iof_adicional = bordero.valor_base * bordero.iof_adicional
 
         this.valor_iof_diario = (carteira && 
-            cobranca.reduce( (total, c) =>
-            total + (c.parcelas.reduce( (soma, parcela) => 
-              soma + (parcela.selected ? ((parcela.valor - (parcela.valor * (carteira.taxa_juros / 100) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true))) * bordero.iof_diario) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0.0) || 0)
-            , 0.0)) || 0.0
+            remessa.parcelas.reduce( (soma, parcela) => 
+              soma + (parcela.selected ? ((parcela.valor - (parcela.valor * (carteira.taxa_juros / 100) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'months', true))) * bordero.iof_diario) * moment(parcela.vencto).diff(moment(bordero.data_operacao), 'days') : 0), 0.0)) || 0.0
 
         this.valor_iof = this.valor_iof_adicional + this.valor_iof_diario
 
@@ -101,6 +89,6 @@ export default {
             "valor_cet": this.valor_cet,
             "cet": this.cet,
         };
-*/
+
     }
 }

@@ -266,7 +266,7 @@ class App extends Component {
                 <MenuItem divider />
                 <MenuItem eventKey={3.3} >Usuarios</MenuItem>
               </NavDropdown>
-              <NavItem eventKey={2} >Configurações</NavItem>
+              <NavItem eventKey={2} ><Link to="/contacorrente/" >Conta Corrente</Link></NavItem>
             </Nav>
             <Nav pullRight>
               <NavItem eventKey={4} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario && this.state.usuario.nome} (Sair)</span></NavItem>

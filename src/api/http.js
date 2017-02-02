@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-let host = 'http://localhost:1880/api/'
-//let host = 'http://financeiro:1880/api/'
+let host = process.env.PUBLIC_URL || 'http://financeiro:1880/api/'
 
 function fetch(url, callback, error) {
 	if (!callback) {

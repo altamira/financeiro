@@ -14,6 +14,8 @@ import Cobranca from './recebiveis/cobranca';
 import Remessa from './recebiveis/remessa/';
 import Retorno from './recebiveis/retorno';
 
+import ContaCorrente from './contacorrente/index.js';
+
 const About = () =>
 	<div>
 		About
@@ -51,6 +53,7 @@ render((
       <Route path="recebiveis/cobranca/:id" component={Cobranca}/>
       <Route path="recebiveis/remessa/:id" component={Remessa}/>
       <Route path="recebiveis/retorno/:id" component={Retorno}/>
+      <Route path="contacorrente/" component={ContaCorrente}/>
       <Route path="about" component={About}/>
       <Route path="users" component={Users}>
         <Route path="/user/:userId" component={User}/>

@@ -73,44 +73,60 @@ export default class Retorno extends Component {
         "cet": 0
       },
 
-      retorno: [
-        {
-          "nosso_numero": 0,
-          "pedido": 0,
-          "cliente": {
-            "cnpj": "",
-            "inscricao": "",
-            "fantasia": "",
-            "nome": "",
-            "logradouro": "",
-            "endereco": "",
-            "numero": "",
-            "complemento": "",
-            "bairro": "",
-            "municipio": 0,
-            "cidade": "",
-            "CEP": "",
-            "UF": "",
-            "ddd": "",
-            "telefone": "",
-            "contato": "",
-            "desconto": 0
-          },
-          "parcelas": []
-        }
-      ],
+      retorno: {
 
-      // campos de controle, não armazenar
-      dialog: null,
+        "tipo": "remessa",
+        "data": "2017-01-31T18:38:08.590Z",
+        "nosso_numero": 0,
+        "pedido": 0,
 
-      // false = ascending order, true = descending order
-      order: {
-        nosso_numero: null, 
-        vencto: null,
-        nome: null,
-        parcela: null,
-        valor: null, 
+        "cliente": {
+          "cnpj": "",
+          "inscricao": "",
+          "fantasia": "",
+          "nome": "",
+          "logradouro": "",
+          "endereco": "",
+          "numero": "",
+          "complemento": "",
+          "bairro": "",
+          "municipio": 0,
+          "cidade": "",
+          "CEP": "",
+          "UF": "",
+          "ddd": "",
+          "telefone": "",
+          "contato": "",
+          "desconto": 0
+        },
+
+        "carteira": {
+          "id": 0,
+          "banco": "",
+          "agencia": "0",
+          "conta": "0",
+          "carteira": 0,
+          "nome": "",
+          "limite": 0,
+          "utilizado": 0,
+          "saldo": 0,
+          "defasagem": 0,
+          "descoberto": 0,
+          "valor_operacao": 0,
+          "valor_tarifa": 0,
+          "taxa_juros": 0,
+          "total_iof": 0,
+          "total_juros": 0,
+          "total_tarifas": 0,
+          "remessa": 0,
+          "retorno": 0
+        },
+
+        "parcelas": [],
+
+        bordero: {}
       }
+
     }
 
     // comandos
@@ -144,9 +160,8 @@ export default class Retorno extends Component {
 
     this.setState({
       tarefa: omit(tarefa, 'documento'), 
-      data: tarefa.documento.data,
-      carteira: tarefa.documento.carteira,
-      retorno: tarefa.documento.retorno
+      retorno: tarefa.documento,
+      bordero: {}
     })
 
   }
