@@ -22,7 +22,7 @@ import {
 } from 'react-bootstrap';
 
 import Titulo from './Titulo';
-import Bordero from '../cobranca/Bordero.jsx';
+import Bordero from './Bordero.jsx';
 
 import process from './process.svg';
 

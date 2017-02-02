@@ -45,38 +45,38 @@ export default class Lancamento extends Component {
       "detalhes": null,
       "documento": {
         "nosso_numero": "",
-        "numero": 74822,
+        "numero": 0,
         "emissao": "2017-01-06T00:00:00.000Z",
         "entrega": "2017-02-25T00:00:00.000Z",
         "condicao": "13 ",
         "cliente": {
-          "cnpj": "00.039.855/7670-04",
-          "inscricao": "ISENTO",
-          "fantasia": "LUIS ARMANDO",
-          "nome": "LUIS ARMANDO CERDA KATTAN",
+          "cnpj": "",
+          "inscricao": "",
+          "fantasia": "",
+          "nome": "L",
           "logradouro": "R",
-          "endereco": "GLAUCO VELASQUEZ",
-          "numero": "577",
+          "endereco": "",
+          "numero": "",
           "complemento": "",
-          "bairro": "SITIO DO MORRO",
-          "municipio": 3550308,
-          "cidade": "SAO PAULO",
-          "CEP": "02553-000",
-          "UF": "SP",
-          "ddd": "11",
-          "telefone": "983622206",
+          "bairro": "",
+          "municipio": 0,
+          "cidade": "",
+          "CEP": "",
+          "UF": "",
+          "ddd": "",
+          "telefone": "",
           "contato": "",
-          "conta_contabil": "1.01.02.001.05191"
+          "conta_contabil": ""
         },
         "representante": {
-          "codigo": "001",
-          "nome": "ADMINISTRAÇÃO",
-          "comissao": 4
+          "codigo": "",
+          "nome": "",
+          "comissao": 0
         },
         "totais": {
-          "produtos": 975.78,
-          "ipi": 48.79,
-          "total": 1024.57
+          "produtos": 0,
+          "ipi": 0,
+          "total": 0
         },
         "parcelas": []
       },
