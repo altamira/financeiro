@@ -4,7 +4,7 @@ function getBanco(id, callback) {
 	http.fetch('contacorrente/banco/' + id, callback);
 }
 
-function getBancos(id, callback) {
+function getBancos(callback) {
 	http.fetch('contacorrente/bancos/', callback);
 }
 

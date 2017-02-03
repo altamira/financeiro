@@ -29,25 +29,11 @@ export default class Buscar extends Component {
 			descricao: ''
 		}
 
-		// conta
-    	this.handleSelectConta = this.handleSelectConta.bind(this);
-
 		this.handleClose = this.handleClose.bind(this);
 		this.handleSelect = this.handleSelect.bind(this);
 		this.handleSearch = this.handleSearch.bind(this);
 		this.handleChange = this.handleChange.bind(this);
 
-		this.loadContas = this.loadContas.bind(this);
-	}
-
-	componentWillMount() {
-		api.cc.conta.list(this.loadContas);
-	}
-
-	loadContas(contas) {
-		if (contas.length) {
-		  this.setState({conta: contas[0], contas: contas})  
-		}
 	}
 
 	handleSelectConta(element) {
@@ -104,12 +90,12 @@ export default class Buscar extends Component {
 
 	                  <Row>
 
-	                  	<Col md={4}>Cheque</Col>
+	                  	<Col md={4}>Documento</Col>
 
 	                    <Col md={4}>
 	                      <FormGroup>
 	                        {/*<ControlLabel>Cheque</ControlLabel>*/}
-	                        <FormControl type="text" id="cheque" value={this.state.cheque} onChange={this.handleChange} />
+	                        <FormControl type="text" id="documento" value={this.state.documento} onChange={this.handleChange} />
 	                        <FormControl.Feedback />
 	                      </FormGroup>
 	                    </Col>
@@ -117,24 +103,11 @@ export default class Buscar extends Component {
 	                  </Row>
 
 	                  <Row>
-	                    	<Col md={4}>Conta</Col>
-	                    	<Col md={8}>
-			                <FormGroup validationState={'success'} >
-			                  <FormControl name="origem" componentClass="select" placeholder="Conta Corrente" value={this.state.conta} onChange={this.handleSelectConta} >
-			                  {this.state.contas && this.state.contas.map( (conta, index) =>
-			                    <option key={'option-' + index} value={index}>{conta.codigo} {conta.nome} {conta.agencia} {conta.conta}</option>
-			                  )}
-			                  </FormControl>
-			                </FormGroup>
-			              </Col>
-	                  </Row>
-
-	                  <Row>
 	                    <Col md={4}>Descrição</Col>
 	                    <Col md={8}>
 	                      <FormGroup>
 	                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-	                        <FormControl type="text" id="nome" value={this.state.nome} onChange={this.handleChange} />
+	                        <FormControl type="text" id="descricao" value={this.state.descricao} onChange={this.handleChange} />
 	                        <FormControl.Feedback />
 	                      </FormGroup>
 	                    </Col>
@@ -147,7 +120,7 @@ export default class Buscar extends Component {
 							      <tr>
 							        <th>Data</th>
 							        <th>Descricao</th>
-							        <th>Cheque</th>
+							        <th>Documento</th>
 							        <th>Liquidado</th>
 							        <th>Valor</th>
 							      </tr>
@@ -157,7 +130,7 @@ export default class Buscar extends Component {
 								      <tr style={{cursor: 'pointer'}} key={item.sequencia} onClick={this.handleSelect.bind(null, item)}>
 								        <td>{new Date(item.data).toLocaleDateString()}</td>
 								        <td>{item.descricao}</td>
-								        <td>{item.cheque}</td>
+								        <td>{item.documento}</td>
 								        <td>{item.liquidado}</td>
 								        <td>{format('R$ ###.###.##0,00', item.valor)}</td>
 								      </tr>

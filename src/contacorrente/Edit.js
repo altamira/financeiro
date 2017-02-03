@@ -1,3 +1,5 @@
+import format from 'number-format.js';
+
 import api from './../api/'
 
 import React, { Component } from 'react';
@@ -5,10 +7,13 @@ import React, { Component } from 'react';
 import { 
   Modal,
   Row,
-  Col,
+  Col, 
+  Glyphicon, 
   FormGroup,
   FormControl,
-  Button
+  Button,
+  ControlLabel,
+  InputGroup
 } from 'react-bootstrap';
 
 import DatePicker from 'react-bootstrap-date-picker';
@@ -21,76 +26,161 @@ export default class Edit extends Component {
     super(props);
 
     this.state = {
+
       contas: [],
 
-      conta: {
-        saldo: 0
+      banco: {
+        codigo: '',
+        nome: '',
+        agencias: []
       },
 
-      data: new Date().toISOString(),
-      cheque: '',
-      descricao: '',
-      valor: '0,00',
+      agencia: {
+        agencia: '',
+        contas: []
+      },
 
-      ...this.props.lancamento,
+      conta: {
+        conta: '',
+        saldo: 0.00
+      },
+
+      lancamento: {
+
+        data: new Date().toISOString(),
+        documento: '',
+        descricao: '',
+        valor: '0,00',
+
+        operacao: 'D',
+        liquidado: false,
+
+      },
+
+      ...this.props,
 
     }
+
+    // conta
+    this.handleSelectBanco = this.handleSelectBanco.bind(this);
+    this.handleSelectAgencia = this.handleSelectAgencia.bind(this);
+    this.handleSelectConta = this.handleSelectConta.bind(this);
 
     this.handleChangeData = this.handleChangeData.bind(this);
     this.handleChange = this.handleChange.bind(this);
 
     this.handleSave = this.handleSave.bind(this);
 
-    this.loadContas = this.loadContas.bind(this);
+    this.handleDebitoCredito = this.handleDebitoCredito.bind(this);
+    this.handleLiquidado = this.handleLiquidado.bind(this);
   }
 
-  componentWillMount() {
-    api.cc.conta.list(this.loadContas);
+  handleSelectBanco(element) {
+    this.setState({
+      banco: this.state.contas.find( banco => banco.codigo === element.target.value),
+      agencia: this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
+        agencia: '',
+        contas: []
+      },
+      conta: (this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
+        agencia: '',
+        contas: []
+      }).contas[0] || {
+        conta: '',
+        saldo: 0.00
+      }
+    }, this.getMovimento);
   }
 
-  componentReceiveProps(props) {
-    this.setState(props);
+  handleSelectAgencia(element) {
+    this.setState({
+      agencia: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value),
+      conta: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value).contas[0] || {
+        conta: '',
+        saldo: 0.00
+      }
+    }, this.getMovimento);
   }
 
-  loadContas(contas) {
-    if (contas.length) {
-      this.setState({conta: contas[0], contas: contas})  
-    }
+  handleSelectConta(element) {
+    this.setState({conta: this.state.agencia.contas.find( conta => conta.conta === element.target.value)}, this.getMovimento.bind(this));
   }
 
   handleChangeData(data) {
-    this.setState({data: data})
+    this.setState({
+      lancamento: {
+        ...this.state.lancamento,
+        data: data
+      }
+    })
   }
  
   handleChange(element) {
-    this.setState({[element.target.name]: element.target.value});
-  }
-
-  handleSave() {
-    this.props.onSave && this.props.onSave(this.state, this.props.index);
-  }
-
-  onValidateDate(propriedade) {
-      //var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[7-9]|202[0-9])$/;
-      //return regex.test(this.state[propriedade]) && this.state[propriedade].length < 10;
-      if (propriedade === undefined) {
-        return false;
-      } else {
-        return true;
+    this.setState({
+      lancamento: {
+        ...this.state.lancamento,
+        [element.target.name]: element.target.value
       }
+    });
+  }
+
+  handleDebitoCredito(operacao) {
+    console.log('operacao: ' + this.state.operacao);
+
+    this.setState({
+      lancamento: {
+        ...this.state.lancamento,
+        operacao: operacao
+      }
+    })
+  }
+
+  handleLiquidado() {
+    console.log('liquidado: ' + this.state.lancamento.liquidado);
+
+    this.setState({
+      lancamento: {
+        ...this.state.lancamento,
+        liquidado: !this.state.lancamento.liquidado
+      }
+    })
+  }
+
+  // Validações
+  onValidateDate(propriedade) {
+    var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[7-9]|202[0-9])$/;
+    return regex.test(new Date(this.state.lancamento[propriedade]).toLocaleDateString());
   }
 
   onValidateMoney(propriedade) {
-      var regex = /^[0-9]{1,9}([.]([0-9]{3}))*[,]([.]{0})[0-9]{2}$/;
-      return regex.test(this.state[propriedade]) && this.state[propriedade].length < 10;
+    var regex = /^[0-9]{1,9}([.]([0-9]{3}))*[,]([.]{0})[0-9]{2}$/;
+    return regex.test(this.state.lancamento[propriedade]) && this.state.lancamento[propriedade].length <= 10;
   }
 
-  onValidateEmpty(propriedade) {
-      return this.state[propriedade].length < 10;
+  onValidateEmpty(propriedade, maxLength) {
+    return this.state.lancamento[propriedade].length <= maxLength;
   }
 
-  onValidateNotEmpty(propriedade) {
-      return this.state[propriedade].length > 0;
+  onValidateNotEmpty(propriedade, maxLength) {
+    return this.state.lancamento[propriedade].length > 0 && this.state.lancamento[propriedade].length <= maxLength;
+  }
+
+  handleSave() {
+    let lancamento = {
+
+      ...this.state.lancamento,
+
+      banco: this.state.banco.codigo,
+      agencia: this.state.agencia.agencia,
+      conta: this.state.conta.conta,
+
+      valor: parseFloat(this.state.lancamento.valor.replace('.', '').replace(',', '.'))
+
+    }
+
+    console.log(JSON.stringify(lancamento, null, 2));
+
+    api.cc.movimento.save(lancamento, this.props.onSave);
   }
 
   render() {
@@ -103,63 +193,121 @@ export default class Edit extends Component {
           </Modal.Header>
 
           <Modal.Body>
+            
             <Row>
-              <Col md={4}>Conta Corrente</Col>
               <Col md={8}>
                 <FormGroup validationState={'success'} >
-                  <FormControl name="origem" componentClass="select" placeholder="Conta Corrente" value={this.state.conta} onChange={this.handleSelectConta} >
-                  {this.state.contas && this.state.contas.map( (conta, index) =>
-                    <option key={'option-' + index} value={index}>{conta.codigo} {conta.nome} {conta.agencia} {conta.conta}</option>
+                  <ControlLabel>Banco</ControlLabel>
+                  <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
+                  {this.state.contas && this.state.contas.map( (banco, index) =>
+                    <option key={'banco-' + index} value={banco.codigo} >{banco.codigo} - {banco.nome}</option>
                   )}
                   </FormControl>
                 </FormGroup>
               </Col>
+
+            </Row>
+            
+            <Row>
+              <Col md={4}>
+                <FormGroup validationState={'success'} >
+                  <ControlLabel>Agencia</ControlLabel>
+                  <FormControl name="agencia" componentClass="select" placeholder="Agencia" value={this.state.agencia.agencia} onChange={this.handleSelectAgencia} >
+                    {this.state.banco && this.state.banco.agencias.map( (agencia, index) =>
+                      <option key={'agencia-' + index} value={agencia.agencia} >{agencia.agencia}</option>
+                    )}
+                  </FormControl>
+                </FormGroup>
+              </Col>
+
+              <Col md={4}>
+                <FormGroup validationState={'success'} >
+                  <ControlLabel>Conta</ControlLabel>
+                  <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.conta} onChange={this.handleSelectConta} >
+                  {this.state.agencia && this.state.agencia.contas.map( (conta, index) =>
+                    <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
+                  )}
+                  </FormControl>
+                </FormGroup>
+              </Col>
+
+              <Col md={4}>
+                <FormGroup validationState="success">
+                  <ControlLabel>Saldo da Conta</ControlLabel>
+                  <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.conta.saldo)} readOnly />
+                </FormGroup>
+              </Col>
+              
             </Row>
 
             <Row>
-              <Col md={4}>Data</Col>
-              <Col md={8}>
+              <Col md={5}>
                 <FormGroup validationState={this.onValidateDate('data') ? 'success' : 'error'} >
-                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  {/*<FormControl type="text" defaultValue="10/10/2016" />*/}
-                  {/*<FormControl.Feedback />*/}
-                  <DatePicker name="data" value={this.state.data} dayLabels={BrazilianDayLabels} monthLabels={BrazilianMonthLabels} onChange={this.handleChangeData} />
+                  <ControlLabel>Data</ControlLabel>
+                  <DatePicker name="data" value={this.state.lancamento.data} dayLabels={BrazilianDayLabels} monthLabels={BrazilianMonthLabels} onChange={this.handleChangeData} />
                 </FormGroup>
               </Col>
-            </Row>
 
-            <Row>
-              <Col md={4}>Cheque</Col>
-              <Col md={8}>
-                <FormGroup validationState={this.onValidateEmpty('cheque') ? 'success' : 'error'} >
-                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  <FormControl type="text" name="cheque" value={this.state.cheque} onChange={this.handleChange} />
+              <Col md={5}>
+                <FormGroup validationState={this.onValidateEmpty('documento', 50) ? 'success' : 'error'} >
+                  <ControlLabel>Documento</ControlLabel>
+                  <FormControl type="text" name="documento" value={this.state.lancamento.documento} onChange={this.handleChange} />
+                  <FormControl.Feedback />
+                </FormGroup>
+              </Col>
+
+              <Col md={2}>
+                <FormGroup>
+                  <ControlLabel>Liquidado</ControlLabel>
+                  <InputGroup>
+                    {this.state.lancamento.liquidado ?
+                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidado} ><Glyphicon glyph="ok" /></Button>) :                                 
+                      (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidado} ><Glyphicon glyph="dot" /></Button>)
+                    }
+                  </InputGroup>
                   <FormControl.Feedback />
                 </FormGroup>
               </Col>
             </Row>
 
             <Row>
-              <Col md={4}>Descrição</Col>
-              <Col md={8}>
-                <FormGroup validationState={this.onValidateNotEmpty('descricao') ? 'success' : 'error'} >
-                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  <FormControl type="text" name="descricao" value={this.state.descricao} onChange={this.handleChange} />
+              <Col md={12}>
+                <FormGroup validationState={this.onValidateNotEmpty('descricao', 100) ? 'success' : 'error'} >
+                  <ControlLabel>Descrição</ControlLabel>
+                  <FormControl type="text" name="descricao" value={this.state.lancamento.descricao} onChange={this.handleChange} />
                   <FormControl.Feedback />
                 </FormGroup>
               </Col>
             </Row>
 
             <Row>
-              <Col md={4}>Valor</Col>
-              <Col md={8}>
+              <Col md={5}>
                 <FormGroup validationState={this.onValidateMoney('valor') ? 'success' : 'error'} >
-                  {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
-                  <FormControl type="text" name="valor" value={this.state.valor} onChange={this.handleChange} />
+                  <ControlLabel>Valor</ControlLabel>
+                  <FormControl type="text" name="valor" value={this.state.lancamento.valor} onChange={this.handleChange} />
                   <FormControl.Feedback />
                 </FormGroup>
               </Col>
+
+              <Col md={5}>
+                <FormGroup>
+                  <ControlLabel>Operação</ControlLabel>
+                  <InputGroup>
+                    {this.state.lancamento.operacao === 'D' ?
+                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleDebitoCredito.bind(null, 'C')} ><Glyphicon glyph="ok" /></Button>) :                                 
+                      (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleDebitoCredito.bind(null, 'D')} ><Glyphicon glyph="minus" /></Button>)
+                    } <ControlLabel style={{marginLeft: '10px'}}>Debito</ControlLabel>
+                    {this.state.lancamento.operacao === 'C' ?
+                      (<Button bsStyle="success" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleDebitoCredito.bind(null, 'D')} ><Glyphicon glyph="ok" /></Button>) :                                 
+                      (<Button bsStyle="default" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleDebitoCredito.bind(null, 'C')} ><Glyphicon glyph="plus" /></Button>)
+                    } <ControlLabel style={{marginLeft: '10px'}}>Credito</ControlLabel>
+                  </InputGroup>
+                  <FormControl.Feedback />
+                </FormGroup>
+              </Col>
+
             </Row>
+
           </Modal.Body>
 
           <Modal.Footer>
@@ -169,6 +317,7 @@ export default class Edit extends Component {
                 onClick={this.handleSave.bind(this)} 
                 disabled={!(
                   this.onValidateDate('data') &&
+                  this.onValidateNotEmpty('descricao', 100) &&
                   this.onValidateMoney('valor') 
                 )} style={{margin: '5px'}} >Gravar</Button> 
           </Modal.Footer>

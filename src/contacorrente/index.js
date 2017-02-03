@@ -30,41 +30,53 @@ export default class ContaCorrente extends Component {
     this.state = {
       contas: [],
 
+      banco: {
+        codigo: '',
+        nome: '',
+        agencias: []
+      },
+
+      agencia: {
+        agencia: '',
+        contas: []
+      },
+
       conta: {
-        saldo: 0
+        conta: '',
+        saldo: 0.00
       },
 
       movimento: [
-        {
-          sequencia: 0,
+        /*{
+          id: 0,
           banco: '',
           agencia: '',
           conta: '',
           data: new Date().toISOString(),
-          cheque: '',
-          liquidado: false,
+          documento: '',
           descricao: '',
           valor: 0.00,
           operacao: 'D',
-          investimento: false
-        }
+          liquidado: false,
+        }*/
       ]
 
     }
 
+    this.loadContas = this.loadContas.bind(this);
+
     // conta
+    this.handleSelectBanco = this.handleSelectBanco.bind(this);
+    this.handleSelectAgencia = this.handleSelectAgencia.bind(this);
     this.handleSelectConta = this.handleSelectConta.bind(this);
 
     // manipulação dos lancamentos
     this.handleNew = this.handleNew.bind(this);
-    this.handleAdd = this.handleAdd.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
-    this.handleUpdate = this.handleUpdate.bind(this);
-    this.handleSelect = this.handleSelect.bind(this);
-    this.handleUnselect = this.handleUnselect.bind(this);
+    this.handleAfterSave = this.handleAfterSave.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
 
-    this.loadContas = this.loadContas.bind(this);
+    this.handleSelectLancamento = this.handleSelectLancamento.bind(this);
 
   }
 
@@ -73,81 +85,149 @@ export default class ContaCorrente extends Component {
   }
 
   loadContas(contas) {
-    if (contas.length) {
-      this.setState({conta: contas[0], contas: contas})  
-    }
+    this.setState({contas: contas})
+  }
+
+  handleSelectBanco(element) {
+    this.setState({
+
+      banco: this.state.contas.find( banco => banco.codigo === element.target.value),
+
+      agencia: this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
+        agencia: '',
+        contas: []
+      },
+
+      conta: (this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
+        agencia: '',
+        contas: []
+      }).contas[0] || {
+        conta: '',
+        saldo: 0.00
+      },
+
+      movimento: []
+
+    }, this.getMovimento);
+  }
+
+  handleSelectAgencia(element) {
+    this.setState({
+
+      agencia: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value),
+
+      conta: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value).contas[0] || {
+        conta: '',
+        saldo: 0.00
+      },
+
+      movimento: []
+
+    }, this.getMovimento);
   }
 
   handleSelectConta(element) {
-    this.setState({conta: this.state.contas[parseInt(element.target.value, 10)]}, this.getMovimento.bind(this));
+    this.setState({
+
+      conta: this.state.agencia.contas.find( conta => conta.conta === element.target.value),
+
+      movimento: []
+
+    }, this.getMovimento);
   }
 
   getMovimento() {
-    api.cc.movimento.list(this.state.conta, false, this.loadMovimento.bind(this))
+    api.cc.movimento.list(this.state.banco.codigo, this.state.agencia.agencia, this.state.conta.conta, false, this.loadMovimento.bind(this))  
   }
 
   loadMovimento(movimento) {
-    this.setState({movimento: movimento})
+    this.setState({
+
+      movimento: movimento.map( lancamento => {
+        lancamento.data = new Date(lancamento.data).fromUTC().toISOString();
+        return lancamento;
+      })
+
+    })
   }
 
-  handleSelect(lancamento) {
+  handleSelectLancamento(lancamento) {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
     this.setState({
+
       movimento: this.state.movimento.map( l => {
-        if (lancamento.sequencia === l.sequencia) {
-          l.liquidado = l.liquidado === '1' ? '0' : '1'
+        if (lancamento.id === l.id) {
+          l.liquidado = !l.liquidado
         }
         return l;
       })
+
     })
 
-  }
-
-  handleUnselect() {
   }
 
   // manipuladores da lista de parcelas
   handleNew() {
     this.setState({dialog: <Edit 
+
+      contas={this.state.contas}
+      banco={this.state.banco}
+      agencia={this.state.agencia}
+      conta={this.state.conta}
+
       lancamento={
         {
-          sequencia: 0,
+          id: 0,
           banco: '',
           agencia: '',
           conta: '',
           data: new Date().toISOString(),
-          cheque: '',
-          liquidado: false,
+          documento: '',
           descricao: '',
-          valor: 0.00,
+          valor: '0,00',
           operacao: 'D',
-          investimento: false
+          liquidado: false,
         }
       }      
-      onSave={this.handleAdd.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
-  }
 
-  handleAdd(lancamento) {
-    this.setState({dialog: null});
+      onSave={this.handleAfterSave.bind(this)} 
+      onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleEdit(lancamento, index) {
     this.setState({dialog: <Edit 
-      lancamento={lancamento} 
-      index={index}
-      onSave={this.handleUpdate.bind(this)} 
+
+      contas={this.state.contas}
+      banco={this.state.banco}
+      agencia={this.state.agencia}
+      conta={this.state.conta}
+
+      lancamento={
+        {
+          ...lancamento,
+          valor: lancamento.valor.toFixed(2).replace('-', '').replace('.', ',')
+        }
+      }
+
+      onSave={this.handleAfterSave.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleUpdate(lancamento, index) {
-    let movimento = this.state.movimento;
-    movimento.splice(index, 1, {
-      ...lancamento   
-    });
-    this.setState({movimento: movimento, dialog: undefined})
+  handleAfterSave(lancamento) {
+    if (lancamento.banco === this.state.banco.codigo &&
+      lancamento.agencia === this.state.agencia.agencia &&
+      lancamento.conta === this.state.conta.conta) {
+
+      let movimento = this.state.movimento;
+
+      let index = movimento.findIndex( l => l.id === lancamento.id);
+
+      movimento.splice(index, index < 0 ? 0 : index, index < 0 ? lancamento : null)
+      
+      this.setState({movimento: movimento, dialog: undefined})
+    }
   }
 
   handleCloseDialog() {
@@ -162,7 +242,7 @@ export default class ContaCorrente extends Component {
 
   render() {
 
-    let saldo = this.state.conta.saldo_inicial || 0;
+    let saldo = this.state.conta && this.state.conta.saldo || 0;
 
     return (
 
@@ -233,33 +313,47 @@ export default class ContaCorrente extends Component {
             <Col xs={12} md={4}>
               <FormGroup validationState={'success'} >
                 <ControlLabel>Banco</ControlLabel>
-                <FormControl name="origem" componentClass="select" placeholder="Conta Corrente" value={this.state.conta} onChange={this.handleSelectConta} >
-                {this.state.contas && this.state.contas.map( (conta, index) =>
-                  <option key={'option-' + index} value={index}>{conta.codigo} {conta.nome} {conta.agencia} {conta.conta}</option>
+                <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
+                {this.state.contas && this.state.contas.map( (banco, index) =>
+                  <option key={'banco-' + index} value={banco.codigo} >{banco.codigo} - {banco.nome}</option>
                 )}
                 </FormControl>
               </FormGroup>
             </Col>
 
-            <Col xs={12} md={4}>
+            <Col xs={12} md={2}>
               <FormGroup validationState={'success'} >
                 <ControlLabel>Agencia</ControlLabel>
-                <FormControl name="origem" componentClass="select" placeholder="Conta Corrente" value={this.state.conta} onChange={this.handleSelectConta} >
-                {this.state.contas && this.state.contas.map( (conta, index) =>
-                  <option key={'option-' + index} value={index}>{conta.codigo} {conta.nome} {conta.agencia} {conta.conta}</option>
+                <FormControl name="agencia" componentClass="select" placeholder="Agencia" value={this.state.agencia.agencia} onChange={this.handleSelectAgencia} >
+                {this.state.banco && this.state.banco.agencias.map( (agencia, index) =>
+                  <option key={'agencia-' + index} value={agencia.agencia} >{agencia.agencia}</option>
                 )}
                 </FormControl>
               </FormGroup>
             </Col>
 
-            <Col xs={12} md={4}>
+            <Col xs={12} md={2}>
               <FormGroup validationState={'success'} >
                 <ControlLabel>Conta</ControlLabel>
-                <FormControl name="origem" componentClass="select" placeholder="Conta Corrente" value={this.state.conta} onChange={this.handleSelectConta} >
-                {this.state.contas && this.state.contas.map( (conta, index) =>
-                  <option key={'option-' + index} value={index}>{conta.codigo} {conta.nome} {conta.agencia} {conta.conta}</option>
+                <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.conta} onChange={this.handleSelectConta} >
+                {this.state.agencia && this.state.agencia.contas.map( (conta, index) =>
+                  <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
                 )}
                 </FormControl>
+              </FormGroup>
+            </Col>
+
+            <Col md={2}>
+              <FormGroup validationState="success">
+                <ControlLabel>Saldo da Conta</ControlLabel>
+                <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', (this.state.conta.saldo || 0.00))} readOnly />
+              </FormGroup>
+            </Col>
+
+            <Col md={2}>
+              <FormGroup validationState="success">
+                <ControlLabel>Saldo Conferido</ControlLabel>
+                <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', (this.state.conta.saldo || 0.00) + this.state.movimento.filter( lancamento => lancamento.liquidado).reduce( (saldo, lancamento) => saldo + lancamento.valor, 0.00)) } readOnly />
               </FormGroup>
             </Col>
 
@@ -272,11 +366,11 @@ export default class ContaCorrente extends Component {
                   <tr>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Data</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Descricao</th>
-                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Cheque</th>
+                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Documento</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}} >Liquidado</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}} >Valor</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
-                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center', width: 20}}></th>
+                    {/*<th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center', width: 20}}></th>*/}
                   </tr>
                 </thead>
                 <tbody>
@@ -286,45 +380,30 @@ export default class ContaCorrente extends Component {
 
                     return (
                       <tr key={'tr-' + index} id={'tr-' + index} >
-                        <td style={{textAlign: 'center'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{data.toLocaleDateString()}</a></td>
+                        <td style={{textAlign: 'center', cursor: 'pointer'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{data.toLocaleDateString()}</a></td>
                         <td style={{}}>{lancamento.descricao}</td>
-                        <td style={{textAlign: 'center'}}>{lancamento.cheque}</td>
+                        <td style={{textAlign: 'center'}}>{lancamento.documento}</td>
                         <td style={{textAlign: 'center'}}>
-                          {lancamento.liquidado === '1' ?
-                            (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleSelect.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                            (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleSelect.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
+                          {lancamento.liquidado ?
+                            (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleSelectLancamento.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                            (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleSelectLancamento.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
                           }
                         </td>
                         <td style={{textAlign: 'right', color: lancamento.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', lancamento.valor)}</td>
                         <td style={{textAlign: 'right', color: saldo < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', saldo)}</td>
-                        <td>
+                        {/*<td>
                           <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, lancamento)} ><Glyphicon glyph="edit" /></Button>
-                        </td>
+                        </td>*/}
                       </tr>                              
                     )
                   }
                     
                   )}
 
-                  <tr>
-                    <td colSpan={4}></td>
-                    <td style={{textAlign: 'right'}}><b>Saldo Conferido</b></td>
-                    <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', this.state.movimento.reduce( (soma, lancamento) => soma + lancamento.valor, 0.0))}</b></td>
-                    <td></td>
-                  </tr>
                 </tbody>
               </Table>
             </Col>
           </Row>
-
-          {/*<Row>
-            <Col xs={12} md={2}>Saldo Conferido</Col>
-            <Col xs={12} md={10}>
-              <FormGroup validationState="success">
-                <FormControl type="text" value={this.state.conta.saldo} readOnly />
-              </FormGroup>
-            </Col>
-          </Row>*/}
 
         </Panel>
 

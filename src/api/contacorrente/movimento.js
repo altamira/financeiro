@@ -4,11 +4,18 @@ function getLancamento(lancamento, callback) {
 	http.fetch('contacorrente/lancamento/' + lancamento, callback);
 }
 
-function getLancamentos(conta, liquidado, callback) {
-	http.fetch('contacorrente/lancamentos/' + conta.banco + '/' + conta.agencia + '/' + conta.conta + '?liquidado=' + (liquidado || 0), callback);
+function getLancamentos(banco, agencia, conta, liquidado, callback) {
+	if (banco && agencia && conta) {
+		http.fetch('contacorrente/lancamentos/' + banco + '/' + agencia + '/' + conta + '?liquidado=' + (!!liquidado ? 1 : 0), callback);	
+	}
+}
+
+function postLancamento(lancamento, callback) {
+	http.post('contacorrente/lancamento/', lancamento, callback);	
 }
 
 export default {
 	get: getLancamento,
-	list: getLancamentos
+	list: getLancamentos,
+	save: postLancamento
 }
