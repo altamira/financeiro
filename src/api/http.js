@@ -31,7 +31,20 @@ function post(url, data, callback, error) {
 	})
 }
 
+function put(url, data, callback, error) {
+	axios
+	.put(host + url, data)
+	.then( response => {
+		callback ? callback(response.data) : window.errHandler && window.errHandler({mensagem: 'API: função de callback não foi definida !'})
+	})
+	.catch( err => {
+		console.log('Error: ' + JSON.stringify(err, null, 2))
+		error ? error(err) : window.errHandler && window.errHandler(err)
+	})
+}
+
 export default {
 	fetch: fetch,
-	post: post
+	post: post,
+	put: put
 };

@@ -4,6 +4,10 @@ import format from 'number-format.js';
 
 import React, { Component } from 'react';
 
+import Spinner from 'react-spinner';
+
+import './../react-spinner.css';
+
 import {  
   Col, 
   Row, 
@@ -11,7 +15,8 @@ import {
   FormControl,
   Table,
   Modal,
-  Button
+  Button,
+  Glyphicon
 } from 'react-bootstrap';
 
 import DatePicker from 'react-bootstrap-date-picker';
@@ -24,36 +29,29 @@ export default class Buscar extends Component {
 		super(props);
 
 		this.state = {
+
 			data: new Date().toISOString(),
-			conta: {},
-			descricao: ''
+			descricao: '',
+
+			conta: this.props.conta
+
 		}
 
-		this.handleClose = this.handleClose.bind(this);
-		this.handleSelect = this.handleSelect.bind(this);
-		this.handleSearch = this.handleSearch.bind(this);
+		this.handleChangeData = this.handleChangeData.bind(this);
 		this.handleChange = this.handleChange.bind(this);
 
+		this.handleEdit = this.handleEdit.bind(this);
+
+		this.handleSearch = this.handleSearch.bind(this);
+		this.loadResult = this.loadResult.bind(this);
 	}
 
-	handleSelectConta(element) {
-		this.setState({conta: this.state.contas[parseInt(element.target.value, 10)]});
+	componentWillMount(){
+		this.handleSearch()
 	}
 
-	handleClose() {
-		this.onClose && this.onClose();
-	}
-
-	handleSelect(item) {
-		this.props.onSelect && this.props.onSelect(item);
-	}
-
-	handleSearch() {
-		api.cc.movimento.list(this.state.conta, false, this.loadResult.bind(this))
-	}
-
-	loadResult(lista) {
-		this.setState({lista: lista})
+	handleChangeData(data) {
+		this.setState({data : data});
 	}
 
 	handleChange(event) {
@@ -62,25 +60,62 @@ export default class Buscar extends Component {
 		});
 	}
 
+	// Validações
+	onValidateDate(propriedade) {
+		var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[7-9]|202[0-9])$/;
+		return regex.test(new Date(this.state[propriedade]).toLocaleDateString());
+	}
+
+	onValidateMoney(propriedade) {
+		var regex = /^[0-9]{1,9}([.]([0-9]{3}))*[,]([.]{0})[0-9]{2}$/;
+		return regex.test(this.state[propriedade]) && this.state[propriedade].length <= 10;
+	}
+
+	handleEdit(item) {
+		this.props.onSelect && this.props.onSelect({
+			...item,
+			data: new Date(item.data).fromUTC().toISOString(),
+			documento: item.documento || ''
+		});
+	}
+
+	handleSearch() {
+		if (this.state.conta.banco && 
+			this.state.conta.agencia &&
+			this.state.conta.conta) {
+			this.setState({
+				isLoading: true
+			}/*, api.cc.movimento.search.bind(null, this.state.conta.banco, this.state.conta.agencia, this.state.conta.conta, true, this.loadResult.bind(this))*/ )
+		}
+	}
+
+	loadResult(lista) {
+		if (!Array.isArray(lista) || !lista.length) {
+			this.setState({
+				isLoading: undefined
+			}, window.errHandler.bind(null, {erro: 9191, mensagem: 'Nenhum lançamento encontrado.'}) )
+		} else {
+			this.setState({lista: lista, isLoading: undefined})
+		}
+	}
+
 	render() {
 
 		return(
 
 			<div className="static-modal">
-		        <Modal.Dialog>
+		        <Modal.Dialog bsSize="large" >
 		          <Modal.Header>
 		            <Modal.Title>Buscar Lançamento</Modal.Title>
 		          </Modal.Header>
 
 		          <Modal.Body>
 
-	                  <Row>
+	                  {/*<Row>
 
 						<Col md={4}>Data</Col>
-
 	                    <Col md={4}>
 	                      <FormGroup>
-	                        {/*<ControlLabel>Data</ControlLabel>*/}
 	                        <DatePicker name="data" value={this.state.data} dayLabels={BrazilianDayLabels} monthLabels={BrazilianMonthLabels} onChange={this.handleChangeData} />
 	                        <FormControl.Feedback />
 	                      </FormGroup>
@@ -91,10 +126,8 @@ export default class Buscar extends Component {
 	                  <Row>
 
 	                  	<Col md={4}>Documento</Col>
-
 	                    <Col md={4}>
 	                      <FormGroup>
-	                        {/*<ControlLabel>Cheque</ControlLabel>*/}
 	                        <FormControl type="text" id="documento" value={this.state.documento} onChange={this.handleChange} />
 	                        <FormControl.Feedback />
 	                      </FormGroup>
@@ -106,37 +139,57 @@ export default class Buscar extends Component {
 	                    <Col md={4}>Descrição</Col>
 	                    <Col md={8}>
 	                      <FormGroup>
-	                        {/*<ControlLabel>Input with success and feedback icon</ControlLabel>*/}
 	                        <FormControl type="text" id="descricao" value={this.state.descricao} onChange={this.handleChange} />
 	                        <FormControl.Feedback />
 	                      </FormGroup>
 	                    </Col>
-	                  </Row>
+	                  </Row>*/}
 
 					<Row>
 	                    <Col md={12}>
+	                    	<div  style={{
+	                    		height: '400px',
+	                    			
+								    overflowX: 'hidden',
+								    overflowY: 'auto'
+								}}
+							>
+							
+							{this.state.isLoading && <Spinner style={{backgroundColor: 'black'}} />}
+
 							<Table striped bordered condensed hover>
 							    <thead>
 							      <tr>
-							        <th>Data</th>
+							      	<th>#</th>
+							        <th>Lançado</th>
+							        <th>Liquidação</th>
 							        <th>Descricao</th>
 							        <th>Documento</th>
 							        <th>Liquidado</th>
 							        <th>Valor</th>
+							        <th style={{textAlign: 'center', width: 20}}></th>
 							      </tr>
 							    </thead>
 							    <tbody>
-								    {this.state.lista && this.state.lista.map( item =>
-								      <tr style={{cursor: 'pointer'}} key={item.sequencia} onClick={this.handleSelect.bind(null, item)}>
-								        <td>{new Date(item.data).toLocaleDateString()}</td>
+								    {this.state.lista && this.state.lista.map( (item, index) =>
+								      <tr style={{cursor: 'pointer'}} key={item.id} >
+								      	<td>{index + 1}</td>
+								        <td>{new Date(item.data).fromUTC().toLocaleDateString()}</td>
+								        <td>{item.liquidacao && new Date(item.liquidacao).fromUTC().toLocaleDateString()}</td>
 								        <td>{item.descricao}</td>
 								        <td>{item.documento}</td>
-								        <td>{item.liquidado}</td>
-								        <td>{format('R$ ###.###.##0,00', item.valor)}</td>
+								        <td style={{textAlign: 'center'}}>
+				                          {item.liquidado ? (<Glyphicon glyph="ok" />) : (<Glyphicon glyph="dot" />) }
+				                        </td>
+								        <td style={{textAlign: 'right', whiteSpace: 'nowrap'}}>{format('R$ ###.###.##0,00', item.valor)}</td>
+								        <td>
+				                          <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, item)} ><Glyphicon glyph="edit" /></Button>
+				                        </td>
 								      </tr>
 								    )}
 								</tbody>
   							</Table>
+  						</div>
 		                </Col>
 	                </Row>
 
@@ -144,7 +197,17 @@ export default class Buscar extends Component {
 
 		          <Modal.Footer>
 		            <Button onClick={this.props.onClose} >Fechar</Button>
-		            <Button bsStyle="primary" onClick={this.handleSearch}>Buscar</Button>
+		            {/*<Button 
+		            	bsStyle="primary" 
+		            	onClick={this.handleSearch}
+		            	disabled={!(
+							this.onValidateDate('data') &&
+							this.state.conta.banco.length &&
+							this.state.conta.agencia.length &&
+							this.state.conta.conta.length 
+						)} 
+		            >Visualizar
+		            </Button>*/}
 		          </Modal.Footer>
 
 		        </Modal.Dialog>

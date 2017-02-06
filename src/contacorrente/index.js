@@ -76,7 +76,8 @@ export default class ContaCorrente extends Component {
     this.handleAfterSave = this.handleAfterSave.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
 
-    this.handleSelectLancamento = this.handleSelectLancamento.bind(this);
+    this.handleLiquidar = this.handleLiquidar.bind(this);
+    this.handleLiquidado = this.handleLiquidado.bind(this);
 
   }
 
@@ -85,26 +86,66 @@ export default class ContaCorrente extends Component {
   }
 
   loadContas(contas) {
-    this.setState({contas: contas})
+    let banco = contas[0] || {
+      codigo: '',
+      nome: '',
+      agencias: [
+        {
+          agencia: '',
+          contas: [
+            {
+              conta: '',
+              saldo: 0.00
+            }
+          ]
+        }
+      ]
+    }
+
+    let agencia = banco.agencias[0]
+
+    let conta = agencia.contas[0]
+
+    this.setState({
+      contas: contas,
+
+      banco: banco,
+
+      agencia: agencia,
+
+      conta: conta
+
+    }, this.getMovimento)
   }
 
   handleSelectBanco(element) {
+    let banco = this.state.contas.find( banco => banco.codigo === element.target.value) || {
+      codigo: '',
+      nome: '',
+      agencias: [
+        {
+          agencia: '',
+          contas: [
+            {
+              conta: '',
+              saldo: 0.00
+            }
+          ]
+        }
+      ]
+    }
+
+    let agencia = banco.agencias[0]
+
+    let conta = agencia.contas[0]
+
     this.setState({
 
-      banco: this.state.contas.find( banco => banco.codigo === element.target.value),
+      banco: banco,
 
-      agencia: this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
-        agencia: '',
-        contas: []
-      },
+      agencia: agencia,
 
-      conta: (this.state.contas.find( banco => banco.codigo === element.target.value).agencias[0] || {
-        agencia: '',
-        contas: []
-      }).contas[0] || {
-        conta: '',
-        saldo: 0.00
-      },
+      conta: conta,
 
       movimento: []
 
@@ -112,14 +153,23 @@ export default class ContaCorrente extends Component {
   }
 
   handleSelectAgencia(element) {
+    let agencia = this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value) || {
+      agencia: '',
+      contas: [
+        {
+          conta: '',
+          saldo: 0.00
+        }
+      ]
+    }
+
+    let conta = agencia.contas[0]
+
     this.setState({
 
-      agencia: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value),
+      agencia: agencia,
 
-      conta: this.state.banco.agencias.find( agencia => agencia.agencia === element.target.value).contas[0] || {
-        conta: '',
-        saldo: 0.00
-      },
+      conta: conta,
 
       movimento: []
 
@@ -127,9 +177,14 @@ export default class ContaCorrente extends Component {
   }
 
   handleSelectConta(element) {
+    let conta = this.state.agencia.contas.find( conta => conta.conta === element.target.value) || {
+      conta: '',
+      saldo: 0.00
+    }
+
     this.setState({
 
-      conta: this.state.agencia.contas.find( conta => conta.conta === element.target.value),
+      conta: conta,
 
       movimento: []
 
@@ -141,25 +196,49 @@ export default class ContaCorrente extends Component {
   }
 
   loadMovimento(movimento) {
-    this.setState({
-
-      movimento: movimento.map( lancamento => {
-        lancamento.data = new Date(lancamento.data).fromUTC().toISOString();
-        return lancamento;
-      })
-
-    })
+    this.setState({movimento: movimento})
   }
 
-  handleSelectLancamento(lancamento) {
+  handleLiquidar(lancamento) {
+
+    api.cc.movimento.liquidar({
+      ...lancamento,
+      liquidado: !lancamento.liquidado
+    }, this.handleLiquidado)
+
+  }
+
+  handleLiquidado(lancamento) {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
     this.setState({
 
+      contas: this.state.contas.map( banco => {
+        return {
+          ...banco,
+          agencias: banco.agencias.map( agencia => {
+            return {
+              ...agencia,
+              contas: agencia.contas.map( conta => {
+                return {
+                  ...conta,
+                  saldo: banco.codigo === lancamento.banco && 
+                    agencia.agencia === lancamento.agencia && 
+                    conta.conta === lancamento.conta ? 
+                      conta.saldo + lancamento.valor : 
+                      conta.saldo
+                }
+              })
+            }
+          })
+        }
+      }),
+
       movimento: this.state.movimento.map( l => {
         if (lancamento.id === l.id) {
-          l.liquidado = !l.liquidado
+          l.liquidado = lancamento.liquidado,
+          l.valor = lancamento.valor
         }
         return l;
       })
@@ -207,6 +286,8 @@ export default class ContaCorrente extends Component {
       lancamento={
         {
           ...lancamento,
+          data: new Date(lancamento.data).fromUTC().toISOString(),
+          documento: lancamento.documento || '',
           valor: lancamento.valor.toFixed(2).replace('-', '').replace('.', ',')
         }
       }
@@ -216,18 +297,18 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterSave(lancamento) {
-    if (lancamento.banco === this.state.banco.codigo &&
+    /*if (lancamento.banco === this.state.banco.codigo &&
       lancamento.agencia === this.state.agencia.agencia &&
-      lancamento.conta === this.state.conta.conta) {
+      lancamento.conta === this.state.conta.conta) {*/
 
       let movimento = this.state.movimento;
 
       let index = movimento.findIndex( l => l.id === lancamento.id);
 
-      movimento.splice(index, index < 0 ? 0 : index, index < 0 ? lancamento : null)
+      movimento.splice(index, index < 0 ? 0 : 1, lancamento)
       
       this.setState({movimento: movimento, dialog: undefined})
-    }
+    //}
   }
 
   handleCloseDialog() {
@@ -235,14 +316,26 @@ export default class ContaCorrente extends Component {
   }
 
   handleSearch() {
-    this.setState({dialog: <Search 
-      onSelect={this.handleEdit.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
+    this.setState({
+      dialog: 
+        <Search 
+          
+          conta={{
+            banco: this.state.banco.codigo || '',
+            agencia: this.state.agencia.agencia || '',
+            ...this.state.conta
+          }}
+
+          onSelect={this.handleEdit.bind(this)} 
+          onClose={this.handleCloseDialog.bind(this)} 
+          
+        />
+    })
   }
 
   render() {
 
-    let saldo = this.state.conta && this.state.conta.saldo || 0;
+    let saldo = (this.state.conta && this.state.conta.saldo) || 0;
 
     return (
 
@@ -274,7 +367,7 @@ export default class ContaCorrente extends Component {
 
               <OverlayTrigger 
                 placement="top" 
-                overlay={(<Tooltip id="tooltip">Procurar um Lançamento</Tooltip>)}
+                overlay={(<Tooltip id="tooltip">Visualizar os últimos 100 lançamentos liquidados</Tooltip>)}
               >
                   <Button
                     onClick={this.handleSearch}
@@ -282,7 +375,7 @@ export default class ContaCorrente extends Component {
                     bsStyle="success"
                   >
                     <Glyphicon glyph="search" />
-                    <div><span>Busca</span></div>
+                    <div><span>Visualizar</span></div>
                   </Button>
               </OverlayTrigger>
 
@@ -323,7 +416,7 @@ export default class ContaCorrente extends Component {
 
             <Col xs={12} md={2}>
               <FormGroup validationState={'success'} >
-                <ControlLabel>Agencia</ControlLabel>
+                <ControlLabel>Empresa</ControlLabel>
                 <FormControl name="agencia" componentClass="select" placeholder="Agencia" value={this.state.agencia.agencia} onChange={this.handleSelectAgencia} >
                 {this.state.banco && this.state.banco.agencias.map( (agencia, index) =>
                   <option key={'agencia-' + index} value={agencia.agencia} >{agencia.agencia}</option>
@@ -359,7 +452,7 @@ export default class ContaCorrente extends Component {
 
           </Row>
 
-          <Row>
+          <Row style={{paddingTop: 10}}>
             <Col xs={12} md={12}>
               <Table striped bordered condensed hover>
                 <thead>
@@ -370,30 +463,29 @@ export default class ContaCorrente extends Component {
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}} >Liquidado</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}} >Valor</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
-                    {/*<th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center', width: 20}}></th>*/}
+                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center', width: 20}}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {this.state.movimento.map( (lancamento, index) => {
-                    let data = new Date(lancamento.data);
                     saldo += lancamento.valor;
 
                     return (
                       <tr key={'tr-' + index} id={'tr-' + index} >
-                        <td style={{textAlign: 'center', cursor: 'pointer'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{data.toLocaleDateString()}</a></td>
+                        <td style={{textAlign: 'center', cursor: 'pointer'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{new Date(lancamento.data).fromUTC().toLocaleDateString()}</a></td>
                         <td style={{}}>{lancamento.descricao}</td>
                         <td style={{textAlign: 'center'}}>{lancamento.documento}</td>
                         <td style={{textAlign: 'center'}}>
                           {lancamento.liquidado ?
-                            (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleSelectLancamento.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                            (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleSelectLancamento.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
+                            (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                            (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
                           }
                         </td>
-                        <td style={{textAlign: 'right', color: lancamento.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', lancamento.valor)}</td>
-                        <td style={{textAlign: 'right', color: saldo < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', saldo)}</td>
-                        {/*<td>
+                        <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: lancamento.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', lancamento.valor)}</td>
+                        <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: saldo < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', saldo)}</td>
+                        <td>
                           <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, lancamento)} ><Glyphicon glyph="edit" /></Button>
-                        </td>*/}
+                        </td>
                       </tr>                              
                     )
                   }

@@ -28,6 +28,7 @@ import Error from './Error';
 
 var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
+// eslint-disable-next-line
 Date.prototype.fromUTC = function() {
   let date = this.toISOString();
   if (!this.getUTCHours() && !this.getUTCMinutes() && !this.getUTCSeconds() && !this.getUTCMilliseconds()) {
@@ -37,6 +38,7 @@ Date.prototype.fromUTC = function() {
   return this;
 }
 
+// eslint-disable-next-line
 Date.prototype.toUTC = function() {
   let date = this.toISOString();
   if (this.getUTCHours() || this.getUTCMinutes() || this.getUTCSeconds() || this.getUTCMilliseconds()) {
