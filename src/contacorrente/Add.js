@@ -21,7 +21,7 @@ import DatePicker from 'react-bootstrap-date-picker';
 const BrazilianDayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 const BrazilianMonthLabels = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Octubro', 'Novembro', 'Dezembro'];
 
-export default class Edit extends Component {
+export default class Add extends Component {
   constructor(props) {
     super(props);
 
@@ -70,6 +70,7 @@ export default class Edit extends Component {
     this.handleChange = this.handleChange.bind(this);
 
     this.handleSave = this.handleSave.bind(this);
+    this.handleReset = this.handleReset.bind(this);
 
     this.handleOperacao = this.handleOperacao.bind(this);
     this.handleLiquidado = this.handleLiquidado.bind(this);
@@ -213,7 +214,23 @@ export default class Edit extends Component {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
-    api.cc.movimento.save(lancamento, this.props.onSave);
+    api.cc.movimento.save(lancamento, this.handleReset);
+  }
+
+  handleReset(lancamento) {
+    this.setState({
+      lancamento: {
+
+        data: new Date().toISOString(),
+        documento: '',
+        descricao: '',
+        valor: '0,00',
+
+        operacao: 'D',
+        liquidado: false,
+
+      }
+    }, this.props.onSave.bind(null, lancamento))
   }
 
   render() {

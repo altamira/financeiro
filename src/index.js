@@ -9,12 +9,19 @@ import './index.css';  // bootstrap css
 import App from './App';
 import Dashboard from './dashboard';
 import Emissao from './recebiveis/emissao';
+
 import Faturamento from './recebiveis/lancamento';
+
 import Cobranca from './recebiveis/cobranca';
 import Remessa from './recebiveis/remessa/';
 import Retorno from './recebiveis/retorno';
 
 import ContaCorrente from './contacorrente/index.js';
+
+import UltimosPedidosLiberados from './recebiveis/lancamento/Search';
+import UltimasCobrancas from './recebiveis/cobranca/Search';
+import UltimasRemessas from './recebiveis/remessa/Search';
+import UltimosRetornos from './recebiveis/retorno/Search';
 
 const About = () =>
 	<div>
@@ -33,7 +40,7 @@ const User = () =>
 
 const NoMatch = () =>
 	<div>
-		NoMatch
+		Formulário não encontrado !
 	</div>
 
 /*ReactDOM.render(
@@ -47,13 +54,22 @@ const NoMatch = () =>
 render((
   <Router history={browserHistory}>
     <Route path="/" component={App} >
-      <Route path="dashboard" component={Dashboard}/>
+
     	<Route path="recebiveis/emissao" component={Emissao}/>
       <Route path="recebiveis/lancamento/:id" component={Faturamento}/>
       <Route path="recebiveis/cobranca/:id" component={Cobranca}/>
       <Route path="recebiveis/remessa/:id" component={Remessa}/>
       <Route path="recebiveis/retorno/:id" component={Retorno}/>
+
       <Route path="contacorrente/" component={ContaCorrente}/>
+
+      <Route path="consultas/dashboard" component={Dashboard}/>
+
+      <Route path="consultas/lancamento/ultimos" component={UltimosPedidosLiberados}/>
+      <Route path="consultas/cobranca/ultimos" component={UltimasCobrancas}/>
+      <Route path="consultas/remessa/ultimos" component={UltimasRemessas}/>
+      <Route path="consultas/retorno/ultimos" component={UltimosRetornos}/>
+
       <Route path="about" component={About}/>
       <Route path="users" component={Users}>
         <Route path="/user/:userId" component={User}/>

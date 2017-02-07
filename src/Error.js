@@ -11,7 +11,7 @@ export default class Error extends Component {
 
        	console.log('Erro:' + JSON.stringify(this.props, null, 2))
 
-		let erro = 9999;
+		let erro = 0;
 		let mensagem = 'Erro desconhecido, nenhuma mensagem recebida.';
 
 		if (this.props.response && this.props.response.data) {

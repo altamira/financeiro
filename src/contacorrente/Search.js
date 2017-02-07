@@ -4,25 +4,16 @@ import format from 'number-format.js';
 
 import React, { Component } from 'react';
 
-import Spinner from 'react-spinner';
-
-import './../react-spinner.css';
-
 import {  
   Col, 
   Row, 
-  FormGroup,
-  FormControl,
   Table,
   Modal,
   Button,
   Glyphicon
 } from 'react-bootstrap';
 
-import DatePicker from 'react-bootstrap-date-picker';
-
-const BrazilianDayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-const BrazilianMonthLabels = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Octubro', 'Novembro', 'Dezembro'];
+import Spinner from 'react-spinkit';
 
 export default class Buscar extends Component {
 	constructor(props) {
@@ -43,7 +34,7 @@ export default class Buscar extends Component {
 		this.handleEdit = this.handleEdit.bind(this);
 
 		this.handleSearch = this.handleSearch.bind(this);
-		this.loadResult = this.loadResult.bind(this);
+		this.handleResult = this.handleResult.bind(this);
 	}
 
 	componentWillMount(){
@@ -85,15 +76,15 @@ export default class Buscar extends Component {
 			this.state.conta.conta) {
 			this.setState({
 				isLoading: true
-			}/*, api.cc.movimento.search.bind(null, this.state.conta.banco, this.state.conta.agencia, this.state.conta.conta, true, this.loadResult.bind(this))*/ )
+			}, api.cc.movimento.search.bind(null, this.state.conta.banco, this.state.conta.agencia, this.state.conta.conta, true, this.handleResult.bind(this)) )
 		}
 	}
 
-	loadResult(lista) {
+	handleResult(lista) {
 		if (!Array.isArray(lista) || !lista.length) {
 			this.setState({
 				isLoading: undefined
-			}, window.errHandler.bind(null, {erro: 9191, mensagem: 'Nenhum lançamento encontrado.'}) )
+			}, window.errHandler.bind(null, {erro: 0, mensagem: 'Nenhum lançamento encontrado.'}) )
 		} else {
 			this.setState({lista: lista, isLoading: undefined})
 		}
@@ -154,42 +145,47 @@ export default class Buscar extends Component {
 								    overflowY: 'auto'
 								}}
 							>
-							
-							{this.state.isLoading && <Spinner style={{backgroundColor: 'black'}} />}
 
-							<Table striped bordered condensed hover>
-							    <thead>
-							      <tr>
-							      	<th>#</th>
-							        <th>Lançado</th>
-							        <th>Liquidação</th>
-							        <th>Descricao</th>
-							        <th>Documento</th>
-							        <th>Liquidado</th>
-							        <th>Valor</th>
-							        <th style={{textAlign: 'center', width: 20}}></th>
-							      </tr>
-							    </thead>
-							    <tbody>
-								    {this.state.lista && this.state.lista.map( (item, index) =>
-								      <tr style={{cursor: 'pointer'}} key={item.id} >
-								      	<td>{index + 1}</td>
-								        <td>{new Date(item.data).fromUTC().toLocaleDateString()}</td>
-								        <td>{item.liquidacao && new Date(item.liquidacao).fromUTC().toLocaleDateString()}</td>
-								        <td>{item.descricao}</td>
-								        <td>{item.documento}</td>
-								        <td style={{textAlign: 'center'}}>
-				                          {item.liquidado ? (<Glyphicon glyph="ok" />) : (<Glyphicon glyph="dot" />) }
-				                        </td>
-								        <td style={{textAlign: 'right', whiteSpace: 'nowrap'}}>{format('R$ ###.###.##0,00', item.valor)}</td>
-								        <td>
-				                          <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, item)} ><Glyphicon glyph="edit" /></Button>
-				                        </td>
+								<Table striped bordered condensed hover>
+								    <thead>
+								      <tr>
+								      	<th>#</th>
+								        <th>Lançado</th>
+								        <th>Liquidação</th>
+								        <th>Descricao</th>
+								        <th>Documento</th>
+								        <th>Liquidado</th>
+								        <th>Valor</th>
+								        <th style={{textAlign: 'center', width: 20}}></th>
 								      </tr>
-								    )}
-								</tbody>
-  							</Table>
-  						</div>
+								    </thead>
+								    <tbody>
+									    {this.state.lista && this.state.lista.map( (item, index) =>
+									      <tr style={{cursor: 'pointer'}} key={item.id} >
+									      	<td>{index + 1}</td>
+									        <td>{new Date(item.data).fromUTC().toLocaleDateString()}</td>
+									        <td>{item.liquidacao && new Date(item.liquidacao).fromUTC().toLocaleDateString()}</td>
+									        <td>{item.descricao}</td>
+									        <td>{item.documento}</td>
+									        <td style={{textAlign: 'center'}}>
+					                          {item.liquidado ? (<Glyphicon glyph="ok" />) : (<Glyphicon glyph="dot" />) }
+					                        </td>
+									        <td style={{textAlign: 'right', whiteSpace: 'nowrap'}}>{format('R$ ###.###.##0,00', item.valor)}</td>
+									        <td>
+					                          <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, item)} ><Glyphicon glyph="edit" /></Button>
+					                        </td>
+									      </tr>
+									    )}
+									</tbody>
+	  							</Table>
+
+	  							{this.state.isLoading && 
+									<div style={{textAlign: 'center'}}>
+										<Spinner spinnerName="three-bounce" />
+									</div>
+								}
+
+	  						</div>
 		                </Col>
 	                </Row>
 

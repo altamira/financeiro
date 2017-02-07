@@ -1,5 +1,8 @@
 import usuario from './usuario'
+
+import consulta from './consultas'
 import tarefa from './tarefa'
+
 import carteira from './carteira'
 import lancamento from './lancamento'
 import cobranca from './cobranca'
@@ -16,6 +19,8 @@ export default {
 	
 	config: config,
 	usuario: usuario,
+
+	consulta: consulta,
 	tarefa: tarefa,
 
 	carteira: carteira,

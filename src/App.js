@@ -6,15 +6,15 @@ import mqtt from 'mqtt/lib/connect';
 import api from './api';
 
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
 import { Link } from 'react-router';
 
 import { 
   Nav, 
   Navbar, 
   NavItem, 
-  NavDropdown, 
-  MenuItem, 
   Col, 
+  Row,
   Accordion, 
   Panel, 
   ListGroup, 
@@ -48,6 +48,11 @@ Date.prototype.toUTC = function() {
   return this;
 }
 
+const ConsultaItem = props =>
+  <Link to={{ pathname: props.form, query: props.parametros || '' }}>
+    <span style={{display: 'block'}}>{props.descricao}</span>
+  </Link>
+
 const TaskItem = props =>
   <Link to={{ pathname: props.form + props.id, query: props.parametros }}>
     <span style={{display: 'block'}}>{props.titulo}</span>
@@ -77,7 +82,9 @@ class App extends Component {
     this.handleErro = this.handleErro.bind(this);
     this.handleDebug = this.handleDebug.bind(this);
 
+    this.setConsultas = this.setConsultas.bind(this);
     this.setTarefas = this.setTarefas.bind(this);
+
     this.handleTarefaConcluida = this.handleTarefaConcluida.bind(this);
     this.handleTarefaNova = this.handleTarefaNova.bind(this);
     this.handleTarefaAtualizada = this.handleTarefaAtualizada.bind(this);
@@ -174,6 +181,7 @@ class App extends Component {
       alert('Erro na conexao com o servidor de mensagens: ' + err);
     })
 
+    api.consulta.list(this.state.usuario.perfil || '', this.setConsultas)
     api.tarefa.list((this.state.usuario && this.state.usuario.perfil) || '', this.setTarefas);
 
   }  
@@ -193,6 +201,12 @@ class App extends Component {
     this.client.end();  
 
     this.goHome();  
+  }
+
+  setConsultas(consultas) {
+    if (consultas instanceof Array) {
+      this.setState({consultas: consultas});
+    }
   }
 
   setTarefas(tarefas) {
@@ -241,6 +255,10 @@ class App extends Component {
     this.setState({dialog: null})
   }
 
+  handleNavSelect(item) {
+    item && browserHistory.push(item);
+  }
+
   render() {
 
     const tarefas = {};
@@ -252,48 +270,62 @@ class App extends Component {
     const main = (
      
       <div className="App">
-        <Navbar inverse collapseOnSelect style={{borderRadius: 0}}>
+        <Navbar inverse collapseOnSelect style={{borderRadius: 0}} onSelect={this.handleNavSelect}>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to='/'>Resumo Financeiro</Link>
+              <Link to='/'>Altamira</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
           <Navbar.Collapse>
-            <Nav>
-              <NavDropdown eventKey={3} title="Cadastros" id="basic-nav-dropdown">
-                <MenuItem eventKey={3.1} >Banco</MenuItem>
-                <MenuItem eventKey={3.2} >Conta Corrente</MenuItem>
-                <MenuItem eventKey={3.3} >Clientes</MenuItem>
+            {/*<Nav>
+              <NavDropdown eventKey="" title="Consultas" id="basic-nav-dropdown">
+                <MenuItem eventKey="/recebiveis/lancamentos/consulta/ultimos" >Pedidos Liberados</MenuItem>
                 <MenuItem divider />
-                <MenuItem eventKey={3.3} >Usuarios</MenuItem>
+                <MenuItem eventKey="" >Últimas Cobrancas</MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey="" >Últimas Remessas</MenuItem>
+                <MenuItem divider />
+                <MenuItem eventKey="" >Últimos Retornos</MenuItem>
               </NavDropdown>
-              <NavItem eventKey={2} ><Link to="/contacorrente/" >Conta Corrente</Link></NavItem>
-            </Nav>
+              <NavItem eventKey="/contacorrente/" >Conta Corrente</NavItem>
+            </Nav>*/}
             <Nav pullRight>
-              <NavItem eventKey={4} href="#" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario && this.state.usuario.nome} (Sair)</span></NavItem>
+              <NavItem eventKey="logout" ><span onClick={this.handleLogout.bind(this)}>{this.state.usuario && this.state.usuario.nome} (Sair)</span></NavItem>
             </Nav>
           </Navbar.Collapse>
         </Navbar>
 
         <Col md={3} >
-          <Accordion>
-            <Panel style={{cursor: 'pointer'}} header={<span>Tarefas  <Badge>{this.state.tarefas.length}</Badge></span>} eventKey="1">
-              <ListGroup>
-                {this.state.tarefas && this.state.tarefas.map( (tarefa, i) =>
-                  <ListGroupItem key={'tarefa-'+ i} header={tarefa.nome}>
-                    <TaskItem {...tarefa} />
-                  </ListGroupItem>
-                )}
-              </ListGroup>                
-            </Panel>
-            <Panel style={{cursor: 'pointer'}} header="Iniciar Procedimento" eventKey="2">
-              <ListGroup>
-                <ListGroupItem header="Emissão de Duplicatas"><Link to='/duplicata/emissao'>Emitir Duplicata (Avulsa)</Link></ListGroupItem>
-                {/*<ListGroupItem header="Heading 3" bsStyle="danger">Danger styling</ListGroupItem>*/}
-              </ListGroup>
-            </Panel>
-          </Accordion> 
+          <Row>
+
+              <Accordion>
+                <Panel style={{cursor: 'pointer'}} header={<span>Consultas <Badge>{this.state.consultas && this.state.consultas.length}</Badge></span>} eventKey="1">
+                  <ListGroup>
+                    {this.state.consultas && this.state.consultas.map( (consulta, i) =>
+                      <ListGroupItem key={'consulta-'+ i} header={consulta.titulo}>
+                        <ConsultaItem {...consulta} />
+                      </ListGroupItem>
+                    )}
+                  </ListGroup>                
+                </Panel>
+              </Accordion> 
+
+          </Row>
+
+          <Row>
+            <Accordion>
+              <Panel style={{cursor: 'pointer'}} header={<span>Tarefas <Badge>{this.state.tarefas && this.state.tarefas.length}</Badge></span>} eventKey="1">
+                <ListGroup>
+                  {this.state.tarefas && this.state.tarefas.map( (tarefa, i) =>
+                    <ListGroupItem key={'tarefa-'+ i} header={tarefa.nome}>
+                      <TaskItem {...tarefa} />
+                    </ListGroupItem>
+                  )}
+                </ListGroup>                
+              </Panel>
+            </Accordion> 
+          </Row>
         </Col>
 
         <Col md={9} >

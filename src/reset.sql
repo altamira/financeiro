@@ -16,10 +16,23 @@ DELETE FROM FINANCEIRO.dbo.EMP
 DELETE FROM FINANCEIRO.dbo.USR
 DELETE FROM FINANCEIRO.dbo.ERR
 DELETE FROM FINANCEIRO.dbo.ERR_LOG
+DELETE FROM FINANCEIRO.dbo.USR_LNK
 
 INSERT INTO FINANCEIRO.dbo.USR (nome, login, senha, perfil, departamento) VALUES ('Neuci', 'neuci', '03A8A64F9CA460B0EB5466666BFCDD83', 'faturamento', 'fiscal')
 INSERT INTO FINANCEIRO.dbo.USR (nome, login, senha, perfil, departamento) VALUES ('Rita', 'rita', '2794D223F90059C9F705C73A99384085', 'financeiro', 'financeiro')
 INSERT INTO FINANCEIRO.dbo.USR (nome, login, senha, perfil, departamento) VALUES ('Marisa', 'marisa', '458FF389547C5068DC72CF9B79EBCEBD', 'cobranca', 'cobranca')
+
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('faturamento', 'Pedidos', 'Últimos Pedidos Liberados', 'consultas/lancamento/ultimos', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('financeiro', 'Financeiro', 'Resumo Financeiro', 'consultas/dashboard', 1)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('financeiro', 'Conta Corrente', 'Conciliação Extrato', 'contacorrente/', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('financeiro', 'Cobranças', 'Últimas Cobranças', 'consultas/cobranca/ultimos', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('financeiro', 'Retornos', 'Últimos Retornos', 'consultas/retorno/ultimos', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('financeiro', 'Remessas', 'Últimas Remessas', 'consultas/remessa/ultimos', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('cobranca', 'Financeiro', 'Resumo Financeiro', 'consultas/dashboard', 1)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('cobranca', 'Retornos', 'Últimos Retornos', 'consultas/retorno/ultimos', 0)
+INSERT INTO FINANCEIRO.dbo.USR_LNK (perfil, titulo, descricao, form, padrao) VALUES ('cobranca', 'Remessas', 'Últimas Remessas', 'consultas/remessa/ultimos', 0)
+
+
 
 INSERT INTO FINANCEIRO.dbo.ERR (erro, mensagem) VALUES (0, 'Operação foi realizada com sucesso !')
 

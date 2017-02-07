@@ -20,6 +20,9 @@ import {
   Tooltip
 } from 'react-bootstrap';
 
+import Spinner from 'react-spinkit';
+
+import Add from './Add';
 import Edit from './Edit';
 import Search from './Search';
 
@@ -73,7 +76,8 @@ export default class ContaCorrente extends Component {
     // manipulação dos lancamentos
     this.handleNew = this.handleNew.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
-    this.handleAfterSave = this.handleAfterSave.bind(this);
+    this.handleAfterAdd = this.handleAfterAdd.bind(this);
+    this.handleAfterEdit = this.handleAfterEdit.bind(this);
     this.handleSearch = this.handleSearch.bind(this);
 
     this.handleLiquidar = this.handleLiquidar.bind(this);
@@ -192,11 +196,24 @@ export default class ContaCorrente extends Component {
   }
 
   getMovimento() {
-    api.cc.movimento.list(this.state.banco.codigo, this.state.agencia.agencia, this.state.conta.conta, false, this.loadMovimento.bind(this))  
+    if (this.state.banco.codigo && 
+      this.state.agencia.agencia &&
+      this.state.conta.conta) {
+      this.setState({
+        isLoading: true
+      }, api.cc.movimento.list(this.state.banco.codigo, this.state.agencia.agencia, this.state.conta.conta, false, this.handleResult.bind(this)) )
+    }
   }
 
-  loadMovimento(movimento) {
-    this.setState({movimento: movimento})
+  handleResult(result) {
+    if (!Array.isArray(result) || !result.length) {
+      this.setState({
+        isLoading: undefined
+      }, window.errHandler.bind(null, {erro: 0, mensagem: 'Nenhum lançamento encontrado.'}) )
+    } else {
+      this.setState({movimento: result, isLoading: undefined})
+    }
+
   }
 
   handleLiquidar(lancamento) {
@@ -237,10 +254,10 @@ export default class ContaCorrente extends Component {
 
       movimento: this.state.movimento.map( l => {
         if (lancamento.id === l.id) {
-          l.liquidado = lancamento.liquidado,
+          l.liquidado = lancamento.liquidado
           l.valor = lancamento.valor
         }
-        return l;
+        return l
       })
 
     })
@@ -249,7 +266,7 @@ export default class ContaCorrente extends Component {
 
   // manipuladores da lista de parcelas
   handleNew() {
-    this.setState({dialog: <Edit 
+    this.setState({dialog: <Add 
 
       contas={this.state.contas}
       banco={this.state.banco}
@@ -271,7 +288,7 @@ export default class ContaCorrente extends Component {
         }
       }      
 
-      onSave={this.handleAfterSave.bind(this)} 
+      onSave={this.handleAfterAdd.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
@@ -292,11 +309,26 @@ export default class ContaCorrente extends Component {
         }
       }
 
-      onSave={this.handleAfterSave.bind(this)} 
+      onSave={this.handleAfterEdit.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
-  handleAfterSave(lancamento) {
+  handleAfterAdd(lancamento) {
+    /*if (lancamento.banco === this.state.banco.codigo &&
+      lancamento.agencia === this.state.agencia.agencia &&
+      lancamento.conta === this.state.conta.conta) {*/
+
+      let movimento = this.state.movimento;
+
+      let index = movimento.findIndex( l => l.id === lancamento.id);
+
+      movimento.splice(index, index < 0 ? 0 : 1, lancamento)
+      
+      this.setState({movimento: movimento})
+    //}
+  }
+
+  handleAfterEdit(lancamento) {
     /*if (lancamento.banco === this.state.banco.codigo &&
       lancamento.agencia === this.state.agencia.agencia &&
       lancamento.conta === this.state.conta.conta) {*/
@@ -494,6 +526,13 @@ export default class ContaCorrente extends Component {
 
                 </tbody>
               </Table>
+
+              {this.state.isLoading && 
+                <div style={{textAlign: 'center'}}>
+                  <Spinner spinnerName="three-bounce" />
+                </div>
+              }
+
             </Col>
           </Row>
 
