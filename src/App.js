@@ -30,21 +30,21 @@ var clientId = 'mqtt_' + (1 + Math.random() * 4294967295).toString(16);
 
 // eslint-disable-next-line
 Date.prototype.fromUTC = function() {
-  let date = this.toISOString();
+  //let date = this.toISOString();
   if (!this.getUTCHours() && !this.getUTCMinutes() && !this.getUTCSeconds() && !this.getUTCMilliseconds()) {
     this.setTime(this.getTime() + (this.getTimezoneOffset() * 60 * 1000))
   } 
-  console.log(`from UTC: ${date}, to locale: ${this.toISOString()}`)
+  //console.log(`from UTC: ${date}, to locale: ${this.toISOString()}`)
   return this;
 }
 
 // eslint-disable-next-line
 Date.prototype.toUTC = function() {
-  let date = this.toISOString();
+  //let date = this.toISOString();
   if (this.getUTCHours() || this.getUTCMinutes() || this.getUTCSeconds() || this.getUTCMilliseconds()) {
     this.setTime(this.getTime() - ((this.getHours() * 60 * 60 * 1000) + (this.getMinutes() * 60 * 1000) + (this.getSeconds() * 1000) + this.getMilliseconds() + (this.getTimezoneOffset() * 60 * 1000)) )
   }
-  console.log(`from locale: ${date}, to UTC: ${this.toISOString()}`)
+  //console.log(`from locale: ${date}, to UTC: ${this.toISOString()}`)
   return this;
 }
 
@@ -300,7 +300,7 @@ class App extends Component {
           <Row>
 
               <Accordion>
-                <Panel style={{cursor: 'pointer'}} header={<span>Consultas <Badge>{this.state.consultas && this.state.consultas.length}</Badge></span>} eventKey="1">
+                <Panel style={{cursor: 'pointer'}} header={<span>Consultas</span>} eventKey="1">
                   <ListGroup>
                     {this.state.consultas && this.state.consultas.map( (consulta, i) =>
                       <ListGroupItem key={'consulta-'+ i} header={consulta.titulo}>

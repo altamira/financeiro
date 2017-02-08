@@ -18,6 +18,8 @@ import {
 
 import DatePicker from 'react-bootstrap-date-picker';
 
+import Confirm from '../Confirm'
+
 const BrazilianDayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 const BrazilianMonthLabels = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Octubro', 'Novembro', 'Dezembro'];
 
@@ -69,10 +71,26 @@ export default class Edit extends Component {
     this.handleChangeData = this.handleChangeData.bind(this);
     this.handleChange = this.handleChange.bind(this);
 
-    this.handleSave = this.handleSave.bind(this);
+    this.handleEdit = this.handleEdit.bind(this);
+    this.handleConfirmDelete = this.handleConfirmDelete.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
 
     this.handleOperacao = this.handleOperacao.bind(this);
     this.handleLiquidado = this.handleLiquidado.bind(this);
+
+    this.handleClose = this.handleClose.bind(this);
+  }
+
+  componentWillMount() {
+    this.setState({
+      lancamento: {
+        ...this.props.lancamento,
+        data: new Date(this.props.lancamento.data).fromUTC().toISOString(),
+        documento: this.props.lancamento.documento || '',
+        valor: this.props.lancamento.valor.toFixed(2).replace('-', '').replace('.', ',')
+      },
+      original: this.props.lancamento
+    })
   }
 
   handleSelectBanco(element) {
@@ -150,7 +168,7 @@ export default class Edit extends Component {
   }
 
   handleOperacao(operacao) {
-    console.log('operacao: ' + this.state.operacao);
+    //console.log('operacao: ' + this.state.lancamento.operacao);
 
     this.setState({
       lancamento: {
@@ -173,11 +191,8 @@ export default class Edit extends Component {
 
   // Validações
   onValidateDate(propriedade) {
-    let data_valida = new Date();
-    data_valida.setTime(data_valida.getTime() - (30 * 24 * 60 * 60 * 1000))
     var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[6-9]|202[0-9])$/;
-    return regex.test(new Date(this.state.lancamento[propriedade]).toLocaleDateString()) && 
-      new Date(this.state.lancamento[propriedade]).getTime() > data_valida.getTime();
+    return regex.test(new Date(this.state.lancamento[propriedade]).toLocaleDateString());
   }
 
   onValidateMoney(propriedade) {
@@ -198,7 +213,7 @@ export default class Edit extends Component {
     return this.state.lancamento[propriedade] !== null && this.state.lancamento[propriedade].trim().length > 2 && this.state.lancamento[propriedade].length <= maxLength;
   }
 
-  handleSave() {
+  handleEdit() {
     let lancamento = {
 
       ...this.state.lancamento,
@@ -213,7 +228,28 @@ export default class Edit extends Component {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
-    api.cc.movimento.save(lancamento, this.props.onSave);
+    api.cc.movimento.edit(lancamento, this.props.onEdit.bind(null, this.state.original));
+  }
+
+  handleConfirmDelete() {
+    this.setState(
+      {
+        dialog: <Confirm 
+          onNo={this.handleClose.bind(this)} 
+          onYes={this.handleDelete.bind(this)} 
+        >
+          <h4 style={{textAlign: 'center'}}>Confirma a exclusão do lançamento ?</h4>
+        </Confirm>
+      }
+    )
+  }
+
+  handleDelete() {
+    api.cc.movimento.delete(this.state.lancamento.id, this.props.onDelete.bind(null, this.state.lancamento));
+  }
+
+  handleClose() {
+    this.setState({dialog: undefined})
   }
 
   render() {
@@ -329,11 +365,11 @@ export default class Edit extends Component {
                 <FormGroup>
                   <InputGroup>
                     {this.state.lancamento.operacao === 'D' ?
-                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="minus" /></Button>) :                                 
+                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="minus" /></Button>) :                                 
                       (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="minus" /></Button>)
                     } <ControlLabel style={{marginLeft: '10px'}}>Debito</ControlLabel>
                     {this.state.lancamento.operacao === 'C' ?
-                      (<Button bsStyle="success" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="plus" /></Button>) :                                 
+                      (<Button bsStyle="success" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="plus" /></Button>) :                                 
                       (<Button bsStyle="default" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="plus" /></Button>)
                     } <ControlLabel style={{marginLeft: '10px'}}>Credito</ControlLabel>
                   </InputGroup>
@@ -360,23 +396,36 @@ export default class Edit extends Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button onClick={this.props.onClose} >Fechar</Button>
-            <Button 
-              bsStyle="success" 
-              onClick={this.handleSave.bind(this)} 
-              disabled={!(
-                this.state.banco.codigo.length &&
-                this.state.agencia.agencia.length &&
-                this.state.conta.conta.length && 
-                this.onValidateDate('data') &&
-                this.onValidateNotEmpty('descricao', 100) &&
-                this.onValidateMoney('valor')
-              )} 
-              style={{margin: '5px'}} 
-            >Gravar</Button> 
+            <Col md={2}>
+              <Button 
+                onClick={this.handleConfirmDelete.bind(this)} 
+                disabled={this.state.lancamento.liquidado}
+              >
+                Excluir
+              </Button>
+            </Col>
+            <Col md={10}>
+              <Button onClick={this.props.onClose} >Fechar</Button>
+              <Button 
+                bsStyle="success" 
+                onClick={this.handleEdit.bind(this)} 
+                disabled={!(
+                  this.state.banco.codigo.length &&
+                  this.state.agencia.agencia.length &&
+                  this.state.conta.conta.length && 
+                  this.onValidateDate('data') &&
+                  this.onValidateNotEmpty('descricao', 100) &&
+                  this.onValidateMoney('valor')
+                )} 
+                style={{margin: '5px'}} 
+              >Gravar</Button> 
+            </Col>
           </Modal.Footer>
 
         </Modal.Dialog>
+
+        {this.state.dialog}
+
       </div>
     );
   }

@@ -211,7 +211,23 @@ export default class ContaCorrente extends Component {
         isLoading: undefined
       }, window.errHandler.bind(null, {erro: 0, mensagem: 'Nenhum lançamento encontrado.'}) )
     } else {
-      this.setState({movimento: result, isLoading: undefined})
+      
+      console.log('Saldo conferido: ' + format('R$ ###.###.##0,00', result.find( lancamento => !lancamento.id).valor || 0))
+
+      this.setState({
+
+        conta: {
+          ...this.state.conta,
+          saldo: result.find( lancamento => !lancamento.id).valor || 0
+        },
+
+        movimento: result/*.filter( lancamento => lancamento.id)*/.map( lancamento => {
+          lancamento.liquidado = !!lancamento.liquidado
+          return lancamento
+        }), 
+        isLoading: undefined
+
+      })
     }
 
   }
@@ -225,41 +241,16 @@ export default class ContaCorrente extends Component {
 
   }
 
-  handleLiquidado(lancamento) {
+  handleLiquidado(liquidado) {
+    liquidado.liquidado = !!liquidado.liquidado
 
-    console.log(JSON.stringify(lancamento, null, 2));
+    let movimento = this.state.movimento;
+    let index = movimento.findIndex( l => l.id === liquidado.id)
 
+    movimento[index] = liquidado
     this.setState({
-
-      contas: this.state.contas.map( banco => {
-        return {
-          ...banco,
-          agencias: banco.agencias.map( agencia => {
-            return {
-              ...agencia,
-              contas: agencia.contas.map( conta => {
-                return {
-                  ...conta,
-                  saldo: banco.codigo === lancamento.banco && 
-                    agencia.agencia === lancamento.agencia && 
-                    conta.conta === lancamento.conta ? 
-                      conta.saldo + lancamento.valor : 
-                      conta.saldo
-                }
-              })
-            }
-          })
-        }
-      }),
-
-      movimento: this.state.movimento.map( l => {
-        if (lancamento.id === l.id) {
-          l.liquidado = lancamento.liquidado
-          l.valor = lancamento.valor
-        }
-        return l
-      })
-
+      movimento: movimento, 
+      dialog: undefined
     })
 
   }
@@ -271,24 +262,12 @@ export default class ContaCorrente extends Component {
       contas={this.state.contas}
       banco={this.state.banco}
       agencia={this.state.agencia}
-      conta={this.state.conta}
+      conta={{
+        ...this.state.conta,
+        saldo: this.state.movimento.filter( lancamento => lancamento.id).reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00)) 
+      }}
 
-      lancamento={
-        {
-          id: 0,
-          banco: '',
-          agencia: '',
-          conta: '',
-          data: new Date().toISOString(),
-          documento: '',
-          descricao: '',
-          valor: '0,00',
-          operacao: 'D',
-          liquidado: false,
-        }
-      }      
-
-      onSave={this.handleAfterAdd.bind(this)} 
+      onAdd={this.handleAfterAdd.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
@@ -298,49 +277,50 @@ export default class ContaCorrente extends Component {
       contas={this.state.contas}
       banco={this.state.banco}
       agencia={this.state.agencia}
-      conta={this.state.conta}
+      conta={{
+        ...this.state.conta,
+        saldo: this.state.movimento.filter( lancamento => lancamento.id).reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00)) 
+      }}
 
-      lancamento={
-        {
-          ...lancamento,
-          data: new Date(lancamento.data).fromUTC().toISOString(),
-          documento: lancamento.documento || '',
-          valor: lancamento.valor.toFixed(2).replace('-', '').replace('.', ',')
-        }
-      }
+      lancamento={lancamento}
 
-      onSave={this.handleAfterEdit.bind(this)} 
+      onEdit={this.handleAfterEdit.bind(this)} 
+      onDelete={this.handleAfterDelete.bind(this)} 
       onClose={this.handleCloseDialog.bind(this)} />})
   }
 
   handleAfterAdd(lancamento) {
-    /*if (lancamento.banco === this.state.banco.codigo &&
-      lancamento.agencia === this.state.agencia.agencia &&
-      lancamento.conta === this.state.conta.conta) {*/
+    lancamento.liquidado = !!lancamento.liquidado
+    
+    let movimento = this.state.movimento;
+    let index = movimento.push(lancamento)
 
-      let movimento = this.state.movimento;
-
-      let index = movimento.findIndex( l => l.id === lancamento.id);
-
-      movimento.splice(index, index < 0 ? 0 : 1, lancamento)
-      
-      this.setState({movimento: movimento})
-    //}
+    this.setState({
+      movimento: movimento
+    })
   }
 
-  handleAfterEdit(lancamento) {
-    /*if (lancamento.banco === this.state.banco.codigo &&
-      lancamento.agencia === this.state.agencia.agencia &&
-      lancamento.conta === this.state.conta.conta) {*/
+  handleAfterEdit(original, alterado) {
+    alterado.liquidado = !!alterado.liquidado
+    
+    let movimento = this.state.movimento;
+    let index = movimento.findIndex( l => l.id === alterado.id)
+    movimento[index] = alterado
 
-      let movimento = this.state.movimento;
+    this.setState({
+      movimento: movimento, 
+      dialog: undefined
+    })
+  }
 
-      let index = movimento.findIndex( l => l.id === lancamento.id);
-
-      movimento.splice(index, index < 0 ? 0 : 1, lancamento)
-      
-      this.setState({movimento: movimento, dialog: undefined})
-    //}
+  handleAfterDelete(original, alterado) {
+    let movimento = this.state.movimento;
+    let index = movimento.findIndex( l => l.id === alterado.id)
+    movimento.splice(index, 1)
+    this.setState({
+      movimento: movimento, 
+      dialog: undefined
+    })
   }
 
   handleCloseDialog() {
@@ -470,15 +450,37 @@ export default class ContaCorrente extends Component {
 
             <Col md={2}>
               <FormGroup validationState="success">
-                <ControlLabel>Saldo da Conta</ControlLabel>
-                <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', (this.state.conta.saldo || 0.00))} readOnly />
+                <ControlLabel>Saldo Conferido</ControlLabel>
+                <FormControl 
+                  type="text" 
+                  style={{textAlign: 'right'}} 
+                  value={
+                    format('R$ ###.###.##0,00', 
+                      this.state.movimento
+                        .filter( lancamento => lancamento.id && lancamento.liquidado)
+                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
+                    ) 
+                  } 
+                  readOnly 
+                />
               </FormGroup>
             </Col>
 
             <Col md={2}>
               <FormGroup validationState="success">
-                <ControlLabel>Saldo Conferido</ControlLabel>
-                <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', (this.state.conta.saldo || 0.00) + this.state.movimento.filter( lancamento => lancamento.liquidado).reduce( (saldo, lancamento) => saldo + lancamento.valor, 0.00)) } readOnly />
+                <ControlLabel>Saldo da Conta</ControlLabel>
+                <FormControl 
+                  type="text" 
+                  style={{textAlign: 'right'}} 
+                  value={
+                    format('R$ ###.###.##0,00', 
+                      this.state.movimento
+                        .filter( lancamento => lancamento.id)
+                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
+                    ) 
+                  } 
+                  readOnly 
+                />
               </FormGroup>
             </Col>
 
@@ -499,28 +501,30 @@ export default class ContaCorrente extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {this.state.movimento.map( (lancamento, index) => {
-                    saldo += lancamento.valor;
+                  {this.state.movimento
+                    .filter( lancamento => lancamento.id)
+                    .map( (lancamento, index) => {
+                      saldo += lancamento.id ? lancamento.valor : 0;
 
-                    return (
-                      <tr key={'tr-' + index} id={'tr-' + index} >
-                        <td style={{textAlign: 'center', cursor: 'pointer'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{new Date(lancamento.data).fromUTC().toLocaleDateString()}</a></td>
-                        <td style={{}}>{lancamento.descricao}</td>
-                        <td style={{textAlign: 'center'}}>{lancamento.documento}</td>
-                        <td style={{textAlign: 'center'}}>
-                          {lancamento.liquidado ?
-                            (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
-                            (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
-                          }
-                        </td>
-                        <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: lancamento.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', lancamento.valor)}</td>
-                        <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: saldo < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', saldo)}</td>
-                        <td>
-                          <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, lancamento)} ><Glyphicon glyph="edit" /></Button>
-                        </td>
-                      </tr>                              
-                    )
-                  }
+                      return (
+                        <tr key={'tr-' + index} id={'tr-' + index} >
+                          <td style={{textAlign: 'center', cursor: 'pointer'}}><a onClick={this.handleEdit.bind(null, lancamento)}>{new Date(lancamento.data).fromUTC().toLocaleDateString()}</a></td>
+                          <td style={{}}>{lancamento.descricao}</td>
+                          <td style={{textAlign: 'center'}}>{lancamento.documento}</td>
+                          <td style={{textAlign: 'center'}}>
+                            {lancamento.liquidado ?
+                              (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="ok" /></Button>) :                                 
+                              (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, lancamento)} ><Glyphicon glyph="dot" /></Button>)
+                            }
+                          </td>
+                          <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: lancamento.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', lancamento.valor)}</td>
+                          <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: saldo < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', saldo)}</td>
+                          <td>
+                            <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, lancamento)} ><Glyphicon glyph="edit" /></Button>
+                          </td>
+                        </tr>                              
+                      )
+                    }
                     
                   )}
 

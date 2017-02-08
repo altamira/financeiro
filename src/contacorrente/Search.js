@@ -10,7 +10,8 @@ import {
   Table,
   Modal,
   Button,
-  Glyphicon
+  Glyphicon,
+  FormControl
 } from 'react-bootstrap';
 
 import Spinner from 'react-spinkit';
@@ -24,42 +25,30 @@ export default class Buscar extends Component {
 			data: new Date().toISOString(),
 			descricao: '',
 
-			conta: this.props.conta
+			conta: this.props.conta,
+
+			search: ''
 
 		}
 
-		this.handleChangeData = this.handleChangeData.bind(this);
 		this.handleChange = this.handleChange.bind(this);
 
 		this.handleEdit = this.handleEdit.bind(this);
 
 		this.handleSearch = this.handleSearch.bind(this);
 		this.handleResult = this.handleResult.bind(this);
+
+		this.handleLiquidar = this.handleLiquidar.bind(this);
+    	this.handleLiquidado = this.handleLiquidado.bind(this);
+
 	}
 
 	componentWillMount(){
 		this.handleSearch()
 	}
 
-	handleChangeData(data) {
-		this.setState({data : data});
-	}
-
 	handleChange(event) {
-		this.setState({
-			[event.target.id]: event.target.value
-		});
-	}
-
-	// Validações
-	onValidateDate(propriedade) {
-		var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[7-9]|202[0-9])$/;
-		return regex.test(new Date(this.state[propriedade]).toLocaleDateString());
-	}
-
-	onValidateMoney(propriedade) {
-		var regex = /^[0-9]{1,9}([.]([0-9]{3}))*[,]([.]{0})[0-9]{2}$/;
-		return regex.test(this.state[propriedade]) && this.state[propriedade].length <= 10;
+		this.setState({search: event.target.value.toUpperCase()});
 	}
 
 	handleEdit(item) {
@@ -80,14 +69,34 @@ export default class Buscar extends Component {
 		}
 	}
 
-	handleResult(lista) {
-		if (!Array.isArray(lista) || !lista.length) {
+	handleResult(movimento) {
+		if (!Array.isArray(movimento) || !movimento.length) {
 			this.setState({
 				isLoading: undefined
 			}, window.errHandler.bind(null, {erro: 0, mensagem: 'Nenhum lançamento encontrado.'}) )
 		} else {
-			this.setState({lista: lista, isLoading: undefined})
+			this.setState({movimento: movimento, isLoading: undefined})
 		}
+	}
+
+	handleLiquidar(lancamento) {
+		api.cc.movimento.liquidar({
+		  ...lancamento,
+		  liquidado: !lancamento.liquidado
+		}, this.handleLiquidado)
+	}
+
+	handleLiquidado(liquidado) {
+		liquidado.liquidado = !!liquidado.liquidado
+
+		let movimento = this.state.movimento;
+		let index = movimento.findIndex( l => l.id === liquidado.id)
+
+		movimento[index] = liquidado
+		this.setState({
+		  movimento: movimento, 
+		  dialog: undefined
+		})
 	}
 
 	render() {
@@ -136,6 +145,19 @@ export default class Buscar extends Component {
 	                    </Col>
 	                  </Row>*/}
 
+	                <Row style={{marginBottom: '10px'}}>
+		              <Col md={12}><h5>Banco: {this.state.conta.banco}, Empresa: {this.state.conta.agencia}, Conta: {this.state.conta.conta}</h5></Col>
+		            </Row>
+
+					<Row style={{marginBottom: '10px'}}>
+
+		              <Col md={2}>Busca</Col>
+		              <Col md={10}>
+		                  <FormControl type="text" name="documento" value={this.state.search} onChange={this.handleChange} />
+		              </Col>
+
+		            </Row>
+
 					<Row>
 	                    <Col md={12}>
 	                    	<div  style={{
@@ -160,7 +182,14 @@ export default class Buscar extends Component {
 								      </tr>
 								    </thead>
 								    <tbody>
-									    {this.state.lista && this.state.lista.map( (item, index) =>
+									    {this.state.movimento && this.state.movimento
+									    	.filter( item => this.state.search.trim().length === 0 || 
+									    		new Date(item.data).fromUTC().toLocaleDateString().search(this.state.search.toUpperCase()) >= 0 ||
+									    		item.descricao.toUpperCase().search(this.state.search.toUpperCase()) >= 0 ||
+								    			item.documento.toUpperCase().search(this.state.search.toUpperCase()) >= 0 ||
+								    			item.valor.toFixed(2).replace('.', ',').toUpperCase().search(this.state.search.toUpperCase()) >= 0
+								    		)
+									    	.map( (item, index) =>
 									      <tr style={{cursor: 'pointer'}} key={item.id} >
 									      	<td>{index + 1}</td>
 									        <td>{new Date(item.data).fromUTC().toLocaleDateString()}</td>
@@ -168,9 +197,12 @@ export default class Buscar extends Component {
 									        <td>{item.descricao}</td>
 									        <td>{item.documento}</td>
 									        <td style={{textAlign: 'center'}}>
-					                          {item.liquidado ? (<Glyphicon glyph="ok" />) : (<Glyphicon glyph="dot" />) }
-					                        </td>
-									        <td style={{textAlign: 'right', whiteSpace: 'nowrap'}}>{format('R$ ###.###.##0,00', item.valor)}</td>
+				                            	{item.liquidado ?
+				                              		(<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, item)} ><Glyphicon glyph="ok" /></Button>) :                                 
+				                              		(<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, item)} ><Glyphicon glyph="dot" /></Button>)
+				                            	}
+				                          	</td>
+									        <td style={{textAlign: 'right', whiteSpace: 'nowrap', color: item.valor < 0 ? 'red' : 'blue'}}>{format('R$ ###.###.##0,00', item.valor)}</td>
 									        <td>
 					                          <Button bsStyle="primary" style={{width: '33px'}} bsSize="small" onClick={this.handleEdit.bind(null, item)} ><Glyphicon glyph="edit" /></Button>
 					                        </td>

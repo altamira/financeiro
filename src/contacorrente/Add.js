@@ -45,19 +45,20 @@ export default class Add extends Component {
         saldo: 0.00
       },
 
-      lancamento: {
-
+      lancamento : {
+        id: 0,
+        banco: '',
+        agencia: '',
+        conta: '',
         data: new Date().toISOString(),
         documento: '',
         descricao: '',
         valor: '0,00',
-
         operacao: 'D',
         liquidado: false,
-
       },
 
-      ...this.props,
+      ...this.props
 
     }
 
@@ -69,7 +70,7 @@ export default class Add extends Component {
     this.handleChangeData = this.handleChangeData.bind(this);
     this.handleChange = this.handleChange.bind(this);
 
-    this.handleSave = this.handleSave.bind(this);
+    this.handleAdd = this.handleAdd.bind(this);
     this.handleReset = this.handleReset.bind(this);
 
     this.handleOperacao = this.handleOperacao.bind(this);
@@ -174,11 +175,11 @@ export default class Add extends Component {
 
   // Validações
   onValidateDate(propriedade) {
-    let data_valida = new Date();
-    data_valida.setTime(data_valida.getTime() - (30 * 24 * 60 * 60 * 1000))
+    let data_retroativa = new Date();
+    data_retroativa.setTime(data_retroativa.getTime() - (30 * 24 * 60 * 60 * 1000))
     var regex = /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[012])\/(201[6-9]|202[0-9])$/;
     return regex.test(new Date(this.state.lancamento[propriedade]).toLocaleDateString()) && 
-      new Date(this.state.lancamento[propriedade]).getTime() > data_valida.getTime();
+      new Date(this.state.lancamento[propriedade]).getTime() > data_retroativa.getTime();
   }
 
   onValidateMoney(propriedade) {
@@ -199,7 +200,7 @@ export default class Add extends Component {
     return this.state.lancamento[propriedade] !== null && this.state.lancamento[propriedade].trim().length > 2 && this.state.lancamento[propriedade].length <= maxLength;
   }
 
-  handleSave() {
+  handleAdd() {
     let lancamento = {
 
       ...this.state.lancamento,
@@ -214,11 +215,17 @@ export default class Add extends Component {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
-    api.cc.movimento.save(lancamento, this.handleReset);
+    api.cc.movimento.add(lancamento, this.handleReset);
   }
 
   handleReset(lancamento) {
     this.setState({
+
+      conta: {
+        ...this.state.conta,
+        saldo: this.state.conta.saldo + lancamento.valor
+      },
+
       lancamento: {
 
         data: new Date().toISOString(),
@@ -226,11 +233,12 @@ export default class Add extends Component {
         descricao: '',
         valor: '0,00',
 
-        operacao: 'D',
+        operacao: this.state.lancamento.operacao,
         liquidado: false,
 
       }
-    }, this.props.onSave.bind(null, lancamento))
+
+    }, this.props.onAdd.bind(null, lancamento))
   }
 
   render() {
@@ -380,7 +388,7 @@ export default class Add extends Component {
             <Button onClick={this.props.onClose} >Fechar</Button>
             <Button 
               bsStyle="success" 
-              onClick={this.handleSave.bind(this)} 
+              onClick={this.handleAdd.bind(this)} 
               disabled={!(
                 this.state.banco.codigo.length &&
                 this.state.agencia.agencia.length &&
