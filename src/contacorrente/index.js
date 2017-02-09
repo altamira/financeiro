@@ -274,7 +274,7 @@ export default class ContaCorrente extends Component {
       lancamento.liquidado = !!lancamento.liquidado
       
       let movimento = this.state.movimento;
-      let index = movimento.push(lancamento)
+      movimento.push(lancamento)
 
       this.setState({
         movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
