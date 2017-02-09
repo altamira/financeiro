@@ -267,14 +267,20 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterAdd(lancamento) {
-    lancamento.liquidado = !!lancamento.liquidado
-    
-    let movimento = this.state.movimento;
-    let index = movimento.push(lancamento)
+    if (lancamento.banco === this.state.banco.codigo &&
+      lancamento.agencia === this.state.agencia.agencia &&
+      lancamento.conta === this.state.conta.conta) {
 
-    this.setState({
-      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-    })
+      lancamento.liquidado = !!lancamento.liquidado
+      
+      let movimento = this.state.movimento;
+      let index = movimento.push(lancamento)
+
+      this.setState({
+        movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+      })
+
+    }
   }
 
   handleEdit(lancamento) {
@@ -297,41 +303,65 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterEdit(original, alterado) {
-    alterado.liquidado = !!alterado.liquidado
-    
-    let movimento = this.state.movimento;
-    let index = movimento.findIndex( l => l.id === alterado.id)
+    if (alterado.banco === this.state.banco.codigo &&
+      alterado.agencia === this.state.agencia.agencia &&
+      alterado.conta === this.state.conta.conta) {
 
-    if (index < 0) {
-      movimento.push(alterado)
+      alterado.liquidado = !!alterado.liquidado
+      
+      let movimento = this.state.movimento;
+      let index = movimento.findIndex( l => l.id === alterado.id)
+
+      if (index < 0) {
+        movimento.push(alterado)
+      } else {
+        movimento[index] = alterado  
+      }
+
+      this.setState({
+        movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+      })
+
     } else {
-      movimento[index] = alterado  
-    }
 
-    this.setState({
-      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()), 
-      dialog: undefined
-    })
+      let movimento = this.state.movimento;
+      let index = movimento.findIndex( l => l.id === alterado.id)
+
+      if (index >= 0) {
+        movimento.splice(index, 1)
+      }
+
+      this.setState({
+        movimento: movimento
+      })
+
+    }
   }
 
   handleAfterLiquidado(original, alterado) {
-    alterado.liquidado = !!alterado.liquidado
-    
-    let conta = this.state.conta;
-    let movimento = this.state.movimento;
-    let index = movimento.findIndex( l => l.id === alterado.id)
+    if (alterado.banco === this.state.banco.codigo &&
+      alterado.agencia === this.state.agencia.agencia &&
+      alterado.conta === this.state.conta.conta) {
 
-    if (index < 0) {
-      conta.saldo -= alterado.valor
-      movimento.push(alterado)
-    } else {
-      movimento[index] = alterado  
+      alterado.liquidado = !!alterado.liquidado
+      
+      let conta = this.state.conta;
+      let movimento = this.state.movimento;
+      let index = movimento.findIndex( l => l.id === alterado.id)
+
+      if (index < 0) {
+        conta.saldo -= alterado.valor
+        movimento.push(alterado)
+      } else {
+        movimento[index] = alterado  
+      }
+
+      this.setState({
+        conta: conta,
+        movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+      })
+
     }
-
-    this.setState({
-      conta: conta,
-      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-    })
   }
 
   handleAfterDelete(original, excluido) {
@@ -383,7 +413,7 @@ export default class ContaCorrente extends Component {
 
           <Row style={{borderBottom: 'solid', borderBottomWidth: 1, borderBottomColor: '#337ab7', paddingBottom: 20}}>
 
-            <Col xs={4} md={4} >
+            <Col md={3} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -401,7 +431,7 @@ export default class ContaCorrente extends Component {
 
             </Col>
 
-            <Col xs={4} md={4} >
+            <Col md={3} >
 
               <OverlayTrigger 
                 placement="top" 
@@ -419,7 +449,25 @@ export default class ContaCorrente extends Component {
 
             </Col>
 
-            <Col xs={4} md={4} style={{textAlign: 'right'}} >
+            <Col md={3} >
+
+              <OverlayTrigger 
+                placement="top" 
+                overlay={(<Tooltip id="tooltip">Atualizar tela para mostrar somente os lançamentos em aberto</Tooltip>)}
+              >
+                  <Button
+                    onClick={this.getMovimento.bind(this)}
+                    style={{width: 120}}
+                    bsStyle="success"
+                  >
+                    <Glyphicon glyph="refresh" />
+                    <div><span>Atualizar</span></div>
+                  </Button>
+              </OverlayTrigger>
+
+            </Col>
+
+            <Col md={3} style={{textAlign: 'right'}} >
 
               <OverlayTrigger 
                 placement="top" 

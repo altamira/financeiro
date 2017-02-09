@@ -3,6 +3,7 @@ import format from 'number-format.js';
 import api from './../api/'
 
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 
 import { 
   Modal,
@@ -72,6 +73,7 @@ export default class Edit extends Component {
     this.handleChange = this.handleChange.bind(this);
 
     this.handleEdit = this.handleEdit.bind(this);
+    this.handleReset = this.handleReset.bind(this);
     this.handleConfirmDelete = this.handleConfirmDelete.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
 
@@ -87,10 +89,14 @@ export default class Edit extends Component {
         ...this.props.lancamento,
         data: new Date(this.props.lancamento.data).fromUTC().toISOString(),
         documento: this.props.lancamento.documento || '',
-        valor: this.props.lancamento.valor.toFixed(2).replace('-', '').replace('.', ',')
+        valor: format('###.###.##0,00', this.props.lancamento.valor).replace('-','')
       },
       original: this.props.lancamento
     })
+  }
+
+  componentDidMount() {
+    ReactDOM.findDOMNode(this.refs.documento).focus()
   }
 
   handleSelectBanco(element) {
@@ -117,7 +123,14 @@ export default class Edit extends Component {
     this.setState({
       banco: banco,
       agencia: agencia,
-      conta: conta
+      conta: conta,
+
+      lancamento: {
+        ...this.state.lancamento,
+        banco: banco.codigo,
+        agencia: agencia.agencia,
+        conta: conta.conta
+      }
     });
   }
 
@@ -136,7 +149,13 @@ export default class Edit extends Component {
 
     this.setState({
       agencia: agencia,
-      conta: conta
+      conta: conta,
+
+      lancamento: {
+        ...this.state.lancamento,
+        agencia: agencia.agencia,
+        conta: conta.conta
+      }
     });
   }
 
@@ -146,7 +165,14 @@ export default class Edit extends Component {
       saldo: 0.00
     }
 
-    this.setState({conta: conta});
+    this.setState({
+      conta: conta,
+
+      lancamento: {
+        ...this.state.lancamento,
+        conta: conta.conta
+      }
+    });
   }
 
   handleChangeData(data) {
@@ -162,7 +188,7 @@ export default class Edit extends Component {
     this.setState({
       lancamento: {
         ...this.state.lancamento,
-        [element.target.name]: element.target.value
+        [element.target.name]: element.target.value.toUpperCase()
       }
     });
   }
@@ -223,7 +249,48 @@ export default class Edit extends Component {
 
     console.log(JSON.stringify(lancamento, null, 2));
 
-    api.cc.movimento.edit(lancamento, this.props.onEdit.bind(null, this.state.original));
+    lancamento.id ? 
+      api.cc.movimento.edit(lancamento, this.handleReset.bind(null, this.state.original)) :
+      api.cc.movimento.add(lancamento, this.handleReset.bind(null, {
+
+      ...this.state.lancamento,
+
+      id: 0,
+
+      banco: this.state.banco.codigo,
+      agencia: this.state.agencia.agencia,
+      conta: this.state.conta.conta,
+
+      valor: 0
+
+    }));
+  }
+
+  handleReset(original, alteracao) {
+    this.setState({
+
+      conta: {
+        ...this.state.conta,
+        saldo: this.state.conta.saldo - original.valor + alteracao.valor
+      },
+
+      lancamento: {
+
+        ...alteracao,
+
+        id: 0,
+
+        documento: '',
+        descricao: '',
+        valor: '0,00',
+
+        liquidado: false,
+
+      }
+
+    }, this.props.onEdit.bind(null, original, alteracao))
+
+    ReactDOM.findDOMNode(this.refs.documento).focus()
   }
 
   handleConfirmDelete() {
@@ -262,11 +329,13 @@ export default class Edit extends Component {
               <Col md={2}>Banco</Col>
               <Col md={10}>
                 <FormGroup validationState={'success'} >
+
                   <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
                   {this.state.contas && this.state.contas.map( (banco, index) =>
                     <option key={'banco-' + index} value={banco.codigo} >{banco.codigo} - {banco.nome}</option>
                   )}
                   </FormControl>
+
                 </FormGroup>
               </Col>
 
@@ -277,11 +346,13 @@ export default class Edit extends Component {
               <Col md={2}>Empresa</Col>
               <Col md={4}>
                 <FormGroup validationState={'success'} >
+
                   <FormControl name="agencia" componentClass="select" placeholder="Agencia" value={this.state.agencia.agencia} onChange={this.handleSelectAgencia} >
                     {this.state.banco && this.state.banco.agencias.map( (agencia, index) =>
                       <option key={'agencia-' + index} value={agencia.agencia} >{agencia.agencia}</option>
                     )}
                   </FormControl>
+
                 </FormGroup>
               </Col>
 
@@ -298,16 +369,28 @@ export default class Edit extends Component {
                     <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
                   )}
                   </FormControl>
+
                 </FormGroup>
               </Col>
 
               <Col md={2}>Saldo</Col>
               <Col md={4}>
-                <FormGroup validationState="success">
-                  
-                  <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.conta.saldo)} readOnly />
-                </FormGroup>
-              </Col>  
+
+                {
+                  // TODO: Este caso justifica o uso de Redux para atualizar o saldo da conta e 
+                  // atualizar o saldo e os lançamentos da conta na tela de lançamento que esta visivel embaixo desta
+                  this.props.banco.codigo === this.state.banco.codigo && 
+                  this.props.agencia.agencia === this.state.agencia.agencia && 
+                  this.props.conta.conta === this.state.conta.conta && (
+                    <FormGroup validationState="success">
+
+                      <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.conta.saldo)} readOnly />
+
+                    </FormGroup>
+                  )
+                }   
+
+              </Col> 
 
             </Row>
 
@@ -316,8 +399,9 @@ export default class Edit extends Component {
               <Col md={2}>Data</Col>
               <Col md={4}>
                 <FormGroup validationState={this.onValidateDate('data') ? 'success' : 'error'} >
-                  
+
                   <DatePicker name="data" value={this.state.lancamento.data} dayLabels={BrazilianDayLabels} monthLabels={BrazilianMonthLabels} onChange={this.handleChangeData} />
+                
                 </FormGroup>
               </Col>
 
@@ -329,8 +413,17 @@ export default class Edit extends Component {
               <Col md={4}>
                 <FormGroup validationState={this.onValidateEmpty('documento', 50) ? 'success' : 'error'} >
                   
-                  <FormControl type="text" name="documento" value={this.state.lancamento.documento} onChange={this.handleChange} />
+                  <FormControl 
+                    type="text" 
+                    ref="documento"
+                    name="documento" 
+                    onFocus={ input => input.target.setSelectionRange(0, input.target.value.length)}
+                    onKeyPress={ e => e.key === 'Enter' && ReactDOM.findDOMNode(this.refs.descricao).focus()}
+                    value={this.state.lancamento.documento} 
+                    onChange={this.handleChange} 
+                  />
                   {/*<FormControl.Feedback />*/}
+
                 </FormGroup>
               </Col>
 
@@ -340,8 +433,18 @@ export default class Edit extends Component {
               <Col md={2}>Descrição</Col>
               <Col md={10}>
                 <FormGroup validationState={this.onValidateNotEmpty('descricao', 100) ? 'success' : 'error'} >
-                  <FormControl type="text" name="descricao" value={this.state.lancamento.descricao} onChange={this.handleChange} />
+
+                  <FormControl 
+                    type="text" 
+                    ref="descricao" 
+                    name="descricao" 
+                    onFocus={ input => input.target.setSelectionRange(0, input.target.value.length)}
+                    onKeyPress={ e => e.key === 'Enter' && ReactDOM.findDOMNode(this.refs.valor).focus()}
+                    value={this.state.lancamento.descricao} 
+                    onChange={this.handleChange} 
+                  />
                   {/*<FormControl.Feedback />*/}
+
                 </FormGroup>
               </Col>
             </Row>
@@ -350,8 +453,29 @@ export default class Edit extends Component {
               <Col md={2}>Valor</Col>
               <Col md={3}>
                 <FormGroup validationState={this.onValidateMoney('valor') ? 'success' : 'error'} >
-                  <FormControl type="text" name="valor" value={this.state.lancamento.valor} onChange={this.handleChange} />
+                  
+                  <FormControl 
+                    type="text" 
+                    ref="valor"
+                    name="valor" 
+                    value={this.state.lancamento.valor} 
+                    onFocus={ input => input.target.setSelectionRange(0, input.target.value.length)}
+                    onKeyPress={ e => e.key === 'Enter' && this.setState({
+                      lancamento: {
+                        ...this.state.lancamento,
+                        valor: format('###.###.##0,00', parseFloat(this.state.lancamento.valor.replace('.', '').replace(',','.')))
+                      }
+                    })}
+                    onChange={this.handleChange} 
+                    onBlur={ input => this.setState({
+                      lancamento: {
+                        ...this.state.lancamento,
+                        valor: format('###.###.##0,00', parseFloat(this.state.lancamento.valor.replace('.', '').replace(',','.')))
+                      }
+                    })}
+                  />
                   {/*<FormControl.Feedback />*/}
+
                 </FormGroup>
               </Col>
 
