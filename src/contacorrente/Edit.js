@@ -168,8 +168,6 @@ export default class Edit extends Component {
   }
 
   handleOperacao(operacao) {
-    //console.log('operacao: ' + this.state.lancamento.operacao);
-
     this.setState({
       lancamento: {
         ...this.state.lancamento,
@@ -179,8 +177,6 @@ export default class Edit extends Component {
   }
 
   handleLiquidado() {
-    console.log('liquidado: ' + this.state.lancamento.liquidado);
-
     this.setState({
       lancamento: {
         ...this.state.lancamento,
@@ -201,8 +197,7 @@ export default class Edit extends Component {
       regex.test(this.state.lancamento[propriedade]) && 
       this.state.lancamento[propriedade].length <= 10 &&
       isNaN(this.state.lancamento[propriedade]) && 
-      parseFloat(this.state.lancamento[propriedade].replace('.', '').replace(',', '.')) > 0
-      ;
+      parseFloat(this.state.lancamento[propriedade].replace('.', '').replace(',', '.')) > 0;
   }
 
   onValidateEmpty(propriedade, maxLength) {

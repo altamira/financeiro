@@ -152,8 +152,6 @@ export default class Add extends Component {
   }
 
   handleOperacao(operacao) {
-    console.log('operacao: ' + this.state.operacao);
-
     this.setState({
       lancamento: {
         ...this.state.lancamento,
@@ -163,8 +161,6 @@ export default class Add extends Component {
   }
 
   handleLiquidado() {
-    console.log('liquidado: ' + this.state.lancamento.liquidado);
-
     this.setState({
       lancamento: {
         ...this.state.lancamento,
@@ -354,11 +350,11 @@ export default class Add extends Component {
                 <FormGroup>
                   <InputGroup>
                     {this.state.lancamento.operacao === 'D' ?
-                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="minus" /></Button>) :                                 
+                      (<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="minus" /></Button>) :                                 
                       (<Button bsStyle="default" style={{width: '33px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="minus" /></Button>)
                     } <ControlLabel style={{marginLeft: '10px'}}>Debito</ControlLabel>
                     {this.state.lancamento.operacao === 'C' ?
-                      (<Button bsStyle="success" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'D')} ><Glyphicon glyph="plus" /></Button>) :                                 
+                      (<Button bsStyle="success" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="plus" /></Button>) :                                 
                       (<Button bsStyle="default" style={{width: '33px', marginLeft: '10px'}} bsSize="small" onClick={this.handleOperacao.bind(null, 'C')} ><Glyphicon glyph="plus" /></Button>)
                     } <ControlLabel style={{marginLeft: '10px'}}>Credito</ControlLabel>
                   </InputGroup>

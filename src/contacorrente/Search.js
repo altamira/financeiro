@@ -52,7 +52,7 @@ export default class Buscar extends Component {
 	}
 
 	handleEdit(item) {
-		this.props.onSelect && this.props.onSelect({
+		this.props.onEdit && this.props.onEdit({
 			...item,
 			data: new Date(item.data).fromUTC().toISOString(),
 			documento: item.documento || ''
@@ -83,10 +83,10 @@ export default class Buscar extends Component {
 		api.cc.movimento.liquidar({
 		  ...lancamento,
 		  liquidado: !lancamento.liquidado
-		}, this.handleLiquidado)
+		}, this.handleLiquidado.bind(null, lancamento))
 	}
 
-	handleLiquidado(liquidado) {
+	handleLiquidado(original, liquidado) {
 		liquidado.liquidado = !!liquidado.liquidado
 
 		let movimento = this.state.movimento;
@@ -96,7 +96,7 @@ export default class Buscar extends Component {
 		this.setState({
 		  movimento: movimento, 
 		  dialog: undefined
-		})
+		}, this.props.onLiquidado.bind(null, original, liquidado))
 	}
 
 	render() {

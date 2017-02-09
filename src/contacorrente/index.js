@@ -82,6 +82,7 @@ export default class ContaCorrente extends Component {
 
     this.handleLiquidar = this.handleLiquidar.bind(this);
     this.handleLiquidado = this.handleLiquidado.bind(this);
+    this.handleAfterLiquidado = this.handleAfterLiquidado.bind(this);
 
   }
 
@@ -221,24 +222,19 @@ export default class ContaCorrente extends Component {
           saldo: result.find( lancamento => !lancamento.id).valor || 0
         },
 
-        movimento: result/*.filter( lancamento => lancamento.id)*/.map( lancamento => {
-          lancamento.liquidado = !!lancamento.liquidado
-          return lancamento
-        }), 
+        movimento: result, 
+
         isLoading: undefined
 
       })
     }
-
   }
 
   handleLiquidar(lancamento) {
-
     api.cc.movimento.liquidar({
       ...lancamento,
       liquidado: !lancamento.liquidado
     }, this.handleLiquidado)
-
   }
 
   handleLiquidado(liquidado) {
@@ -252,10 +248,8 @@ export default class ContaCorrente extends Component {
       movimento: movimento, 
       dialog: undefined
     })
-
   }
 
-  // manipuladores da lista de parcelas
   handleNew() {
     this.setState({dialog: <Add 
 
@@ -268,10 +262,22 @@ export default class ContaCorrente extends Component {
       }}
 
       onAdd={this.handleAfterAdd.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
+      onClose={this.handleCloseDialog.bind(this)} />
+    })
   }
 
-  handleEdit(lancamento, index) {
+  handleAfterAdd(lancamento) {
+    lancamento.liquidado = !!lancamento.liquidado
+    
+    let movimento = this.state.movimento;
+    let index = movimento.push(lancamento)
+
+    this.setState({
+      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+    })
+  }
+
+  handleEdit(lancamento) {
     this.setState({dialog: <Edit 
 
       contas={this.state.contas}
@@ -286,17 +292,7 @@ export default class ContaCorrente extends Component {
 
       onEdit={this.handleAfterEdit.bind(this)} 
       onDelete={this.handleAfterDelete.bind(this)} 
-      onClose={this.handleCloseDialog.bind(this)} />})
-  }
-
-  handleAfterAdd(lancamento) {
-    lancamento.liquidado = !!lancamento.liquidado
-    
-    let movimento = this.state.movimento;
-    let index = movimento.push(lancamento)
-
-    this.setState({
-      movimento: movimento
+      onClose={this.handleCloseDialog.bind(this)} />
     })
   }
 
@@ -305,18 +301,47 @@ export default class ContaCorrente extends Component {
     
     let movimento = this.state.movimento;
     let index = movimento.findIndex( l => l.id === alterado.id)
-    movimento[index] = alterado
+
+    if (index < 0) {
+      movimento.push(alterado)
+    } else {
+      movimento[index] = alterado  
+    }
 
     this.setState({
-      movimento: movimento, 
+      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()), 
       dialog: undefined
     })
   }
 
-  handleAfterDelete(original, alterado) {
+  handleAfterLiquidado(original, alterado) {
+    alterado.liquidado = !!alterado.liquidado
+    
+    let conta = this.state.conta;
     let movimento = this.state.movimento;
     let index = movimento.findIndex( l => l.id === alterado.id)
-    movimento.splice(index, 1)
+
+    if (index < 0) {
+      conta.saldo -= alterado.valor
+      movimento.push(alterado)
+    } else {
+      movimento[index] = alterado  
+    }
+
+    this.setState({
+      conta: conta,
+      movimento: movimento.sort( (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
+    })
+  }
+
+  handleAfterDelete(original, excluido) {
+    let movimento = this.state.movimento;
+    let index = movimento.findIndex( l => l.id === excluido.id)
+
+    if (index >= 0) {
+      movimento.splice(index, 1)
+    }
+
     this.setState({
       movimento: movimento, 
       dialog: undefined
@@ -338,7 +363,8 @@ export default class ContaCorrente extends Component {
             ...this.state.conta
           }}
 
-          onSelect={this.handleEdit.bind(this)} 
+          onLiquidado={this.handleAfterLiquidado.bind(this)} 
+          onEdit={this.handleEdit.bind(this)} 
           onClose={this.handleCloseDialog.bind(this)} 
           
         />
@@ -420,7 +446,7 @@ export default class ContaCorrente extends Component {
                 <ControlLabel>Banco</ControlLabel>
                 <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
                 {this.state.contas && this.state.contas.map( (banco, index) =>
-                  <option key={'banco-' + index} value={banco.codigo} >{banco.codigo} - {banco.nome}</option>
+                  <option key={'banco-' + index} value={banco.codigo}>{banco.codigo} - {banco.nome}</option>
                 )}
                 </FormControl>
               </FormGroup>
@@ -431,7 +457,7 @@ export default class ContaCorrente extends Component {
                 <ControlLabel>Empresa</ControlLabel>
                 <FormControl name="agencia" componentClass="select" placeholder="Agencia" value={this.state.agencia.agencia} onChange={this.handleSelectAgencia} >
                 {this.state.banco && this.state.banco.agencias.map( (agencia, index) =>
-                  <option key={'agencia-' + index} value={agencia.agencia} >{agencia.agencia}</option>
+                  <option key={'agencia-' + index} value={agencia.agencia}>{agencia.agencia}</option>
                 )}
                 </FormControl>
               </FormGroup>
@@ -445,24 +471,6 @@ export default class ContaCorrente extends Component {
                   <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
                 )}
                 </FormControl>
-              </FormGroup>
-            </Col>
-
-            <Col md={2}>
-              <FormGroup validationState="success">
-                <ControlLabel>Saldo Conferido</ControlLabel>
-                <FormControl 
-                  type="text" 
-                  style={{textAlign: 'right'}} 
-                  value={
-                    format('R$ ###.###.##0,00', 
-                      this.state.movimento
-                        .filter( lancamento => lancamento.id && lancamento.liquidado)
-                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
-                    ) 
-                  } 
-                  readOnly 
-                />
               </FormGroup>
             </Col>
 
@@ -484,6 +492,24 @@ export default class ContaCorrente extends Component {
               </FormGroup>
             </Col>
 
+            <Col md={2}>
+              <FormGroup validationState="success">
+                <ControlLabel>Saldo Conferido</ControlLabel>
+                <FormControl 
+                  type="text" 
+                  style={{textAlign: 'right'}} 
+                  value={
+                    format('R$ ###.###.##0,00', 
+                      this.state.movimento
+                        .filter( lancamento => lancamento.id && lancamento.liquidado)
+                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
+                    ) 
+                  } 
+                  readOnly 
+                />
+              </FormGroup>
+            </Col>
+
           </Row>
 
           <Row style={{paddingTop: 10}}>
@@ -494,8 +520,8 @@ export default class ContaCorrente extends Component {
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Data</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Descricao</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray'}}>Documento</th>
-                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}} >Liquidado</th>
-                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}} >Valor</th>
+                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center'}}>Liquidado</th>
+                    <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Valor</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'right'}}>Saldo</th>
                     <th style={{borderBottom: '2px solid black', borderTop: '2px solid black', backgroundColor: 'lightgray', textAlign: 'center', width: 20}}></th>
                   </tr>
