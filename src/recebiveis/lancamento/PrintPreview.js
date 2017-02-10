@@ -145,7 +145,7 @@ export default class PrintPreview extends Component {
           <Modal.Body>
               {/*<iframe className="preview-pane" type="application/pdf" width="100%" height="100%" frameBorder="0" src={this.props.src}></iframe>*/}
               {this.state.src ? 
-                <embed width="100%" height="500px" name="plugin" id="plugin" src={this.state.src} type="application/pdf" /> : null
+                <embed width="100%" height="350px" name="plugin" id="plugin" src={this.state.src} type="application/pdf" /> : null
               }
               
           </Modal.Body>

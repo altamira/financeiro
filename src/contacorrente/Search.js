@@ -161,7 +161,7 @@ export default class Buscar extends Component {
 					<Row>
 	                    <Col md={12}>
 	                    	<div  style={{
-	                    		height: '400px',
+	                    		height: '300px',
 	                    			
 								    overflowX: 'hidden',
 								    overflowY: 'auto'
@@ -195,7 +195,7 @@ export default class Buscar extends Component {
 									        <td>{new Date(item.data).fromUTC().toLocaleDateString()}</td>
 									        <td>{item.liquidacao && new Date(item.liquidacao).fromUTC().toLocaleDateString()}</td>
 									        <td>{item.descricao}</td>
-									        <td>{item.documento}</td>
+									        <td style={{textAlign: 'center'}}>{item.documento}</td>
 									        <td style={{textAlign: 'center'}}>
 				                            	{item.liquidado ?
 				                              		(<Button bsStyle="success" style={{width: '33px'}} bsSize="small" onClick={this.handleLiquidar.bind(null, item)} ><Glyphicon glyph="ok" /></Button>) :                                 

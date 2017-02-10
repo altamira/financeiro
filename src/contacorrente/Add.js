@@ -336,7 +336,7 @@ export default class Add extends Component {
                   this.props.conta.conta === this.state.conta.conta && (
                     <FormGroup validationState="success">
 
-                      <FormControl type="text" style={{textAlign: 'right'}} value={format('R$ ###.###.##0,00', this.state.conta.saldo)} readOnly />
+                      <FormControl type="text" style={{textAlign: 'right', color: this.state.conta.saldo < 0 ? 'red' : 'blue'}} value={format('R$ ###.###.##0,00', this.state.conta.saldo)} readOnly />
 
                     </FormGroup>
                   )

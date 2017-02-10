@@ -405,6 +405,14 @@ export default class ContaCorrente extends Component {
 
     let saldo = (this.state.conta && this.state.conta.saldo) || 0;
 
+    let saldo_conferido = this.state.movimento
+                        .filter( lancamento => lancamento.id && lancamento.liquidado)
+                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
+
+    let saldo_conta = this.state.movimento
+                        .filter( lancamento => lancamento.id)
+                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
+
     return (
 
       <div>
@@ -527,14 +535,8 @@ export default class ContaCorrente extends Component {
                 <ControlLabel>Saldo da Conta</ControlLabel>
                 <FormControl 
                   type="text" 
-                  style={{textAlign: 'right'}} 
-                  value={
-                    format('R$ ###.###.##0,00', 
-                      this.state.movimento
-                        .filter( lancamento => lancamento.id)
-                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
-                    ) 
-                  } 
+                  style={{textAlign: 'right', color: saldo_conta < 0 ? 'red' : 'blue'}} 
+                  value={format('R$ ###.###.##0,00', saldo_conta)} 
                   readOnly 
                 />
               </FormGroup>
@@ -545,14 +547,8 @@ export default class ContaCorrente extends Component {
                 <ControlLabel>Saldo Conferido</ControlLabel>
                 <FormControl 
                   type="text" 
-                  style={{textAlign: 'right'}} 
-                  value={
-                    format('R$ ###.###.##0,00', 
-                      this.state.movimento
-                        .filter( lancamento => lancamento.id && lancamento.liquidado)
-                        .reduce( (saldo, lancamento) => saldo + lancamento.valor, (this.state.conta.saldo || 0.00))
-                    ) 
-                  } 
+                  style={{textAlign: 'right', color: saldo_conferido < 0 ? 'red' : 'blue'}} 
+                  value={format('R$ ###.###.##0,00', saldo_conferido)} 
                   readOnly 
                 />
               </FormGroup>
