@@ -4,16 +4,12 @@ function getLancamento(lancamento, callback) {
 	http.fetch('contacorrente/lancamento/' + lancamento, callback);
 }
 
-function getLancamentosList(banco, agencia, conta, liquidado, callback) {
-	if (banco && agencia && conta) {
-		http.fetch('contacorrente/lancamentos/conferir/' + banco + '/' + agencia + '/' + conta + '?liquidado=' + (!!liquidado ? 1 : 0), callback);	
-	}
+function getLancamentosList(conta, liquidado, callback) {
+	conta && http.fetch('contacorrente/lancamentos/conferir/' + conta + '?liquidado=' + (!!liquidado ? 1 : 0), callback);	
 }
 
-function getLancamentosSearch(banco, agencia, conta, liquidado, callback) {
-	if (banco && agencia && conta) {
-		http.fetch('contacorrente/lancamentos/liquidados/' + banco + '/' + agencia + '/' + conta + '?liquidado=' + (!!liquidado ? 1 : 0), callback);	
-	}
+function getLancamentosSearch(conta, liquidado, callback) {
+	conta && http.fetch('contacorrente/lancamentos/liquidados/' + conta + '?liquidado=' + (!!liquidado ? 1 : 0), callback);	
 }
 
 function deleteLancamento(id, callback) {

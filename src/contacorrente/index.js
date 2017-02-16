@@ -34,6 +34,7 @@ export default class ContaCorrente extends Component {
       contas: [],
 
       banco: {
+        id: 0,
         codigo: '',
         nome: '',
         agencias: []
@@ -45,8 +46,10 @@ export default class ContaCorrente extends Component {
       },
 
       conta: {
+        id: 0,
         conta: '',
-        saldo: 0.00
+        saldo: 0.00,
+        ativo: false
       },
 
       movimento: [
@@ -92,6 +95,7 @@ export default class ContaCorrente extends Component {
 
   loadContas(contas) {
     let banco = contas[0] || {
+      id: 0,
       codigo: '',
       nome: '',
       agencias: [
@@ -99,8 +103,10 @@ export default class ContaCorrente extends Component {
           agencia: '',
           contas: [
             {
+              id: 0,
               conta: '',
-              saldo: 0.00
+              saldo: 0.00,
+              ativo: false
             }
           ]
         }
@@ -124,7 +130,8 @@ export default class ContaCorrente extends Component {
   }
 
   handleSelectBanco(element) {
-    let banco = this.state.contas.find( banco => banco.codigo === element.target.value) || {
+    let banco = this.state.contas.find( banco => banco.id === parseInt(element.target.value, 10)) || {
+      id: 0,
       codigo: '',
       nome: '',
       agencias: [
@@ -132,8 +139,10 @@ export default class ContaCorrente extends Component {
           agencia: '',
           contas: [
             {
+              id: 0,
               conta: '',
-              saldo: 0.00
+              saldo: 0.00,
+              ativo: false
             }
           ]
         }
@@ -162,8 +171,10 @@ export default class ContaCorrente extends Component {
       agencia: '',
       contas: [
         {
+          id: 0,
           conta: '',
-          saldo: 0.00
+          saldo: 0.00,
+          ativo: false
         }
       ]
     }
@@ -182,9 +193,11 @@ export default class ContaCorrente extends Component {
   }
 
   handleSelectConta(element) {
-    let conta = this.state.agencia.contas.find( conta => conta.conta === element.target.value) || {
+    let conta = this.state.agencia.contas.find( conta => conta.id === parseInt(element.target.value, 10)) || {
+      id: 0,
       conta: '',
-      saldo: 0.00
+      saldo: 0.00,
+      ativo: false
     }
 
     this.setState({
@@ -197,12 +210,10 @@ export default class ContaCorrente extends Component {
   }
 
   getMovimento() {
-    if (this.state.banco.codigo && 
-      this.state.agencia.agencia &&
-      this.state.conta.conta) {
+    if (this.state.conta.id) {
       this.setState({
         isLoading: true
-      }, api.cc.movimento.list(this.state.banco.codigo, this.state.agencia.agencia, this.state.conta.conta, false, this.handleResult.bind(this)) )
+      }, api.cc.movimento.list(this.state.conta.id, false, this.handleResult.bind(this)) )
     }
   }
 
@@ -267,9 +278,7 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterAdd(lancamento) {
-    if (lancamento.banco === this.state.banco.codigo &&
-      lancamento.agencia === this.state.agencia.agencia &&
-      lancamento.conta === this.state.conta.conta) {
+    if (lancamento.conta === this.state.conta.id) {
 
       lancamento.liquidado = !!lancamento.liquidado
       
@@ -303,9 +312,7 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterEdit(original, alterado) {
-    if (alterado.banco === this.state.banco.codigo &&
-      alterado.agencia === this.state.agencia.agencia &&
-      alterado.conta === this.state.conta.conta) {
+    if (alterado.conta === this.state.conta.id) {
 
       alterado.liquidado = !!alterado.liquidado
       
@@ -339,9 +346,7 @@ export default class ContaCorrente extends Component {
   }
 
   handleAfterLiquidado(original, alterado) {
-    if (alterado.banco === this.state.banco.codigo &&
-      alterado.agencia === this.state.agencia.agencia &&
-      alterado.conta === this.state.conta.conta) {
+    if (alterado.conta === this.state.conta.id) {
 
       alterado.liquidado = !!alterado.liquidado
       
@@ -387,11 +392,7 @@ export default class ContaCorrente extends Component {
       dialog: 
         <Search 
           
-          conta={{
-            banco: this.state.banco.codigo || '',
-            agencia: this.state.agencia.agencia || '',
-            ...this.state.conta
-          }}
+          conta={this.state.conta}
 
           onLiquidado={this.handleAfterLiquidado.bind(this)} 
           onEdit={this.handleEdit.bind(this)} 
@@ -500,9 +501,9 @@ export default class ContaCorrente extends Component {
             <Col xs={12} md={4}>
               <FormGroup validationState={'success'} >
                 <ControlLabel>Banco</ControlLabel>
-                <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
+                <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.id} onChange={this.handleSelectBanco} >
                 {this.state.contas && this.state.contas.map( (banco, index) =>
-                  <option key={'banco-' + index} value={banco.codigo}>{banco.codigo} - {banco.nome}</option>
+                  <option key={'banco-' + index} value={banco.id}>{banco.codigo} - {banco.nome}</option>
                 )}
                 </FormControl>
               </FormGroup>
@@ -522,9 +523,9 @@ export default class ContaCorrente extends Component {
             <Col xs={12} md={2}>
               <FormGroup validationState={'success'} >
                 <ControlLabel>Conta</ControlLabel>
-                <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.conta} onChange={this.handleSelectConta} >
+                <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.id} onChange={this.handleSelectConta} >
                 {this.state.agencia && this.state.agencia.contas.map( (conta, index) =>
-                  <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
+                  <option key={'conta-' + index} value={conta.id}>{conta.conta}</option>
                 )}
                 </FormControl>
               </FormGroup>

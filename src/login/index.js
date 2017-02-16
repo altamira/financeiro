@@ -72,6 +72,7 @@ export default class Login extends Component {
           </Modal.Header>
 
           <Modal.Body>
+
             <Row>
               <Col md={4}>Usuario</Col>
               <Col md={8}>
@@ -82,6 +83,7 @@ export default class Login extends Component {
                 </FormGroup>
               </Col>
             </Row>
+
             <Row>
               <Col md={4}>Senha</Col>
               <Col md={8}>
@@ -92,6 +94,7 @@ export default class Login extends Component {
                 </FormGroup>
               </Col>
             </Row>
+            
           </Modal.Body>
 
           <Modal.Footer>

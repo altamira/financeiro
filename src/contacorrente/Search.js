@@ -60,12 +60,10 @@ export default class Buscar extends Component {
 	}
 
 	handleSearch() {
-		if (this.state.conta.banco && 
-			this.state.conta.agencia &&
-			this.state.conta.conta) {
+		if (this.state.conta.id) {
 			this.setState({
 				isLoading: true
-			}, api.cc.movimento.search.bind(null, this.state.conta.banco, this.state.conta.agencia, this.state.conta.conta, true, this.handleResult.bind(this)) )
+			}, api.cc.movimento.search.bind(null, this.state.conta.id, true, this.handleResult.bind(this)) )
 		}
 	}
 

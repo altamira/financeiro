@@ -31,6 +31,7 @@ export default class Add extends Component {
       contas: [],
 
       banco: {
+        id: 0,
         codigo: '',
         nome: '',
         agencias: []
@@ -42,8 +43,10 @@ export default class Add extends Component {
       },
 
       conta: {
+        id: 0,
         conta: '',
-        saldo: 0.00
+        saldo: 0.00,
+        ativo: false
       },
 
       lancamento : {
@@ -83,7 +86,8 @@ export default class Add extends Component {
   }
 
   handleSelectBanco(element) {
-    let banco = this.state.contas.find( banco => banco.codigo === element.target.value) || {
+    let banco = this.state.contas.find( banco => banco.id === parseInt(element.target.value, 10)) || {
+      id: 0,
       codigo: '',
       nome: '',
       agencias: [
@@ -91,8 +95,10 @@ export default class Add extends Component {
           agencia: '',
           contas: [
             {
+              id: 0,
               conta: '',
-              saldo: 0.00
+              saldo: 0.00,
+              ativo: false
             }
           ]
         }
@@ -110,9 +116,9 @@ export default class Add extends Component {
 
       lancamento: {
         ...this.state.lancamento,
-        banco: banco.codigo,
+        banco: banco.id,
         agencia: agencia.agencia,
-        conta: conta.conta
+        conta: conta.id
       }
     });
   }
@@ -122,8 +128,10 @@ export default class Add extends Component {
       agencia: '',
       contas: [
         {
+          id: 0,
           conta: '',
-          saldo: 0.00
+          saldo: 0.00,
+          ativo: false
         }
       ]
     }
@@ -137,15 +145,17 @@ export default class Add extends Component {
       lancamento: {
         ...this.state.lancamento,
         agencia: agencia.agencia,
-        conta: conta.conta
+        conta: conta.id
       }
     });
   }
 
   handleSelectConta(element) {
-    let conta = this.state.agencia.contas.find( conta => conta.conta === element.target.value) || {
+    let conta = this.state.agencia.contas.find( conta => conta.id === parseInt(element.target.value, 10)) || {
+      id: 0,
       conta: '',
-      saldo: 0.00
+      saldo: 0.00,
+      ativo: false
     }
 
     this.setState({
@@ -226,9 +236,7 @@ export default class Add extends Component {
 
       ...this.state.lancamento,
 
-      banco: this.state.banco.codigo,
-      agencia: this.state.agencia.agencia,
-      conta: this.state.conta.conta,
+      conta: this.state.conta.id,
 
       valor: parseFloat(this.state.lancamento.valor.replace('.', '').replace(',', '.'))
 
@@ -282,9 +290,9 @@ export default class Add extends Component {
               <Col md={10}>
                 <FormGroup validationState={'success'} >
 
-                  <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.codigo} onChange={this.handleSelectBanco} >
+                  <FormControl name="banco" componentClass="select" placeholder="Banco" value={this.state.banco.id} onChange={this.handleSelectBanco} >
                   {this.state.contas && this.state.contas.map( (banco, index) =>
-                    <option key={'banco-' + index} value={banco.codigo} >{banco.codigo} - {banco.nome}</option>
+                    <option key={'banco-' + index} value={banco.id} >{banco.codigo} - {banco.nome}</option>
                   )}
                   </FormControl>
 
@@ -316,9 +324,9 @@ export default class Add extends Component {
               <Col md={4}>
                 <FormGroup validationState={'success'} >
                   
-                  <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.conta} onChange={this.handleSelectConta} >
+                  <FormControl name="conta" componentClass="select" placeholder="Conta" value={this.state.conta.id} onChange={this.handleSelectConta} >
                   {this.state.agencia && this.state.agencia.contas.map( (conta, index) =>
-                    <option key={'conta-' + index} value={conta.conta}>{conta.conta}</option>
+                    <option key={'conta-' + index} value={conta.id}>{conta.conta}</option>
                   )}
                   </FormControl>
 
@@ -447,6 +455,7 @@ export default class Add extends Component {
                   {/*<FormControl.Feedback />*/}
                 </FormGroup>
               </Col>
+              
             </Row>
             
             <Row>

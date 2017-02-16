@@ -33,6 +33,7 @@ export default class Edit extends Component {
       contas: [],
 
       banco: {
+        id: 0,
         codigo: '',
         nome: '',
         agencias: []
@@ -44,8 +45,10 @@ export default class Edit extends Component {
       },
 
       conta: {
+        id: 0,
         conta: '',
-        saldo: 0.00
+        saldo: 0.00,
+        ativo: false
       },
 
       lancamento: {
@@ -101,6 +104,7 @@ export default class Edit extends Component {
 
   handleSelectBanco(element) {
     let banco = this.state.contas.find( banco => banco.codigo === element.target.value) || {
+      id: 0,
       codigo: '',
       nome: '',
       agencias: [
@@ -108,6 +112,7 @@ export default class Edit extends Component {
           agencia: '',
           contas: [
             {
+              id: 0,
               conta: '',
               saldo: 0.00
             }
@@ -139,8 +144,10 @@ export default class Edit extends Component {
       agencia: '',
       contas: [
         {
+          id: 0,
           conta: '',
-          saldo: 0.00
+          saldo: 0.00,
+          ativo: false
         }
       ]
     }
@@ -161,8 +168,10 @@ export default class Edit extends Component {
 
   handleSelectConta(element) {
     let conta = this.state.agencia.contas.find( conta => conta.conta === element.target.value) || {
+      id: 0,
       conta: '',
-      saldo: 0.00
+      saldo: 0.00,
+      ativo: false
     }
 
     this.setState({
@@ -239,9 +248,7 @@ export default class Edit extends Component {
 
       ...this.state.lancamento,
 
-      banco: this.state.banco.codigo,
-      agencia: this.state.agencia.agencia,
-      conta: this.state.conta.conta,
+      conta: this.state.conta.id,
 
       valor: parseFloat(this.state.lancamento.valor.replace('.', '').replace(',', '.'))
 
@@ -257,9 +264,7 @@ export default class Edit extends Component {
 
       id: 0,
 
-      banco: this.state.banco.codigo,
-      agencia: this.state.agencia.agencia,
-      conta: this.state.conta.conta,
+      conta: this.state.conta.id,
 
       valor: 0
 

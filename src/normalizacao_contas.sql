@@ -1,0 +1,94 @@
+-- ETAPA 1
+-- CRIAR CAMPOS 
+-- FN_BANCOS -> id 
+-- FN_CONTA -> id, banco_fk 
+-- FN_MOVIMENTO -> id, conta_fk
+
+-- ETAPA 2
+DELETE FROM FN_BANCOS WHERE nome = 'BANCO TESTE'
+
+INSERT INTO FN_BANCOS (codigo, nome, valor_taxa, valor_bordero, valor_limite) VALUES ('479', 'CONTA INATIVA 1', 0, 0, 0)
+INSERT INTO FN_BANCOS (codigo, nome, valor_taxa, valor_bordero, valor_limite) VALUES ('347', 'CONTA INATIVA 2', 0, 0, 0)
+
+UPDATE FN_CONTAS
+	SET banco_fk = B.id
+FROM FN_CONTAS C 
+	INNER JOIN FN_BANCOS B ON C.banco = B.codigo
+-- (27 linha(s) afetadas)
+
+UPDATE FN_MOVIMENTO
+	SET conta_fk = C.id
+FROM FN_MOVIMENTO M INNER JOIN FN_CONTAS C ON M.banco = C.banco AND M.agencia = C.agencia AND C.conta = M.conta
+
+
+-- ETAPA 3
+-- IMPLEMENTAR INTEGRIDADE REFERENCIAL:
+-- BANCO -> CONTA -> MOVIMENTO
+
+
+-- ETAPA 4
+-- RENOMEAR O CAMPOS
+-- FN_BANCOS -> id
+-- FN_CONTA -> banco_fk -> banco
+-- FN_MOVIMENTO -> conta_fk -> conta
+
+
+-- ETAPA 5
+-- MUDAR PROCEDURES
+
+
+
+
+
+
+-- (190003 linha(s) afetadas)
+
+--DELETE FROM FN_MOVIMENTO WHERE banco = '999'
+--DELETE FROM FN_CONTAS WHERE banco = '999'
+--DELETE FROM FN_BANCOS WHERE codigo = '999'
+
+--DELETE FROM FN_CONTAS WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE codigo = FN_CONTAS.banco)
+
+
+--SELECT * FROM FN_BANCOS WHERE codigo = '999'
+--SELECT * FROM FN_CONTAS WHERE banco = '999'
+--SELECT * FROM FN_MOVIMENTO WHERE banco = '999'
+
+
+--SELECT * FROM FN_CONTAS WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE codigo = FN_CONTAS.banco)
+--SELECT * FROM FN_MOVIMENTO WHERE NOT EXISTS (SELECT 1 FROM FN_CONTAS WHERE banco = FN_MOVIMENTO.banco AND agencia = FN_MOVIMENTO.agencia AND conta = FN_MOVIMENTO.conta)
+
+--DELETE FROM FN_MOVIMENTO WHERE NOT EXISTS (SELECT 1 FROM FN_CONTAS WHERE banco = FN_MOVIMENTO.banco AND agencia = FN_MOVIMENTO.agencia AND conta = FN_MOVIMENTO.conta)
+--DELETE FROM FN_MOVIMENTO WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE codigo = FN_MOVIMENTO.banco)
+
+--DELETE FROM FN_BANCOS WHERE NOT EXISTS (SELECT 1 FROM FN_MOVIMENTO WHERE banco = FN_BANCOS.codigo)
+--DELETE FROM FN_BANCOS WHERE NOT EXISTS (SELECT 1 FROM FN_CONTAS WHERE banco = FN_BANCOS.codigo)
+--DELETE FROM FN_BANCOS WHERE NOT EXISTS (SELECT 1 FROM FN_CONTAS WHERE FN_BANCOS.codigo = FN_CONTAS.banco AND FN_CONTAS.ativo = 0)
+
+--DELETE FROM FN_CONTAS WHERE NOT EXISTS (SELECT 1 FROM FN_MOVIMENTO WHERE banco = FN_CONTAS.banco AND agencia = FN_CONTAS.agencia AND conta = FN_CONTAS.conta) OR ativo = 0
+--DELETE FROM FN_CONTAS WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE codigo = FN_CONTAS.banco)
+
+
+SELECT * FROM FN_MOVIMENTO WHERE conta_fk = 0
+SELECT * FROM FN_CONTAS WHERE banco_fk = 0
+
+SELECT * FROM FN_CONTAS C INNER JOIN FN_MOVIMENTO M ON M.banco = C.banco AND M.agencia = C.agencia AND M.conta = C.conta
+WHERE C.id = M.conta_fk
+
+
+
+/*
+
+SELECT 
+	ltrim(rtrim(banco)) as banco, 
+	ltrim(rtrim(agencia)) as agencia, 
+	ltrim(rtrim(conta)) as conta, 
+	ltrim(rtrim(gerente)) as gerente, 
+	ltrim(rtrim(telefone)) as  telefone
+FROM FN_CONTAS WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE id = FN_CONTAS.banco)
+
+SELECT count(*) FROM FN_MOVIMENTO WHERE NOT EXISTS (SELECT 1 FROM FN_BANCOS WHERE codigo = FN_MOVIMENTO.banco)
+
+*/
+
+
