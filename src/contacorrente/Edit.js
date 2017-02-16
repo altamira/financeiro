@@ -240,7 +240,7 @@ export default class Edit extends Component {
   }
 
   onValidateNotEmpty(propriedade, maxLength) {
-    return this.state.lancamento[propriedade] !== null && this.state.lancamento[propriedade].trim().length > 2 && this.state.lancamento[propriedade].length <= maxLength;
+    return this.state.lancamento[propriedade] !== null && this.state.lancamento[propriedade].trim().length > 1 && this.state.lancamento[propriedade].length <= maxLength;
   }
 
   handleEdit() {

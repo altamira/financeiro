@@ -296,7 +296,7 @@ export default class Retorno extends Component {
                 overlay={(<Tooltip id="tooltip">Tarefa concluída</Tooltip>)}
               >
                   <Button
-                    disabled={!!this.state.retorno.find( r => r.parcelas.find( p => p.aceito === undefined))}
+                    disabled={!!this.state.retorno.parcelas.find( p => p.aceito === undefined)}
                     onClick={this.handleComplete}
                     style={{width: 150}}
                     bsStyle="success"
@@ -381,7 +381,7 @@ export default class Retorno extends Component {
                           </tr>
                         </thead>
 
-                          {this.state.retorno.map( (r, index) => <Pagador key={'titulo-' + r.nosso_numero} {...r} index={index} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
+                          {this.state.retorno && (<Pagador key={'titulo-' + this.state.retorno.nosso_numero} {...this.state.retorno} index={0} handleSelect={this.handleSelect} handleUnselect={this.handleUnselect} /> )}
                         
                       </Table>
                     </Col>
