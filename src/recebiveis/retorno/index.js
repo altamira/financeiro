@@ -33,26 +33,29 @@ export default class Retorno extends Component {
 
       tarefa: {},
 
+      "tipo": "retorno",
+      "data": "2017-02-15T19:04:40.930Z",
+
       carteira: {
-        "id": 0,
-        "banco": "",
+        "id": 15,
+        "banco": "BRASIL",
         "agencia": "0",
         "conta": "0",
         "carteira": 0,
-        "nome": "",
+        "nome": "BRASIL - GARANTIA",
         "limite": 0,
         "utilizado": 0,
         "saldo": 0,
         "defasagem": 0,
         "descoberto": 0,
-        "valor_operacao": 0,
-        "valor_tarifa": 0,
-        "taxa_juros": 0,
+        "valor_operacao": 250,
+        "valor_tarifa": 3.5,
+        "taxa_juros": 3.5,
         "total_iof": 0,
         "total_juros": 0,
         "total_tarifas": 0,
-        "remessa": 0,
-        "retorno": 0,
+        "remessa": 5952.91,
+        "retorno": 0
       },
 
       bordero: {
@@ -74,57 +77,38 @@ export default class Retorno extends Component {
       },
 
       retorno: {
-
-        "tipo": "remessa",
-        "data": "2017-01-31T18:38:08.590Z",
-        "nosso_numero": 0,
-        "pedido": 0,
-
+        "nosso_numero": 216697,
         "cliente": {
-          "cnpj": "",
-          "inscricao": "",
-          "fantasia": "",
-          "nome": "",
-          "logradouro": "",
-          "endereco": "",
-          "numero": "",
+          "cnpj": "68.870.997/0001-74",
+          "inscricao": "278150401116",
+          "fantasia": "BITZER COMPRESSORES LTDA",
+          "nome": "BITZER COMPRESSORES LTDA",
+          "logradouro": "AV",
+          "endereco": "JOAO PAULO ABLAS",
+          "numero": "777",
           "complemento": "",
-          "bairro": "",
-          "municipio": 0,
-          "cidade": "",
-          "CEP": "",
-          "UF": "",
-          "ddd": "",
-          "telefone": "",
+          "bairro": "JARDIM DA GLORIA",
+          "municipio": 3513009,
+          "cidade": "COTIA",
+          "CEP": "06711-250",
+          "UF": "SP",
+          "ddd": "11",
+          "telefone": "4617-9156",
           "contato": "",
-          "desconto": 0
+          "conta_contabil": "1.01.02.001.03902"
         },
-
-        "carteira": {
-          "id": 0,
-          "banco": "",
-          "agencia": "0",
-          "conta": "0",
-          "carteira": 0,
-          "nome": "",
-          "limite": 0,
-          "utilizado": 0,
-          "saldo": 0,
-          "defasagem": 0,
-          "descoberto": 0,
-          "valor_operacao": 0,
-          "valor_tarifa": 0,
-          "taxa_juros": 0,
-          "total_iof": 0,
-          "total_juros": 0,
-          "total_tarifas": 0,
-          "remessa": 0,
-          "retorno": 0
-        },
-
-        "parcelas": [],
-
-        bordero: {}
+        "parcelas": [
+          {
+            "vencto": "2017-03-24T03:00:00.000Z",
+            "origem": "VENDA",
+            "forma_pagto": "COBRANCA",
+            "tipo_vencto": "DDL",
+            "parcela": 1,
+            "prazo": 21,
+            "valor": 1506.71,
+            "carteira": "BRASIL - GARANTIA"
+          }
+        ]
       }
 
     }
@@ -160,7 +144,7 @@ export default class Retorno extends Component {
 
     this.setState({
       tarefa: omit(tarefa, 'documento'), 
-      retorno: tarefa.documento,
+      retorno: tarefa.documento.retorno,
       bordero: {}
     })
 
@@ -171,6 +155,7 @@ export default class Retorno extends Component {
   }
 
   handleComplete() {
+
     let state = {
       ...this.state.tarefa, 
       documento: { 
@@ -183,12 +168,12 @@ export default class Retorno extends Component {
     console.log(JSON.stringify(state, null, 2));
 
     this.setState({dialog: <Bordero 
+
       bordero={{
         ...this.state.bordero, 
-        valor_titulos: format('########0,00', this.state.retorno.reduce( (total, pagador) => 
-          total + pagador.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
-            subtotal + parcela.valor, 0.0)
-        , 0.0)),
+        valor_titulos: format('########0,00', 
+          this.state.retorno.parcelas.filter( p => p.aceito).reduce( (subtotal, parcela) => 
+            subtotal + parcela.valor, 0.0)),
         valor_base: format('########0,00', this.state.bordero.valor_base || 0.0),
         valor_cet: format('########0,00', this.state.bordero.valor_cet || 0.0),
         valor_iof: format('########0,00', this.state.bordero.valor_iof || 0.0),
@@ -200,10 +185,15 @@ export default class Retorno extends Component {
         taxa_juros: format('########0,00', this.state.bordero.taxa_juros || 0.0),
         valor_liquido: format('########0,00', this.state.bordero.valor_liquido || 0.0)
       }} 
+
       onClose={this.handleCloseDialog.bind(this)} 
       onSave={this.handleSaveAndClose.bind(this)} />
     })
 
+  }
+
+  handleClose() {
+    this.props.router.push('/');
   }
 
   handleSaveAndClose(bordero) {
@@ -221,35 +211,23 @@ export default class Retorno extends Component {
 
   }
 
-  handleClose() {
-    this.props.router.push('/');
-  }
-
-  handleSelect(retorno, aceito) {
+  handleSelect(parcela, aceito) {
     this.setState({
       dialog: undefined,
-      retorno: this.state.retorno.map( (r, i) => {
+      retorno: {
+
+        ...this.state.retorno,
+
+        parcelas: this.state.retorno.parcelas.map( (p, i) => {
         
-        if (retorno.retorno_index === i) {
-          r.parcelas[retorno.parcela_index].aceito = aceito;
-        } 
+          if (parcela.index === i) {
+            p.aceito = aceito;
+          } 
 
-        return r;
-      })
-    })
-  }
+          return p;
+        })
 
-  handleSelectSave(retorno) {
-    this.setState({
-      dialog: undefined,
-      retorno: this.state.retorno.map( (r, i) => {
-        
-        if (retorno.retorno_index === i) {
-          r.parcelas[retorno.parcela_index].aceito = retorno.aceito;
-        } 
-
-        return r;
-      })
+      }
     })
   }
 
@@ -268,13 +246,6 @@ export default class Retorno extends Component {
   // formulario
   handleChange(value) {
     this.setState({[value.target.id]: value.target.value});
-  }
-
-  handleOrderBy(key) {
-    let order = {nosso_numero: null, vencto: null, nome: null, parcela: null, valor: null};
-    let retornos = this.state.retornos;
-    order[key] = !this.state.order[key];
-    this.setState({retornos: retornos.sortByKey(key, order[key]), order: order });
   }
 
   render() {
@@ -410,7 +381,7 @@ const Pagador = (retorno) =>
       <td colSpan={8} style={{borderBottom: '2px solid black'}} ><h4><b>{retorno.cliente.nome}</b></h4></td>
     </tr>
     {retorno.parcelas.map ( (parcela, index) =>
-      <Parcela key={'parcela-' + retorno.nosso_numero + '-' + index} {...parcela} nosso_numero={retorno.nosso_numero} pedido={retorno.pedido} cliente={retorno.cliente} retorno_index={retorno.index} parcela_index={index} handleSelect={retorno.handleSelect} handleUnselect={retorno.handleUnselect} />
+      <Parcela key={'parcela-' + retorno.nosso_numero + '-' + index} {...parcela} nosso_numero={retorno.nosso_numero} pedido={retorno.pedido} cliente={retorno.cliente} index={index} handleSelect={retorno.handleSelect} handleUnselect={retorno.handleUnselect} />
     )}
   </tbody>
 
@@ -429,7 +400,7 @@ const Parcela = (parcela) =>
           <Glyphicon glyph="thumbs-up" />
         </Button>
       </OverlayTrigger>
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_naceito' + parcela.parcela_index}>Não Aceito</Tooltip>}>
+      <OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_naceito' + parcela.index}>Não Aceito</Tooltip>}>
         <Button bsStyle="danger" style={{width: '33px'}} bsSize="small" onClick={parcela.handleSelect.bind(null, parcela, false)}>
           <Glyphicon glyph="thumbs-down" />
         </Button>
@@ -439,7 +410,7 @@ const Parcela = (parcela) =>
 
       (parcela.aceito ?
 
-      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.index} >Desfazer</Tooltip>}>
         <Button bsStyle="success" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
           <Glyphicon glyph="ok" />
         </Button>
@@ -447,7 +418,7 @@ const Parcela = (parcela) =>
 
       :
 
-      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.parcela_index} >Desfazer</Tooltip>}>
+      (<td style={{textAlign: 'center'}}><OverlayTrigger placement="bottom" overlay={<Tooltip id={'tooltip_ok' + parcela.index} >Desfazer</Tooltip>}>
         <Button bsStyle="danger" style={{width: '33px', marginRight: '4px'}} bsSize="small" onClick={parcela.handleUnselect.bind(null, parcela)}>
           <Glyphicon glyph="ok" />
         </Button>
