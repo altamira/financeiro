@@ -4,8 +4,8 @@ function getTarefa(id, callback) {
 	http.fetch('tarefa/' + id, callback);
 }
 
-function getTarefas(perfil, callback) {
-	http.fetch('tarefas?perfil=' + perfil, callback);
+function getTarefas(usuario, callback) {
+	http.fetch('tarefas/' + usuario, callback);
 }
 
 function postTarefa(tarefa, callback) {

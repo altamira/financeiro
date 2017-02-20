@@ -71,8 +71,8 @@ export default class PrintPreview extends Component {
       // Quadros internos
       doc.rect(5, margin_top + 28, 200, 10); 
 
-      doc.setFontSize(12);
-      doc.text(163, margin_top + 10, 'Emissão:' + new Date().toLocaleDateString());
+      doc.setFontSize(10);
+      doc.text(160, margin_top + 9, ((window.userAuthenticated && window.userAuthenticated.nome) || '') + ' ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString());
 
       doc.setFontSize(18);
       doc.text(70, margin_top + 13, 'Cobrança de Título');

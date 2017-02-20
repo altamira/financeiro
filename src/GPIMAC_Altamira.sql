@@ -1,7 +1,7 @@
 USE [GPIMAC_Altamira]
 GO
 
-/****** Object:  Table [dbo].[INTEGRACAO_EVENTO]    Script Date: 01/02/2017 17:40:39 ******/
+/****** Object:  Table [dbo].[INTEGRACAO_EVENTO]    Script Date: 20/02/2017 17:27:35 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -12,18 +12,19 @@ SET ANSI_PADDING ON
 GO
 
 CREATE TABLE [dbo].[INTEGRACAO_EVENTO](
-	[sequencia] [int] IDENTITY(1,1) NOT NULL,
-	[id] [int] NOT NULL,
-	[uid] [uniqueidentifier] NOT NULL CONSTRAINT [DF_INTEGRACAO_EVENTO_uid]  DEFAULT (newid()),
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[chave] [varchar](20) NOT NULL,
 	[timestamp] [datetime] NOT NULL CONSTRAINT [DF_INTEGRACAO_EVENTO_dt]  DEFAULT (getdate()),
-	[evento] [nvarchar](50) NOT NULL,
-	[descricao] [nvarchar](50) NULL,
-	[detalhes] [nvarchar](100) NULL,
+	[origem] [varchar](50) NULL,
+	[evento] [varchar](20) NOT NULL,
+	[descricao] [varchar](50) NULL,
+	[detalhes] [varchar](100) NULL,
 	[documento] [varchar](max) NULL,
 	[reconhecido] [bit] NOT NULL CONSTRAINT [DF_INTEGRACAO_EVENTO_ack]  DEFAULT ((0)),
+	[uid] [uniqueidentifier] NOT NULL CONSTRAINT [DF_INTEGRACAO_EVENTO_uid]  DEFAULT (newid()),
  CONSTRAINT [PK_INTEGRACAO_EVENTO] PRIMARY KEY CLUSTERED 
 (
-	[sequencia] ASC
+	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
@@ -33,15 +34,6 @@ SET ANSI_PADDING OFF
 GO
 
 
-USE [GPIMAC_Altamira]
-GO
-
-/****** Object:  Trigger [dbo].[INTEGRACAO_EVENTO_PEDIDO_LIBERADO]    Script Date: 01/02/2017 17:41:10 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
 
 
 
@@ -49,8 +41,7 @@ GO
 
 
 
-
-CREATE TRIGGER [dbo].[INTEGRACAO_EVENTO_PEDIDO_LIBERADO] 
+CREATE TRIGGER [dbo].[PEDIDO_LIBERADO] 
    ON  [dbo].[LPV] 
    FOR UPDATE
 AS 
@@ -64,12 +55,13 @@ BEGIN
 	* O capmo flag LPV.LpLib muda de 'N' para 'S'
 	*********************************************************************************************************/
 	INSERT INTO INTEGRACAO_EVENTO 
-		(id, evento, descricao, detalhes, documento)
+		(chave, origem, evento, descricao, detalhes, documento)
 	SELECT
-		inserted.LPPED, 
-		'PEDIDO_LIBERADO', 
+		CAST(inserted.LPPED AS VARCHAR), 
+		'GPIMAC_Altamira.LPV.LpLib', 
+		'PEDIDO_LIBERADO',
 		'Pedido ' + CAST(inserted.LPPED AS NVARCHAR),
-		LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))),
+		LTRIM(RTRIM(ISNULL(CACLI.CCNOM, ''))),
 		'{' + '"numero": "' + CAST(inserted.LPPED AS NVARCHAR(10)) + '", ' + '"cliente": {' + '"cnpj": "' + LTRIM(RTRIM(inserted.CCCGC)) + '", ' + '"nome": "' + LTRIM(RTRIM(ISNULL(CACLI.CCNOM, ''))) + '", ' + '"fantasia": "' + LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))) + '"' + '}}'
 	FROM
 		inserted INNER JOIN deleted ON inserted.LPPED = deleted.LPPED INNER JOIN CACLI ON deleted.CCCGC = CACLI.CCCGC
@@ -79,60 +71,7 @@ BEGIN
 		inserted.LpLib = 'S' AND
 		NOT EXISTS (SELECT TOP 1 id FROM INTEGRACAO_EVENTO WHERE id = inserted.LPPED AND evento = 'PEDIDO_LIBERADO')
 
-	/*********************************************************************************************************
-	* Evento: Pedido Liberado Novamente
-	----------------------------------------------------------------------------------------------------------
-	* Ocorre após o pedido já ter sido liberado 1 ou mais vezes
-	* O campo flag LPV.LpLib muda de 'N' para 'S'
-	*********************************************************************************************************/
-	INSERT INTO INTEGRACAO_EVENTO 
-		(id, evento, descricao, detalhes, documento)
-	SELECT
-		inserted.LPPED, 
-		'PEDIDO_LIBERADO_NOVAMENTE', 
-		'Pedido ' + CAST(inserted.LPPED AS NVARCHAR),
-		LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))),
-		'{' + '"numero": "' + CAST(inserted.LPPED AS NVARCHAR(10)) + '", ' + '"cliente": {' + '"cnpj": "' + LTRIM(RTRIM(inserted.CCCGC)) + '", ' + '"nome": "' + LTRIM(RTRIM(ISNULL(CACLI.CCNOM, ''))) + '", ' + '"fantasia": "' + LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))) + '"' + '}}'
-	FROM
-		inserted INNER JOIN deleted ON inserted.LPPED = deleted.LPPED INNER JOIN CACLI ON deleted.CCCGC = CACLI.CCCGC
-	WHERE 
-		UPDATE(LpLib) AND 
-		inserted.LpLib <> deleted.LpLib AND
-		inserted.LpLib = 'S' AND
-		EXISTS (SELECT TOP 1 id FROM INTEGRACAO_EVENTO WHERE id = inserted.LPPED AND evento = 'PEDIDO_LIBERADO')
-
-
-	/*********************************************************************************************************
-	* Evento: Pedido Retido em Vendas
-	----------------------------------------------------------------------------------------------------------
-	* Ocorre quando o campo 'Liberar Pedido' é desmarcado em um Pedido que já foi liberado.
-	* O campo flag LPV.LpLib muda de 'S' para 'N'
-	*********************************************************************************************************/
-	INSERT INTO INTEGRACAO_EVENTO 
-		(id, evento, descricao, detalhes, documento)
-	SELECT
-		inserted.LPPED, 
-		'PEDIDO_RETIDO_EM_VENDAS', 
-		'Pedido ' + CAST(inserted.LPPED AS NVARCHAR),
-		LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))),
-		'{' + '"numero": "' + CAST(inserted.LPPED AS NVARCHAR(10)) + '", ' + '"cliente": {' + '"cnpj": "' + LTRIM(RTRIM(inserted.CCCGC)) + '", ' + '"nome": "' + LTRIM(RTRIM(ISNULL(CACLI.CCNOM, ''))) + '", ' + '"fantasia": "' + LTRIM(RTRIM(ISNULL(CACLI.CCFAN, ''))) + '"' + '}}'
-	FROM
-		inserted INNER JOIN deleted ON inserted.LPPED = deleted.LPPED INNER JOIN CACLI ON deleted.CCCGC = CACLI.CCCGC
-	WHERE 
-		UPDATE(LpLib) AND 
-		inserted.LpLib <> deleted.LpLib AND
-		inserted.LpLib = 'N' AND
-		EXISTS (SELECT TOP 1 id FROM INTEGRACAO_EVENTO WHERE id = inserted.LPPED AND evento = 'PEDIDO_LIBERADO')
 
 END
 
-
-
-
-
-
-
-
 GO
-
-

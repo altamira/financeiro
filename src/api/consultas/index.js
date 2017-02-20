@@ -5,8 +5,8 @@ import retornos from './retorno'
 
 import http from './../http'
 
-function list(perfil, callback) {
-	http.fetch('consultas/?perfil=' + perfil, callback);
+function list(id, callback) {
+	http.fetch('consultas/' + id, callback);
 }
 
 export default {

@@ -181,8 +181,8 @@ class App extends Component {
       alert('Erro na conexao com o servidor de mensagens: ' + err);
     })
 
-    api.consulta.list(this.state.usuario.perfil || '', this.setConsultas)
-    api.tarefa.list((this.state.usuario && this.state.usuario.perfil) || '', this.setTarefas);
+    api.consulta.list(this.state.usuario.id || 0, this.setConsultas)
+    api.tarefa.list(this.state.usuario.id || 0, this.setTarefas);
 
   }  
 
@@ -200,6 +200,8 @@ class App extends Component {
     )
     this.client.end();  
 
+    window.userAuthenticated = undefined;
+    
     this.goHome();  
   }
 
