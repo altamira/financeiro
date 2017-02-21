@@ -130,7 +130,7 @@ export default class PrintPreview extends Component {
       doc.text(60, margin_top + 52, this.cliente.inscricao);
       doc.text(60, margin_top + 59, this.cliente.nome.trim());
       doc.text(60, margin_top + 66, this.cliente.logradouro.trim() + ' ' + this.cliente.endereco.trim() + ' ' + this.cliente.numero.trim());
-      doc.text(60, margin_top + 73, this.cliente.complemento.trim() + ' ' + this.cliente.bairro.trim());
+      doc.text(60, margin_top + 73, (this.cliente.complemento.trim() + ' ' + this.cliente.bairro.trim()).trim());
       doc.text(60, margin_top + 80, this.cliente.cidade.trim());
       doc.text(60, margin_top + 87, this.cliente.uf);
       doc.text(60, margin_top + 94, this.cliente.cep);

@@ -146,7 +146,7 @@ export default class Buscar extends Component {
 	                  </Row>*/}
 
 	                <Row style={{marginBottom: '10px'}}>
-		              <Col md={12}><h5>Banco: {this.state.banco.codigo}, Empresa: {this.state.agencia.agencia}, Conta: {this.state.conta.conta}</h5></Col>
+		              <Col md={12}><h5>Banco: {this.state.banco.nome}, Empresa: {this.state.agencia.agencia}, Conta: {this.state.conta.conta}</h5></Col>
 		            </Row>
 
 					<Row style={{marginBottom: '10px'}}>

@@ -181,6 +181,6 @@ const Parcela = (parcela) =>
     <td style={{textAlign: 'center'}}><b>{parcela.pedido.numero}</b></td>
     <td style={{textAlign: 'center'}}>{new Date(parcela.vencto).fromUTC().toLocaleDateString()}</td>
     <td style={{textAlign: 'center'}}>{parcela.parcela}</td>
-    <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo === "DDP" ? 'SINAL' : parcela.tipo === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
+    <td style={{textAlign: 'center'}}>{parcela.parcela === 1 && parcela.tipo_vencto === "DDP" ? 'SINAL' : parcela.tipo_vencto === 'DDP' ? parcela.prazo + ' dia(s) do PEDIDO' :  parcela.prazo + ' dia(s) da ENTREGA'}</td>
     <td style={{textAlign: 'right'}}><b>{format('R$ ###.###.##0,00', parcela.valor)}</b></td>
   </tr>
