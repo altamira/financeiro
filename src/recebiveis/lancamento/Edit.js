@@ -125,7 +125,7 @@ export default class Edit extends Component {
                     <option value="BNDES">Cartão BNDES</option>
                     <option value="CHEQUE">Cheque</option>
                     <option value="DINHEIRO">Dinheiro</option>
-                    <option value="CARTEIRA">Carteira</option>
+                    <option value="A_FATURAR">Faturar na Entrega</option>
                   </FormControl>
                 </FormGroup>
               </Col>

@@ -331,7 +331,7 @@ export default class Lancamento extends Component {
       BNDES: 'Cartão BNDES',
       CHEQUE: 'Cheque',
       DINHEIRO: 'Dinheiro',
-      CARTEIRA: 'Carteira'
+      A_FATURAR: 'Faturar na Entrega'
     }
 
     let tipo_vencto = {

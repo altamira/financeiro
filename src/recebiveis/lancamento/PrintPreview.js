@@ -117,6 +117,15 @@ export default class PrintPreview extends Component {
 
       doc.setFontStyle('normal');
 
+      let forma_pagto = {
+        COBRANCA: 'Cobrança Bancária',
+        DEPOSITO: 'Depósito Bancário',
+        BNDES: 'Cartão BNDES',
+        CHEQUE: 'Cheque',
+        DINHEIRO: 'Dinheiro',
+        A_FATURAR: 'Faturar na Entrega'
+      }
+
       doc.text(60, margin_top + 45, this.cliente.cnpj);
       doc.text(60, margin_top + 52, this.cliente.inscricao);
       doc.text(60, margin_top + 59, this.cliente.nome.trim());
@@ -128,7 +137,7 @@ export default class PrintPreview extends Component {
       doc.text(60, margin_top + 101, '(' + this.cliente.ddd + ') ' + this.cliente.telefone.trim());
       doc.text(60, margin_top + 108, this.cliente.contato.trim());
       doc.text(60, margin_top + 115, this.representante.codigo + ' ' + this.representante.nome.trim());
-      doc.text(60, margin_top + 122, parcela.prazo.toString() + ' ' + parcela.tipo_vencto + ' - ' + parcela.forma_pagto + ' ' + parcela.origem);
+      doc.text(60, margin_top + 122, forma_pagto[parcela.forma_pagto] + ' ' + parcela.prazo.toString() + ' ' + parcela.tipo_vencto);
       doc.text(60, margin_top + 129, '____/____/____   _______________________   ___________');
       doc.text(60, margin_top + 136, '____/____/____   _______________________   ___________');
 

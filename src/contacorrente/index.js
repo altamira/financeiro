@@ -392,6 +392,8 @@ export default class ContaCorrente extends Component {
       dialog: 
         <Search 
           
+          banco={this.state.banco}
+          agencia={this.state.agencia}
           conta={this.state.conta}
 
           onLiquidado={this.handleAfterLiquidado.bind(this)} 

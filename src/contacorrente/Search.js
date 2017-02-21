@@ -25,6 +25,8 @@ export default class Buscar extends Component {
 			data: new Date().toISOString(),
 			descricao: '',
 
+			banco: this.props.banco,
+			agencia: this.props.agencia,
 			conta: this.props.conta,
 
 			search: ''
@@ -144,7 +146,7 @@ export default class Buscar extends Component {
 	                  </Row>*/}
 
 	                <Row style={{marginBottom: '10px'}}>
-		              <Col md={12}><h5>Banco: {this.state.conta.banco}, Empresa: {this.state.conta.agencia}, Conta: {this.state.conta.conta}</h5></Col>
+		              <Col md={12}><h5>Banco: {this.state.banco.codigo}, Empresa: {this.state.agencia.agencia}, Conta: {this.state.conta.conta}</h5></Col>
 		            </Row>
 
 					<Row style={{marginBottom: '10px'}}>
