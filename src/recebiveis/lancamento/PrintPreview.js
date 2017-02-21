@@ -66,13 +66,15 @@ export default class PrintPreview extends Component {
 
       // Quadros
       doc.rect(5, margin_top + 5, 200, 13); 
-      doc.rect(5, margin_top + 20, 200, 110); 
+      doc.rect(5, margin_top + 20, 200, 120); 
 
       // Quadros internos
       doc.rect(5, margin_top + 28, 200, 10); 
 
-      doc.setFontSize(10);
-      doc.text(160, margin_top + 9, ((window.userAuthenticated && window.userAuthenticated.nome) || '') + ' ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString());
+      doc.setFontSize(9);
+      doc.text(202, margin_top + 8.5, ((window.userAuthenticated && window.userAuthenticated.nome) || ''), null, null, 'right');
+      doc.text(202, margin_top + 12.5, new Date().toLocaleDateString(), null, null, 'right');
+      doc.text(202, margin_top + 16.5, new Date().toLocaleTimeString(), null, null, 'right');
 
       doc.setFontSize(18);
       doc.text(70, margin_top + 13, 'Cobrança de Título');
@@ -111,6 +113,7 @@ export default class PrintPreview extends Component {
       doc.text(8, margin_top + 108, 'Contato');
       doc.text(8, margin_top + 115, 'Representante');
       doc.text(8, margin_top + 122, 'Cond. Pagto');
+      doc.text(8, margin_top + 129, 'Observações');
 
       doc.setFontStyle('normal');
 
@@ -126,6 +129,8 @@ export default class PrintPreview extends Component {
       doc.text(60, margin_top + 108, this.cliente.contato.trim());
       doc.text(60, margin_top + 115, this.representante.codigo + ' ' + this.representante.nome.trim());
       doc.text(60, margin_top + 122, parcela.prazo.toString() + ' ' + parcela.tipo_vencto + ' - ' + parcela.forma_pagto + ' ' + parcela.origem);
+      doc.text(60, margin_top + 129, '____/____/____   _______________________   ___________');
+      doc.text(60, margin_top + 136, '____/____/____   _______________________   ___________');
 
     }.bind(titulo))
     
